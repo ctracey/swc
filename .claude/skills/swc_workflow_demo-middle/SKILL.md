@@ -1,4 +1,4 @@
-# swc-workflow_demo-middle
+# swc_workflow_demo-middle
 
 **This is a placeholder skill.**
 

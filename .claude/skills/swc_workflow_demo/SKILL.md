@@ -13,9 +13,9 @@ Entry point for demoing a workflow. Invoke `swc_workflow-orchestrator` with the 
   "title": "demo",
   "purpose": "The output is a demo of an orchestrated workflow.",
   "stages": [
-    { "name": "start",   "skill": "swc-workflow_demo-start",   "args": "" },
-    { "name": "middle",    "skill": "swc-workflow_demo-middle",    "args": "" },
-    { "name": "end",  "skill": "swc-workflow_demo-end",  "args": "" },
+    { "name": "start",   "skill": "swc_workflow_demo-start",   "args": "" },
+    { "name": "middle",    "skill": "swc_workflow_demo-middle",    "args": "" },
+    { "name": "end",  "skill": "swc_workflow_demo-end",  "args": "" },
   ],
   "on_complete": "Demo complete. Go ahead and create your own workflow now, or ask me to modify this one if you want to see how that works."
 }
