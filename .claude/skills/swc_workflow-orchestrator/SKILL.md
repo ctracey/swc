@@ -21,6 +21,10 @@ Called by a workflow skill with a JSON workflow definition conforming to this sc
       "type": "string",
       "description": "Workflow name displayed in the progress banner (e.g. 'planning', 'execution')"
     },
+    "purpose": {
+      "type": "string",
+      "description": "One-sentence description of what the workflow produces, shown in the confirm-intent prompt (optional)"
+    },
     "stages": {
       "type": "array",
       "description": "Ordered list of stages to run",
@@ -43,6 +47,19 @@ Called by a workflow skill with a JSON workflow definition conforming to this sc
 ```
 
 ## Behaviour
+
+### 0. Confirm intent
+
+Before doing anything else, present a confirmation prompt to the user. For each stage in `stages`, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow). Then ask:
+
+> "Would you like to run through **[title]**?[purpose sentence, preceded by a space, if provided] It covers [N] stages:
+> - [stage bullet 1]
+> - [stage bullet 2]
+> …
+>
+> Want to go ahead?"
+
+If the user confirms, proceed. If not, ask what they actually need and stop here — do not invoke any stage skills.
 
 ### 1. Parse the workflow definition
 

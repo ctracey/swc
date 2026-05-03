@@ -6,28 +6,12 @@ allowed-tools: Bash, Read, Write, Edit, Glob
 
 # SWC Workflow Demo
 
-Entry point for demoing a workflow. Delegates the demo conversation to `swc_workflow-orchestrator`.
-
-## Steps
-
-### 0. Confirm intent
-
-Before starting, read the `stages` array from the JSON config in step 1. For each stage, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow). Present this to the user:
-
-> "Would you like to run through a demo workflow? The output is a demo of an orchestrated workflow. It covers [N] stages:
-> [generated bullets]
->
-> Want to go ahead?"
-
-If yes, proceed. If no, ask what they actually need and stop here.
-
-### 1. Run the workflow
-
-Invoke `swc_workflow-orchestrator` with the following definition:
+Entry point for demoing a workflow. Invoke `swc_workflow-orchestrator` with the following definition:
 
 ```json
 {
-  "title": "planning",
+  "title": "demo",
+  "purpose": "The output is a demo of an orchestrated workflow.",
   "stages": [
     { "name": "start",   "skill": "swc-workflow_demo-start",   "args": "" },
     { "name": "middle",    "skill": "swc-workflow_demo-middle",    "args": "" },
