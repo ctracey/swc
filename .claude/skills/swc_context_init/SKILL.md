@@ -1,5 +1,5 @@
 ---
-name: swc_init
+name: swc_context_init
 description: Scaffold a new .swc/<folder>/ with stub planning docs. Use when starting a fresh piece of work after the folder has been located by swc_lookup.
 allowed-tools: Write
 ---
