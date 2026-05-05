@@ -2,6 +2,10 @@
 description: SWC skill naming convention — separator rules for objects, actions, knowledge, and typed objects. Use when creating a new skill or reviewing an existing skill name.
 ---
 
+## Frontmatter
+
+Skill frontmatter must **not** include a `name` field. The skill's name and namespace are derived dynamically from the plugin folder structure — the folder name becomes the skill identifier and the plugin namespace is applied automatically. Adding a `name` field would override this and break the convention.
+
 # SWC Skill Naming Convention
 
 Skill names are structured identifiers that encode the object model. Each separator has a distinct meaning.
