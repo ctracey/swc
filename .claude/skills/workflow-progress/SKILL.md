@@ -1,6 +1,6 @@
 ---
-name: swc_workflow-progress
-description: Print a workflow progress banner showing title, all stages, and the active stage highlighted. Use when starting a new stage in a multi-stage workflow, or when invoked via /swc-workflow-progress.
+name: workflow-progress
+description: Print a workflow progress banner showing title, all stages, and the active stage highlighted. Use when starting a new stage in a multi-stage workflow, or when invoked via /workflow-progress.
 allowed-tools: Bash
 ---
 
@@ -11,7 +11,7 @@ Emit a workflow progress banner framed with horizontal rules.
 ## Arguments
 
 ```
-/swc-workflow-progress title="process X" stages="stage 1,stage 2,stage 3" active="stage 2"
+/workflow-progress title="process X" stages="stage 1,stage 2,stage 3" active="stage 2"
 ```
 
 - `title` — workflow name

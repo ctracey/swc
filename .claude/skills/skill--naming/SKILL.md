@@ -1,5 +1,5 @@
 ---
-name: swc_skill--naming
+name: skill--naming
 description: SWC skill naming convention — separator rules for objects, actions, knowledge, and typed objects. Use when creating a new skill or reviewing an existing skill name.
 ---
 
@@ -19,26 +19,26 @@ Skill names are structured identifiers that encode the object model. Each separa
 ## Structure
 
 ```
-swc _ <object> _ <sub-object> - <action>
-swc _ <object> -- <knowledge>
-swc _ <typedObject> _ <stage>
+<object> _ <sub-object> - <action>
+<object> -- <knowledge>
+<typedObject> _ <stage>
 ```
 
 ## Examples
 
 ```
-swc_context-init          swc → context object → init action
-swc_context-lookup        swc → context object → lookup action
-swc_context--files        swc → context object → files knowledge
-swc_context--workload     swc → context object → workload knowledge
+context-init          context object → init action
+context-lookup        context object → lookup action
+context--files        context object → files knowledge
+context--workload     context object → workload knowledge
 
-swc_workload-update       swc → workload object → update action
-swc_workload_item-start   swc → workload → item sub-object → start action
+workload-update       workload object → update action
+workload_item-start   workload → item sub-object → start action
 
-swc_workflowDemo          swc → workflowDemo (demo is-a workflow)
-swc_workflowDemo_start    swc → workflowDemo → start stage (has-a)
-swc_workflowDemo_middle   swc → workflowDemo → middle stage (has-a)
-swc_workflowDemo_end      swc → workflowDemo → end stage (has-a)
+workflowDemo          workflowDemo (demo is-a workflow)
+workflowDemo_start    workflowDemo → start stage (has-a)
+workflowDemo_middle   workflowDemo → middle stage (has-a)
+workflowDemo_end      workflowDemo → end stage (has-a)
 ```
 
 ## Alphabetical ordering

@@ -1,6 +1,6 @@
 ---
-name: swc_workflow-orchestrator
-description: Generic workflow orchestrator — drives a user through a sequence of stages defined by the calling workflow skill. Manages progress banner, stage gates, and skill invocation. Use when a workflow skill hands off a workflow definition to run, or when invoked via /swc-workflow-orchestrator.
+name: workflow-orchestrator
+description: Generic workflow orchestrator — drives a user through a sequence of stages defined by the calling workflow skill. Manages progress banner, stage gates, and skill invocation. Use when a workflow skill hands off a workflow definition to run, or when invoked via /workflow-orchestrator.
 allowed-tools: Bash, Read, Write, Edit, Glob, Skill
 ---
 
@@ -69,7 +69,7 @@ Read the JSON argument and validate it against the input schema. If it is malfor
 
 For each stage in `stages`:
 
-1. **Emit progress banner** — invoke `swc_workflow-progress` with:
+1. **Emit progress banner** — invoke `workflow-progress` with:
    - `title` = workflow title
    - `stages` = comma-separated list of all stage names
    - `active` = current stage name

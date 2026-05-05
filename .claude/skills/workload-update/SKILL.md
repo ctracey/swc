@@ -1,6 +1,6 @@
 ---
-name: swc_workload-update
-description: Update the status of a work item in the active workload. ALWAYS use this skill for status changes — never edit workload.md directly. Direct edits miss parent rollup and leave stale status markers. Use when the user says "mark X done", "mark X as done", "start task X", "complete task X", "task X is done", "work item X done", or invokes /swc-workload-update.
+name: workload-update
+description: Update the status of a work item in the active workload. ALWAYS use this skill for status changes — never edit workload.md directly. Direct edits miss parent rollup and leave stale status markers. Use when the user says "mark X done", "mark X as done", "start task X", "complete task X", "task X is done", "work item X done", or invokes /workload-update.
 allowed-tools: Read, Edit, Glob, Bash
 ---
 
@@ -10,9 +10,9 @@ Update a work item status in the active workload file, then roll up the parent s
 
 ## Arguments
 
-- `/swc-workload-update <item> done` — mark a work item done (`[x]`)
-- `/swc-workload-update <item> in-progress` — mark a work item in progress (`[-]`)
-- `/swc-workload-update <item> reset` — mark a work item not started (`[ ]`)
+- `/workload-update <item> done` — mark a work item done (`[x]`)
+- `/workload-update <item> in-progress` — mark a work item in progress (`[-]`)
+- `/workload-update <item> reset` — mark a work item not started (`[ ]`)
 - Item can be a number (`2.6`), a description match, or implied from context ("the current item", "next item")
 
 ## Steps

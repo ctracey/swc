@@ -1,5 +1,5 @@
 ---
-name: swc_context--files
+name: context--files
 description: SWC context file structure and naming — folder-per-branch layout, branch→folder mapping, and doc file roles. Use when creating, locating, or referencing .swc/ folders or doc files (workload.md, plan.md, architecture.md, notes.md, changelog.md).
 allowed-tools: Read
 ---

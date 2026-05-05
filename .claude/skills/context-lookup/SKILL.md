@@ -1,6 +1,6 @@
 ---
-name: swc_context-lookup
-description: Locate or create the active SWC workload folder for the current branch. Single source of truth for branch→folder naming. Use when you need to find the active workload, or when invoked via /swc-lookup.
+name: context-lookup
+description: Locate or create the active SWC workload folder for the current branch. Single source of truth for branch→folder naming. Use when you need to find the active workload, or when invoked via /context-lookup.
 allowed-tools: Read, Glob, Bash, Write
 ---
 
@@ -10,9 +10,9 @@ Determine the `.swc/<folder>/` path for the current (or specified) branch. Handl
 
 ## Arguments
 
-- `/swc-lookup` — locate existing workload for the current branch
-- `/swc-lookup <branch>` — locate existing workload for a specific branch
-- `/swc-lookup --create` — locate or create the workload folder for the current branch (used by planning skills)
+- `/context-lookup` — locate existing workload for the current branch
+- `/context-lookup <branch>` — locate existing workload for a specific branch
+- `/context-lookup --create` — locate or create the workload folder for the current branch (used by planning skills)
 
 ## Steps
 
@@ -66,7 +66,7 @@ List all folders under `.swc/` (exclude `_meta.json`). Compare against the deriv
 
 **No folders found — locate mode:**
 ```
-No workload found under .swc/. Run /swc-workflow-plan to start one.
+No workload found under .swc/. Run /workflow-plan to start one.
 ```
 Stop.
 
