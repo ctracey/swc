@@ -2,7 +2,7 @@
 
 ## Work Items
 
-- [ ] 1 basic functionality
+- [-] 1 basic functionality
     - [x] 1.1 workflow orchestrator
         - [x] 1.1.1 workflow progress
     - [x] 1.2 workload
@@ -12,7 +12,7 @@
         - [x] 1.3.1 consistent naming convention with _/-
         - [x] 1.3.2 drop swc from naming convention (prep for plugin)
     - [x] 1.4 plan workflow
-    - [ ] 1.5 report (notes & plan)
+    - [x] 1.5 report (notes & plan)
     - [ ] 1.6 deliver workflow
     - [ ] 1.7 implement workflow
 - [ ] 2 documentation & usage
