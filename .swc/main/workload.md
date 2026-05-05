@@ -13,8 +13,9 @@
         - [x] 1.3.2 drop swc from naming convention (prep for plugin)
     - [x] 1.4 plan workflow
     - [x] 1.5 report (notes & plan)
-    - [ ] 1.6 deliver workflow
+    - [-] 1.6 deliver workflow
     - [ ] 1.7 implement workflow
+    - [ ] 1.8 swc:about skill
 - [ ] 2 documentation & usage
     - [ ] 2.1 docs for swc
     - [ ] 2.2 including usage
