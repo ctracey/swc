@@ -65,7 +65,7 @@ List all folders under `.swc/` (exclude `_meta.json`). Compare against the deriv
 
 **No folders found — locate mode:**
 ```
-No workload found under .swc/. Run /workflow-plan to start one.
+No workload found under .swc/. Run /context-init to create one.
 ```
 Stop.
 

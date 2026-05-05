@@ -65,7 +65,7 @@ Cover:
 - **Dev environment** — start command, how to confirm it's up, stop command (or "not applicable")
 - **Acceptance** — what the human needs to see to accept the work (can be "test suite only" for non-UI work)
 
-Write the answers to `.swc/<folder>/pipeline.md`. The stub is already there from `swc_init` — fill it in with what was agreed. If the user wants to skip or fill it in later, leave the stub as-is and note it as a deferred decision.
+Write the answers to `.swc/<folder>/pipeline.md`. The stub is already there from `context-init` — fill it in with what was agreed. If the user wants to skip or fill it in later, leave the stub as-is and note it as a deferred decision.
 
 ### 6. Present and check
 
