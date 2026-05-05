@@ -1,5 +1,5 @@
 ---
-name: swc_workload-item-start
+name: swc_workload_item-start
 description: Silently mark a work item as in-progress ([-]) inside an agent workflow. Designed for programmatic use inside skill chains — emits no text output. Use when an implementation agent needs to mark its own work item in-progress during orient. Do NOT use for interactive top-level status changes — use swc_workload-update instead.
 allowed-tools: Read, Edit, Bash, Glob
 ---

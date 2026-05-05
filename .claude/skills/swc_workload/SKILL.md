@@ -17,7 +17,7 @@ Read the active workload file and display work items using visual status symbols
 
 ### 1. Resolve the active workload
 
-Follow the `swc_lookup` skill to get the path to `workload.md`. If the lookup fails or the user declines, stop.
+Follow the `swc_context-lookup` skill to get the path to `workload.md`. If the lookup fails or the user declines, stop.
 
 ### 2. Render via script
 

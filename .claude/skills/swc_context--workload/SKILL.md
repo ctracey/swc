@@ -1,5 +1,5 @@
 ---
-name: swc_context-workload
+name: swc_context--workload
 description: SWC workload.md conventions — work item status markers, parent rollup rules, and cleanup. Use when reading or updating workload.md, checking or changing work item status, or completing a workload.
 allowed-tools: Read
 ---

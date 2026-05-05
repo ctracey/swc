@@ -1,5 +1,5 @@
 ---
-name: swc_lookup
+name: swc_context-lookup
 description: Locate or create the active SWC workload folder for the current branch. Single source of truth for branch→folder naming. Use when you need to find the active workload, or when invoked via /swc-lookup.
 allowed-tools: Read, Glob, Bash, Write
 ---

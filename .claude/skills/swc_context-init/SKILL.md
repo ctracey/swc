@@ -1,12 +1,12 @@
 ---
-name: swc_context_init
-description: Scaffold a new .swc/<folder>/ with stub planning docs. Use when starting a fresh piece of work after the folder has been located by swc_lookup.
+name: swc_context-init
+description: Scaffold a new .swc/<folder>/ with stub planning docs. Use when starting a fresh piece of work after the folder has been located by swc_context-lookup.
 allowed-tools: Write
 ---
 
 # SWC Init
 
-Create the stub planning docs for a new workload folder. Called by `swc_workflow_plan-context` after `swc_lookup` has confirmed the folder path.
+Create the stub planning docs for a new workload folder. Called by `swc_workflow_plan-context` after `swc_context-lookup` has confirmed the folder path.
 
 ## Arguments
 
