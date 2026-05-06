@@ -2,7 +2,7 @@
 
 ## Work Items
 
-- [x] 1 basic functionality
+- [-] 1 basic functionality
     - [x] 1.1 workflow orchestrator
         - [x] 1.1.1 workflow progress
     - [x] 1.2 workload
@@ -15,6 +15,7 @@
     - [x] 1.5 report (notes & plan)
     - [x] 1.6 deliver workflow
     - [x] 1.7 implement workflow
+    - [ ] 1.8 review agent
 - [ ] 2 documentation & usage
     - [ ] 2.1 update tests for scenarios
     - [ ] 2.2 docs for swc
