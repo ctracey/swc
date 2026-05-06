@@ -2,7 +2,7 @@
 
 ## Work Items
 
-- [-] 1 basic functionality
+- [x] 1 basic functionality
     - [x] 1.1 workflow orchestrator
         - [x] 1.1.1 workflow progress
     - [x] 1.2 workload
@@ -13,13 +13,12 @@
         - [x] 1.3.2 drop swc from naming convention (prep for plugin)
     - [x] 1.4 plan workflow
     - [x] 1.5 report (notes & plan)
-    - [-] 1.6 deliver workflow
-    - [ ] 1.7 implement workflow
-    - [ ] 1.8 swc:about skill
+    - [x] 1.6 deliver workflow
+    - [x] 1.7 implement workflow
 - [ ] 2 documentation & usage
-    - [ ] 2.1 docs for swc
-    - [ ] 2.2 including usage
-    - [ ] 2.3 update tests for scenarios
+    - [ ] 2.1 update tests for scenarios
+    - [ ] 2.2 docs for swc
+    - [ ] 2.3 including usage
     - [ ] 2.4 build instructions
     - [ ] 2.5 pattern docs
     - [ ] 2.6 plugin usage
@@ -38,5 +37,6 @@
     - [ ] 5.1 skill for single use react vite thing???
     - [ ] 5.2 swc naming skill in its own plugin
     - [ ] 5.3 streamline output for workflow-progress
+    - [ ] 5.4 swc:about skill
 
 
