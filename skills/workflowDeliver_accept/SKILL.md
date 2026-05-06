@@ -1,5 +1,5 @@
 ---
-description: Accept stage of the delivery workflow — confirm work item completion, mark done, and commit/push via swc_push. Seventh stage of the delivery workflow. Use when invoked by workflowDeliver or via /workflowDeliver_accept.
+description: Accept stage of the delivery workflow — confirm work item completion, mark done, and commit/push via ship. Seventh stage of the delivery workflow. Use when invoked by workflowDeliver or via /workflowDeliver_accept.
 allowed-tools: Read, Write, Edit, Bash, Skill, Glob
 ---
 
@@ -9,7 +9,7 @@ Closes the work item loop: confirms the user is ready to mark the item done, upd
 
 ## Context
 
-The work item number and name are available from the calling context. If missing, read the active workload via `swc_lookup`.
+The work item number and name are available from the calling context. If missing, read the active workload via `context-lookup`.
 
 ## Steps
 
@@ -43,8 +43,8 @@ Wait for the user's response.
 
 If the user confirms:
 
-1. Invoke `swc_workload-update` with the work item number and status `done` to mark it `[x]`.
-2. Invoke `swc_push` to commit and push.
+1. Invoke `workload-update` with the work item number and status `done` to mark it `[x]`.
+2. Invoke `ship` to commit and push.
 
 ### 4. Not ready path — collect feedback
 
@@ -76,7 +76,7 @@ Invoke `workflowDeliver` with the work item number as the argument.
 
 **Done when (happy path):**
 - Work item marked `[x]`
-- `swc_push` invoked and completed
+- `ship` invoked and completed
 - Control returned to orchestrator
 
 **Done when (feedback path):**

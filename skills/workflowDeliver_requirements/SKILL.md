@@ -11,7 +11,7 @@ Establish intent and high-level solution direction before specs or implementatio
 
 ### 1. Load SWC context
 
-Read in parallel from the active workload folder (located via `swc_lookup`):
+Read in parallel from the active workload folder (located via `context-lookup`):
 - `plan.md`
 - `architecture.md`
 - `notes.md`

@@ -11,7 +11,7 @@ Establish context before the planning conversation begins.
 
 ### 1. Resolve the folder
 
-Invoke `swc_lookup --create`. It handles:
+Invoke `context-lookup --create`. It handles:
 - Git repo detection and optional initialisation
 - Branch recommendation and confirmation
 - Folder name derivation and `_meta.json` update
@@ -70,8 +70,8 @@ Say: "Workload ready at `.swc/<folder>/`. Let's start with what's driving this w
 ## Exit criteria
 
 **Done when:**
-- Branch confirmed (via `swc_lookup`)
-- `_meta.json` updated (via `swc_lookup`)
+- Branch confirmed (via `context-lookup`)
+- `_meta.json` updated (via `context-lookup`)
 - Existing-work mode chosen (if applicable)
 - Stub docs present at `.swc/<folder>/` (via `swc_init` or existing files)
 - User acknowledged

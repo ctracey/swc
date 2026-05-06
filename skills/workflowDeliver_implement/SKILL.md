@@ -9,7 +9,7 @@ Spawns a fresh implementation agent for the active work item, then evaluates and
 
 ## Context
 
-The work item number is available from the calling context (set by `workflowDeliver` before the workflow started). If not available, read the active workload via `swc_lookup` and ask the user which item to implement. The implementation agent is responsible for discovering its own folder and work item name via `swc_lookup`.
+The work item number is available from the calling context (set by `workflowDeliver` before the workflow started). If not available, read the active workload via `context-lookup` and ask the user which item to implement. The implementation agent is responsible for discovering its own folder and work item name via `context-lookup`.
 
 ## Steps
 
@@ -63,7 +63,7 @@ Ask the user:
 
 ### 3. Spawn the implementation agent
 
-Use the Agent tool to spawn a general-purpose agent. Pass only the work item number — the agent uses `swc_lookup` to discover the workload folder and `swc_workload` to find the work item name.
+Use the Agent tool to spawn a general-purpose agent. Pass only the work item number — the agent uses `context-lookup` to discover the workload folder and `workload` to find the work item name.
 
 If `quality-baseline.md` was written in step 2, include a note in the prompt so the agent reads it during orient.
 
@@ -74,9 +74,9 @@ Agent(
   description: "Implement work item [N]",
   prompt: "You are an implementation agent for work item [N].
 
-Use the swc_lookup skill to find the active workload folder, then read workload.md to confirm the work item name.
+Use the context-lookup skill to find the active workload folder, then read workload.md to confirm the work item name.
 
-Follow the swc_workflow_implement skill to complete this work item.
+Follow the workflowImplement skill to complete this work item.
 
 [Include only if quality-baseline.md exists:]
 A quality-baseline.md exists at .swc/<folder>/workitems/<N>/quality-baseline.md — read it during orient.

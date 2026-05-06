@@ -11,7 +11,7 @@ Entry point for delivering a work item. Delegates the delivery conversation to `
 
 ### 0. Resolve the work item
 
-Locate the active workload via `swc_lookup`. Read `workload.md`.
+Locate the active workload via `context-lookup`. Read `workload.md`.
 
 **If the user named a specific item** — find it by number or description match and proceed to the status check below.
 
@@ -73,11 +73,11 @@ If yes, proceed. If no, ask what they actually need and stop here.
 
 ### 2. Mark work item in-progress
 
-Before starting the workflow, silently mark the work item `[-]` by invoking `swc_workload-item-start` with the work item number. Emit no output — this is a silent side-effect.
+Before starting the workflow, silently mark the work item `[-]` by invoking `workload_item-start` with the work item number. Emit no output — this is a silent side-effect.
 
 ### 3. Run the workflow
 
-**Use the Skill tool to invoke `swc_workflow-orchestrator`.** Do not run stages inline — the orchestrator manages the progress banner, stage gates, and exit criteria checks. Pass the following workflow definition as the args:
+**Use the Skill tool to invoke `workflow-orchestrator`.** Do not run stages inline — the orchestrator manages the progress banner, stage gates, and exit criteria checks. Pass the following workflow definition as the args:
 
 ```json
 {
