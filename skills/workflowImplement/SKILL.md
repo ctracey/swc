@@ -24,7 +24,7 @@ If any are missing, stop and surface the gap — do not proceed without a resolv
 
 ### 2. Run the workflow
 
-Invoke `swc_workflow-orchestrator` with the implementation stage definitions:
+Invoke `workflow-orchestrator` with the implementation stage definitions:
 
 ```json
 {

@@ -18,7 +18,7 @@ Read in parallel:
 - `.swc/<folder>/architecture.md`
 - `.swc/<folder>/notes.md`
 
-`<N>` is the full work item number (e.g. `1.4.2.8`). Resolve `<folder>` via `swc_lookup`.
+`<N>` is the full work item number (e.g. `1.4.2.8`). Resolve `<folder>` via `context-lookup`.
 
 If `requirements.md` or `specs.md` is missing, note the gap but continue with what's available.
 

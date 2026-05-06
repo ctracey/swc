@@ -9,7 +9,7 @@ Runs after the implementation agent returns. Spawns `swc_code-reviewer`, present
 
 ## Context
 
-The work item number, name, and workload folder path are available from the calling context. If missing, read the active workload via `swc_lookup`.
+The work item number, name, and workload folder path are available from the calling context. If missing, read the active workload via `context-lookup`.
 
 ## Steps
 
@@ -107,9 +107,9 @@ Agent(
   description: "Implement work item [N] — pass [P] (resolve review findings)",
   prompt: "You are an implementation agent for work item [N], pass [P].
 
-Use the swc_lookup skill to find the active workload folder, then read workload.md to confirm the work item name.
+Use the context-lookup skill to find the active workload folder, then read workload.md to confirm the work item name.
 
-Follow the swc_workflow_implement skill to complete this pass.
+Follow the workflowImplement skill to complete this pass.
 
 REVIEW FINDINGS TO RESOLVE:
 [paste the to_resolve findings verbatim]

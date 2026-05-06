@@ -9,7 +9,7 @@ Final human review handoff. Presents what was built so the developer can answer 
 
 ## Context
 
-The work item number, name, and workload folder path are available from the calling context. If missing, read the active workload via `swc_lookup`.
+The work item number, name, and workload folder path are available from the calling context. If missing, read the active workload via `context-lookup`.
 
 ## Steps
 
