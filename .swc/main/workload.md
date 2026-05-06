@@ -37,5 +37,6 @@
 - [ ] 5 extra improvements
     - [ ] 5.1 skill for single use react vite thing???
     - [ ] 5.2 swc naming skill in its own plugin
+    - [ ] 5.3 streamline output for workflow-progress
 
 
