@@ -15,7 +15,8 @@
     - [x] 1.5 report (notes & plan)
     - [x] 1.6 deliver workflow
     - [x] 1.7 implement workflow
-    - [ ] 1.8 review agent
+    - [x] 1.8 review agent
+    - [ ] 1.9 implementation agent
 - [ ] 2 documentation & usage
     - [ ] 2.1 update tests for scenarios
     - [ ] 2.2 docs for swc

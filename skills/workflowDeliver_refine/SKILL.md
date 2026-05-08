@@ -1,11 +1,11 @@
 ---
-description: Refine stage of the delivery workflow — spawn swc_code-reviewer, present findings to user, resolve or defer to tech debt, loop if needed. Fifth stage of the delivery workflow. Use when invoked by workflowDeliver or via /workflowDeliver_refine.
+description: Refine stage of the delivery workflow — spawn code-reviewer, present findings to user, resolve or defer to tech debt, loop if needed. Fifth stage of the delivery workflow. Use when invoked by workflowDeliver or via /workflowDeliver_refine.
 allowed-tools: Read, Write, Edit, Glob, Bash, Agent
 ---
 
 # Deliver — Refine Stage
 
-Runs after the implementation agent returns. Spawns `swc_code-reviewer`, presents findings to the user, and manages the quality loop. The user decides what to resolve and what to accept as tech debt.
+Runs after the implementation agent returns. Spawns `code-reviewer`, presents findings to the user, and manages the quality loop. The user decides what to resolve and what to accept as tech debt.
 
 ## Context
 
@@ -21,13 +21,13 @@ Confirm `summary.md` exists at `.swc/<folder>/workitems/<N>/summary.md`. If not,
 
 Stop and return to the orchestrator.
 
-### 2. Spawn swc_code-reviewer
+### 2. Spawn code-reviewer
 
 Use the Agent tool:
 
 ```
 Agent(
-  subagent_type: "swc_code-reviewer",
+  subagent_type: "swc:code-reviewer",
   description: "Review code for work item [N]",
   prompt: "Review work item [N]: [name].
 
@@ -148,7 +148,7 @@ Return control to the orchestrator.
 ## Exit criteria
 
 **Done when:**
-- `swc_code-reviewer` has run at least once
+- `code-reviewer` has run at least once
 - Verdict is PASS, or all WARN/BLOCK findings are resolved or deferred to tech-debt.md
 - Any tech debt appended to `.swc/<folder>/tech-debt.md`
 - User has been involved in any defer decisions
