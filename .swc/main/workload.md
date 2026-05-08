@@ -40,5 +40,10 @@
     - [ ] 5.2 swc naming skill in its own plugin
     - [ ] 5.3 streamline output for workflow-progress
     - [ ] 5.4 swc:about skill
+- [ ] 6 dynamic skill discovery & installation
+    - [ ] 6.1 tech stack detection (infer from project files)
+    - [ ] 6.2 public marketplace lookup (query Claude marketplace for stack-relevant skills)
+    - [ ] 6.3 skill suggestion UX (present candidates, accept/reject per skill)
+    - [ ] 6.4 local marketplace install (add plugin via public listing, install project-scoped)
 
 
