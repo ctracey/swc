@@ -1,5 +1,11 @@
 # Changelog
 
+## Session — ship skill branch and PR enforcement `2026-05-08`
+
+- Updated `ship` skill to check for `main`/`master` branch early and prompt to create a feature branch before proceeding
+- PR step now always creates a PR with a summary + motivation body if one doesn't exist, rather than optionally commenting
+- `git push` updated to `git push -u origin <branch>` to handle new branches correctly
+
 ## Session — rename code-reviewer agent to match naming convention `2026-05-08`
 
 - Renamed `agents/swc_code-reviewer.md` → `agents/code-reviewer.md` — `code` is the object, `reviewer` is the action, matching the SWC `-` separator convention

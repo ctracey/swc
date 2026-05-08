@@ -21,7 +21,23 @@ git branch --show-current     # active branch
 
 Also read `.swc/_meta.json` to find the active workload folder, then read `workload.md` for task context.
 
-### 2. Present summary to user
+### 2. Branch check
+
+If the current branch is `main` or `master`, stop and warn the user:
+
+> "You're on `main`. Changes should be made on a feature branch so they can be reviewed via PR.
+>
+> Shall I create a branch now? If so, what should it be called? (or suggest one based on the changes)"
+
+Wait for the user's response. If they provide a name (or accept a suggestion), create and switch to it:
+
+```bash
+git checkout -b <branch-name>
+```
+
+If they explicitly confirm they want to proceed on `main` anyway, continue — but note that the PR step will be skipped.
+
+### 3. Present summary to user
 
 Output a brief summary:
 - Which files changed and what kind of changes (new skill, fix, refactor, docs)
@@ -33,13 +49,13 @@ Then ask:
 
 Wait for confirmation or corrections.
 
-### 3. Test check
+### 4. Test check
 
 If tests have been run and are passing since the last changes — continue without asking.
 
 If unknown, or tests were run before the most recent changes: ask the user whether tests are passing before proceeding.
 
-### 4. Update workload changelog
+### 5. Update workload changelog
 
 Append a new session entry to `changelog.md` in the active workload folder:
 
@@ -52,7 +68,7 @@ Append a new session entry to `changelog.md` in the active workload folder:
 
 Date is today. Description is a short phrase (not a sentence). Bullets are factual — what changed and why, not a restatement of file names.
 
-### 5. Update other docs if needed
+### 6. Update other docs if needed
 
 Check whether any other workload docs need updating:
 - `notes.md` — if a decision or convention was settled this session
@@ -61,21 +77,21 @@ Check whether any other workload docs need updating:
 
 Make only changes that reflect what actually happened. Don't pad.
 
-### 6. Confirm ready to commit and push
+### 7. Confirm ready to commit and push
 
 Show the user what was written to the docs, then ask:
 > "Docs updated. Ready to commit and push?"
 
 Wait for confirmation. If they say no or want to make changes, address their feedback and re-confirm before proceeding.
 
-### 7. Commit and push
+### 8. Commit and push
 
 Stage all changes (tracked and untracked), then commit and push:
 
 ```bash
 git add .
 git commit -m "<conventional commit message>"
-git push
+git push -u origin <branch>
 ```
 
 Write the commit message following the conventional commit format: `type(scope): description`. Focus on the why, not the what. Keep it one line unless a short body is genuinely needed.
@@ -83,18 +99,49 @@ Write the commit message following the conventional commit format: `type(scope):
 Report the result:
 > "Committed and pushed. [short sha] on [branch]."
 
-### 8. PR comment
+### 9. Open or update PR
 
-After pushing, check for an open PR:
+If on `main`, skip this step silently.
+
+Check for an existing PR:
 
 ```bash
-gh pr view --json number,title 2>/dev/null
+gh pr view --json number,title,url 2>/dev/null
 ```
 
-If no remote is configured or no PR exists, skip silently.
+**If no PR exists**, draft a PR and show it to the user:
 
-If a PR exists, draft a short comment (3–5 bullets, no preamble) and show it to the user:
-> "Here's a draft PR comment — want me to post it?
+> "Here's a draft PR — want me to create it?
+>
+> **Title:** [short title based on changes]
+>
+> [draft body]"
+
+The PR body should follow this structure:
+```markdown
+## Summary
+
+- <bullet per meaningful change>
+
+## Motivation
+
+<one short paragraph on why — what problem this solves or what it enables>
+```
+
+If yes, create it:
+
+```bash
+gh pr create --title "<title>" --body "$(cat <<'EOF'
+<body>
+EOF
+)"
+```
+
+Report the PR URL.
+
+**If a PR already exists**, draft a short comment (3–5 bullets) and show it to the user:
+
+> "PR already open — here's a draft comment, want me to post it?
 >
 > [draft comment]"
 
@@ -113,6 +160,6 @@ If no, skip silently.
 
 - Changelog entries are session-level — one entry per session, even if multiple tasks touched.
 - Commit happens only after the user confirms in step 7 — never before.
-- PR comment is always drafted and posted after the push — never before.
-- PR comment is optional and user-confirmed — never post without showing the draft and getting approval.
+- Work should be on a feature branch — always check and offer to create one before proceeding.
+- PR creation is always drafted and shown to the user before posting — never create without confirmation.
 - If no workload is active, write the changelog entry to the most recently modified `.swc/` folder and note it.
