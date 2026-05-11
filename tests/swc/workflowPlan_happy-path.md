@@ -1,11 +1,11 @@
-# SWC Workflow Test Scripts
+# SWC Plan Workflow Test Scripts
 
 ## SCENARIO: Planning workflow happy path
 each workflow stage should confirm corrent interpretation with user
 workflow progress should be displayed at the start of each phase
 should report on satisfaction of stage exit criteria before moving to next workflow stage
 
-### Trigger Skill (swc_workflow_plan)
+### Trigger Skill (swc:workflowPlan)
 
 ```lets start a new project```
 
