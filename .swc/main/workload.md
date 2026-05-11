@@ -17,14 +17,14 @@
     - [x] 1.7 implement workflow
     - [x] 1.8 review agent
     - [x] 1.9 implementation agent
-- [ ] 2 documentation & usage
-    - [ ] 2.1 update tests for scenarios
+- [-] 2 documentation & usage
+    - [x] 2.1 update tests for scenarios
     - [ ] 2.2 docs for swc
-    - [ ] 2.3 including usage
-    - [ ] 2.4 build instructions
-    - [ ] 2.5 pattern docs
-    - [ ] 2.6 plugin usage
-    - [ ] 2.7 plugin marketplace
+        - [ ] 2.2.1 including usage
+        - [ ] 2.2.2 pattern docs
+    - [ ] 2.3 build instructions
+        - [ ] 2.3.1 plugin usage
+        - [ ] 2.3.2 plugin marketplace
 - [ ] 3 optimisation
     - [ ] 3.1 single request for swc skill permission
     - [ ] 3.2 cli tool for workfload

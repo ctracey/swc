@@ -1,5 +1,10 @@
 # Changelog
 
+## Session — workload restructure for docs epics `2026-05-11`
+
+- Marked 2.1 (update tests for scenarios) done
+- Reorganised section 2 sub-items: nested "including usage" and "pattern docs" under 2.2 (docs for swc); nested "plugin usage" and "plugin marketplace" under 2.3 (build instructions)
+
 ## Session — ship skill branch and PR enforcement `2026-05-08`
 
 - Updated `ship` skill to check for `main`/`master` branch early and prompt to create a feature branch before proceeding
