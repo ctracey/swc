@@ -3,7 +3,7 @@
 [Intent](/README.md) | [Usage](/docs/usage.md) | [Plugin Design](/docs/plugin-design.md)
 
 
-<table><tr><td width="33%">
+<!-- <table border="0"><tr><td width="33%">
 
 <h3>Claude forgets
 <br/>Your project shouldn't</h3>
@@ -13,14 +13,15 @@ A Claude Code plugin for structured software delivery - Agents implement from a 
 
 </td><td width="67%">
 
-<p align="center"><img src="docs/img/ephemeral-orchestration.png"></p>
+<p align="center"><a href="docs/img/ephemeral-orchestration.png"><img src="docs/img/ephemeral-orchestration.png"></a></p>
 
-</td></tr></table>
+</td></tr></table> -->
 
+<p align="center"><a href="docs/img/intro.png"><img src="docs/img/intro.png"></a></p>
 
 ## Intent
 
-Sessionless Workload Context (SWC) is a suite of skills that embodies a delivery operating model that guides an agent through the complete lifecycle - from capturing intent and breaking down work, through clarifying requirements and quality validations, to deliverying solutions.
+Sessionless Workload Context (SWC) is a suite of skills that embodies a delivery operating model to guides agent through the complete lifecycle - from capturing intent and breaking down work, through clarifying requirements and quality validations, to deliverying solutions.
 
 SWC onboards an agent to best practice delivery culture — the same way you would onboard a skilled person to your team. It prescribes workflows, conventions, and feedback loops so you can act as product owner: breaking down work, steering agents through small focused workitems, and validating quality at each stage.
 
@@ -41,7 +42,7 @@ The plugin uses skills to guides an agent through the complete delivery lifecycl
 
 
 
-<table><tr>
+<table border="0"><tr>
 <td width="10%"></td>
 <td width="20%">
 
@@ -54,7 +55,7 @@ The plugin uses skills to guides an agent through the complete delivery lifecycl
 
 </td><td width="70%">
 
-<p align="center"><img src="docs/img/swc-pillars.png" width="70%"></p>
+<p align="center"><a href="docs/img/swc-pillars.png"><img src="docs/img/swc-pillars.png" width="70%"></a></p>
 
 </td></tr></table>
 
