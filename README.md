@@ -22,7 +22,7 @@ A Claude Code plugin for structured software delivery - Agents implement from a 
 
 ## Intent
 
-Sessionless Workload Context (SWC) is a suite of skills that embodies a delivery operating model to guides agent through the complete lifecycle - from capturing intent and breaking down work, through clarifying requirements and quality validations, to deliverying solutions.
+Sessionless Workload Context (SWC) is a suite of skills that embodies a delivery operating model to guide agents through the complete lifecycle - from capturing intent and breaking down work, through clarifying requirements and quality validations, to deliverying solutions.
 
 SWC onboards an agent to best practice delivery culture — the same way you would onboard a skilled person to your team. It prescribes workflows, conventions, and feedback loops so you can act as product owner: breaking down work, steering agents through small focused workitems, and validating quality at each stage.
 
