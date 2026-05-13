@@ -100,12 +100,42 @@ In your claude code session you can see the list of skills with: `/swc:`
 | [**Deliver**](/docs/usage.md#deliver-workflow) | Drives a single work item from backlog to done: clarifying requirements, defining acceptance specs, solution design, implementation, code review, and user sign-off. |
 | [**Implement**](/docs/usage.md#implement-workflow) | An agent-side workflow that orients against the brief, implements the solution scenario by scenario, and writes a summary artefact on completion. |
 
+NOTE: these workflows are seen as a guide. If required the user can shortcut a process when overkill for a simple task.
 
 ## Plan Workflow
+
+A structured conversation that captures intent, solution direction, delivery shape, and work breakdown, producing a set of planning docs any future session can execute from cold.
+
+| Use Case ||
+|--------------|-------------|
+| **Scenario** | You are about to start a big piece of work |
+| **Input** | The intent, approach, high-level design |
+| **Output** | Documented notes, architecture & broken down workitems for delivery workload (saved: `.swc/`) |
+| **Trigger** | PROMPT: `Lets start a new project` |
 
 
 ## Deliver Workflow
 
+Drives a single work item from backlog to done: clarifying requirements, defining acceptance specs, solution design, implementation, code review, and user sign-off.
+This workflow delegates to Implement Workflow when enough detail confirmed for implementation, then orchestrated feedback loops to review output.
+
+| Use Case ||
+|----------|-------------|
+| **Scenario** | You are ready to start work on a workitem from your workload |
+| **Input** | Detailed requirements, test scenarios, solution design preferences, review input |
+| **Output** | Docs updated. Working solution with relevant tests as agreed. Workitem status maintained. |
+| **Trigger** | PROMPT: `Lets start working on work item n` |
+
 
 ## Implement Workflow
 
+An agent-side workflow that orients against the brief, implements the solution scenario by scenario, and writes a summary artefact on completion.
+This Workflow should play nicely with other skills supporting good software dev practices. You might use different options based on different tech stacks.
+
+| Use Case ||
+|----------|-------------|
+| **Scenario** | Enough context exists for an agent to implement a solution. |
+| **Input** | SWC context documents for a specific workitem. |
+| **Output** | Working solution including tests as agreed. Documents summarising changes. |
+| **Trigger** | N/A - Used by agent spawned by Deliver Workflow Implement stage |
+| **Alternative Trigger** | PROMPT: `/swc:workflowImplement n` |
