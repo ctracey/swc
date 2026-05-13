@@ -1,15 +1,16 @@
 # Sessionless Workload Context
 
-[Intent](/README.md) | [Getting Started](/docs/usage.md#getting-started) | [User Guide](/docs/usage.md#using-the-workflows) | [Plugin Design](/docs/plugin-design.md)
+[Intent](/README.md) | [Getting Started](/docs/usage.md) | [User Guide](/docs/usage.md#using-the-workflows) | [Plugin Design](/docs/plugin-design.md)
 
-- [Getting Started](#getting-started)
+- [Setup](#setup)
+- [Start using SWC](#start-using-swc)
 - [Using the Workflows](#using-the-workflows)
   - [Plan Workflow](#plan-workflow)
   - [Deliver Workflow](#deliver-workflow)
   - [Implement Workflow](#implement-workflow)
 
 
-## Getting Started
+## Setup
 
 
 ### 1. Pre-requisites
@@ -50,36 +51,33 @@ Once this plugin is available via a marketplace you can install it. Recommend in
  - navigate to your project
  - run `claude plugin install swc@<MARKETPLACE_NAME> --scope project`
 
+You should now be setup to use the SWC plugin.
 
-### 5. Ready to use
 
-You should now be setup to use the SWC plugin. SWC skills are prefixed with the swc namespace.
+## Start using SWC
+
+SWC skills are prefixed with the swc namespace.
 
 - navigate to your project folder
 - start claude code `claude`
-- you should see a list of swc: skills. Prompt: `/swc:`
+- you should be able to see SWC skills in the skills list. Prompt: `/swc:`
 
 Try start a workflow. Prompt: `lets start a new project`
 
-This will setup a `.swc/` folder with context based on your conversation. Check [Plugin Design](/docs/plugin-design.md) to learn more.
+This will setup a `.swc/` folder with context based on your conversation that can be included in your git repo. Check [Plugin Design](/docs/plugin-design.md) to learn more.
 
-Other things to try
+### Prompts to try
  - `list workitems`
  - `add workitem to test out swc`
  - `mark work item n as done/in-progress`
  - `lets work on item n`
  - `whats the plan`
 
- Alternatively you can run the workflow directly
+### Alternatively you can run the skill directly
+  - `/swc:workload`
   - `/swc:workflowPlan`
   - `/swc:workflowDeliver n`
-
-
-
-
- 
-
-Install it via a locally hosted Claude Code marketplace such as [ctracey/claude-code-plugin-marketplace](https://github.com/ctracey/claude-code-plugin-marketplace).
+  - `/swc:report`
 
 
 ## Using the Workflows
