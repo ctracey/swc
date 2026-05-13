@@ -1,5 +1,10 @@
 # Changelog
 
+## Session — close out documentation & usage epic `2026-05-14`
+
+- Marked 2.2, 2.2.1, 2.2.2, 2.3, 2.3.1, 2.3.2 done — completes the full documentation & usage group
+- Work item 2 now fully complete
+
 ## Session — workload restructure for docs epics `2026-05-11`
 
 - Marked 2.1 (update tests for scenarios) done
