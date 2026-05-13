@@ -20,8 +20,8 @@ SWC may be overkill for smaller, less complex projects. See [Usage](/docs/usage.
 
 Project workitems are stored in a workload backlog. This backlog can be created on command or via the plan workflow.
 
-<img src="./img/screenshot_sample-workload.png" alt="Workflow Deliver Screenshot" width="70%"/><br/>
-<em>image: sample workload report for a react project</em>
+<a href="./img/screenshot_sample-workload.png"><img src="./img/screenshot_sample-workload.png" alt="screenshot: sample workload report for a react project" width="70%"/></a><br/>
+<em>screenshot: sample workload report for a react project</em>
 
  - Skills are used to manage this workload.
  - Workitem status are updated as they progress through deliver workflow.
@@ -61,7 +61,8 @@ Context documents are persisted to `.swc/` and can be included in your git repo.
 
 The workflow orchestrator manages progression through defined stages, each implemented as a discrete skill. Stages are executed sequentially, with the orchestrator evaluating exit criteria specified by each skill before proceeding to the next phase.
 
-<img src="./img/screenshot_workflowDeliver.png" alt="Workflow Deliver Screenshot" width="70%"/><br/>
+<a href="./img/screenshot_workflowDeliver.png"><img src="./img/screenshot_workflowDeliver.png" alt="Screenshot: workflow progress" width="70%"/></a><br/>
+<em>screenshot: workflow progress</em>
 
 The Workflow Orchestrator ensures:
 - Each stage skill defines its own exit criteria and success conditions
