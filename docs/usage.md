@@ -13,7 +13,13 @@
 
 
 ### 1. Pre-requisites
-Claude Code, Linux, Bash, Python
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)
+![macOS](https://img.shields.io/badge/macOS-000000?style=flat&logo=apple&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-4EAA25?style=flat&logo=gnubash&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![Claude Code](https://img.shields.io/badge/Claude_Code-D97757?style=flat&logo=anthropic&logoColor=white)
+
+NOTE: you can probably get claude code to install python when its first needed by the SWC workflow reports.
 
 
 ### 2. Plugin Manager
