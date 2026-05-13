@@ -3,21 +3,11 @@
 [Intent](/README.md) | [Usage](/docs/usage.md) | [Plugin Design](/docs/plugin-design.md)
 
 
-<!-- <table border="0"><tr><td width="33%">
-
-<h3>Claude forgets
-<br/>Your project shouldn't</h3>
+**Claude forgets. Your project shouldn't.**
 
 A Claude Code plugin for structured software delivery - Agents implement from a backlog, context is externalised from sessions, and your project keeps moving whether Claude remembers or not.
-<br /><br />
 
-</td><td width="67%">
-
-<p align="center"><a href="docs/img/ephemeral-orchestration.png"><img src="docs/img/ephemeral-orchestration.png"></a></p>
-
-</td></tr></table> -->
-
-<p align="center"><a href="docs/img/intro.png"><img src="docs/img/intro.png"></a></p>
+<p align="center"><a href="docs/img/ephemeral-orchestration.png"><img src="docs/img/ephemeral-orchestration.png" width="60%"></a></p>
 
 ## Intent
 
@@ -25,7 +15,7 @@ Sessionless Workload Context (SWC) is a suite of skills that embodies a delivery
 
 SWC onboards an agent to best practice delivery culture — the same way you would onboard a skilled person to your team. It prescribes workflows, conventions, and feedback loops so you can act as product owner: breaking down work, steering agents through small focused workitems, and validating quality at each stage.
 
-Taking a systems based orchestrated delivery approach to agentic onboarding we can support adoption and scale by:
+Taking a systems based orchestrated delivery approach to agentic onboarding we can support adoption by:
  - externalising culture with system workflows & conventions
  - externalising project domain context by externalising requirements, design & state
 
@@ -38,26 +28,10 @@ Good teams don't keep a project alive in one person's head — they externalise 
 
 ## Application
 
-The plugin uses skills to guides an agent through the complete delivery lifecycle in collaboration with the user — from capturing intent and breaking down work, through clarifying requirements and solution design, to implementing and reviewing the solution — with persisted context at every step.
+The SWC plugin uses skills to guide an agent through the complete delivery lifecycle in collaboration with the user — from capturing intent and breaking down work, through clarifying requirements and solution design, to implementing and reviewing the solution — with persisted context at every step.
 
-
-
-<table border="0"><tr>
-<td width="10%"></td>
-<td width="20%">
-
-<h3>3 key pillars</h3>
-
- - workload
- - workflows
- - context
-<br /><br />
-
-</td><td width="70%">
-
-<p align="center"><a href="docs/img/swc-pillars.png"><img src="docs/img/swc-pillars.png" width="70%"></a></p>
-
-</td></tr></table>
+<p align="center"><a href="docs/img/swc-pillars.png"><img src="docs/img/swc-pillars.png" width="60%"></a></p>
+<p align="center"><em>3 key SWC pillars: workload, workflows, context</em></p>
 
 
 ### SWC Workflows
@@ -66,9 +40,9 @@ The plugin uses skills to guides an agent through the complete delivery lifecycl
 
 | Workflow | Description |
 |----------|-------------|
-| **Plan** | A structured conversation that captures intent, solution direction, delivery shape, and work breakdown, producing a set of planning docs any future session can execute from cold. |
-| **Deliver** | Drives a single work item from backlog to done: clarifying requirements, defining acceptance specs, solution design, implementation, code review, and user sign-off. |
-| **Implement** | An agent-side workflow that orients against the brief, implements the solution scenario by scenario, and writes a summary artefact on completion. |
+| [**Plan**](/docs/usage.md#plan-workflow) | A structured conversation that captures intent, solution direction, delivery shape, and work breakdown, producing a set of planning docs any future session can execute from cold. |
+| [**Deliver**](/docs/usage.md#deliver-workflow) | Drives a single work item from backlog to done: clarifying requirements, defining acceptance specs, solution design, implementation, code review, and user sign-off. |
+| [**Implement**](/docs/usage.md#implement-workflow) | An agent-side workflow that orients against the brief, implements the solution scenario by scenario, and writes a summary artefact on completion. |
 
 
 ## SWC Benefits
