@@ -2,8 +2,77 @@
 
 [Intent](/README.md) | [Getting Started](/docs/usage.md#getting-started) | [User Guide](/docs/usage.md#using-the-workflows) | [Plugin Design](/docs/plugin-design.md)
 
+- [Getting Started](#getting-started)
+- [Using the Workflows](#using-the-workflows)
+  - [Plan Workflow](#plan-workflow)
+  - [Deliver Workflow](#deliver-workflow)
+  - [Implement Workflow](#implement-workflow)
+
 
 ## Getting Started
+
+
+### 1. Pre-requisites
+Claude Code, Linux, Bash, Python
+
+
+### 2. Plugin Manager
+
+Currently this plugin is not published on a public claude code plugin marketplace, so you will need to host your own.
+You can use something like [ctracey/claude-code-plugin-marketplace](https://github.com/ctracey/claude-code-plugin-marketplace) to setup a private local plugin marketplace.
+Make sure you register your marketplace with your claude code config (follow your marketplace guide)
+
+Check claude recognises your marketplace:
+
+`claude plugins marketplace list`
+
+
+### 3. Add this SWC Plugin to your marketplace
+
+Once you have your claude code marketplace setup you can install this plugin.
+Follow your marketplace guide. Should be something like this
+
+ - Clone this repo to `~/claude-plugins/plugins/swc`
+ - Add this plugin to the marketplace
+ - Check marketplace recognises the plugin
+
+
+### 4. Install this plugin
+
+Once this plugin is available via a marketplace you can install it. Recommend installed with project scope
+
+ - navigate to your project
+ - run `claude plugin install swc@<MARKETPLACE_NAME> --scope project`
+
+
+### 5. Ready to use
+
+You should now be setup to use the SWC plugin. SWC skills are prefixed with the swc namespace.
+
+- navigate to your project folder
+- start claude code `claude`
+- you should see a list of swc: skills. Prompt: `/swc:`
+
+Try start a workflow. Prompt: `lets start a new project`
+
+This will setup a `.swc/` folder with context based on your conversation. Check [Plugin Design](/docs/plugin-design.md) to learn more.
+
+Other things to try
+ - `list workitems`
+ - `add workitem to test out swc`
+ - `mark work item n as done/in-progress`
+ - `lets work on item n`
+ - `whats the plan`
+
+ Alternatively you can run the workflow directly
+  - `/swc:workflowPlan`
+  - `/swc:workflowDeliver n`
+
+
+
+
+ 
+
 Install it via a locally hosted Claude Code marketplace such as [ctracey/claude-code-plugin-marketplace](https://github.com/ctracey/claude-code-plugin-marketplace).
 
 
