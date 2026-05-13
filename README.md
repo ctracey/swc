@@ -16,7 +16,7 @@
 A Claude Code plugin for structured software delivery - Agents implement from a backlog, context is externalised from sessions, and your project keeps moving whether Claude remembers or not.
 
 <br/>
-<p align="center"><a href="docs/img/ephemeral-orchestration.png"><img src="docs/img/ephemeral-orchestration.png" width="60%"></a></p>
+<p align="center"><a href="docs/img/ephemeral-orchestration.png"><img src="docs/img/ephemeral-orchestration.png" alt="Agentic delivery of items in your workload using workflows with saved domain knowledge" width="60%"></a></p>
 <p align="center"><em>Agentic delivery of items in your workload using workflows with saved domain knowledge</em></p>
 
 

@@ -86,7 +86,7 @@ The SWC plugin uses skills to guide an agent through the complete delivery lifec
 
 In your claude code session you can see the list of skills with: `/swc:`
 
-<p align="center"><a href="docs/img/swc-pillars.png"><img src="img/swc-pillars.png" width="60%"></a></p>
+<p align="center"><a href="img/swc-pillars.png"><img src="img/swc-pillars.png" alt="3 key SWC pillars: workload, workflows, context" width="60%"></a></p>
 <p align="center"><em>3 key SWC pillars: workload, workflows, context</em></p>
 
 
@@ -113,6 +113,12 @@ A structured conversation that captures intent, solution direction, delivery sha
 | **Output** | Documented notes, architecture & broken down workitems for delivery workload (saved: `.swc/`) |
 | **Trigger** | PROMPT: `Lets start a new project` |
 
+<a href="./img/screenshot_sample-plan.png"><img src="./img/screenshot_sample-plan.png" alt="screenshot: sample plan summary for a react project" width="70%"/></a><br/>
+<em>screenshot: sample plan summary for a react project</em>
+
+<a href="./img/screenshot_sample-workload.png"><img src="./img/screenshot_sample-workload.png" alt="screenshot: sample workload report for a react project" width="70%"/></a><br/>
+<em>screenshot: sample workload report for a react project</em>
+
 
 ## Deliver Workflow
 
@@ -126,6 +132,14 @@ This workflow delegates to Implement Workflow when enough detail confirmed for i
 | **Output** | Docs updated. Working solution with relevant tests as agreed. Workitem status maintained. |
 | **Trigger** | PROMPT: `Lets start working on work item n` |
 
+<a href="./img/screenshot_workflowDelivery-resumption.png"><img src="./img/screenshot_workflowDelivery-resumption.png" alt="screenshot: scenario of resuming work based on persisted context" width="70%"/></a><br/>
+<em>screenshot: scenario of resuming work based on persisted context</em>
+
+<a href="./img/screenshot_workflowDeliver_implement-stage.png"><img src="./img/screenshot_workflowDeliver_implement-stage.png" alt="screenshot: deliver workflow implement stage" width="70%"/></a><br/>
+<em>screenshot: deliver workflow implement stage</em>
+
+<a href="./img/screenshot_workflowDeliver_refine-stage.png"><img src="./img/screenshot_workflowDeliver_refine-stage.png" alt="screenshot: deliver workflow refine stage" width="70%"/></a><br/>
+<em>screenshot: deliver workflow refine stage</em>
 
 ## Implement Workflow
 
@@ -139,3 +153,6 @@ This Workflow should play nicely with other skills supporting good software dev 
 | **Output** | Working solution including tests as agreed. Documents summarising changes. |
 | **Trigger** | N/A - Used by agent spawned by Deliver Workflow Implement stage |
 | **Alternative Trigger** | PROMPT: `/swc:workflowImplement n` |
+
+<a href="./img/screenshot_workflowImplement.png"><img src="./img/screenshot_workflowImplement.png" alt="screenshot: scenario of resuming work based on persisted context" width="70%"/></a><br/>
+<em>screenshot: implement workflow exit criteria</em>
