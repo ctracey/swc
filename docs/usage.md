@@ -100,9 +100,12 @@ In your claude code session you can see the list of skills with: `/swc:`
 | [**Deliver**](/docs/usage.md#deliver-workflow) | Drives a single work item from backlog to done: clarifying requirements, defining acceptance specs, solution design, implementation, code review, and user sign-off. |
 | [**Implement**](/docs/usage.md#implement-workflow) | An agent-side workflow that orients against the brief, implements the solution scenario by scenario, and writes a summary artefact on completion. |
 
-NOTE: these workflows are seen as a guide. If required the user can shortcut a process when overkill for a simple task.
+**NOTE:** these workflows are seen as a guide. If required the user can shortcut a process when overkill for a simple task.
+
+**TIP:** ask claude about the workflows. PROMPT: `give me an overview of the stages for the deliver workflow`
 
 ## Plan Workflow
+**STAGES:[ context → intent → solution → delivery → breakdown → finalise ]**
 
 A structured conversation that captures intent, solution direction, delivery shape, and work breakdown, producing a set of planning docs any future session can execute from cold.
 
@@ -121,6 +124,7 @@ A structured conversation that captures intent, solution direction, delivery sha
 
 
 ## Deliver Workflow
+**STAGES:[ requirements → specs → solution-design → implement → refine → review → accept ]**
 
 Drives a single work item from backlog to done: clarifying requirements, defining acceptance specs, solution design, implementation, code review, and user sign-off.
 This workflow delegates to Implement Workflow when enough detail confirmed for implementation, then orchestrated feedback loops to review output.
@@ -142,6 +146,7 @@ This workflow delegates to Implement Workflow when enough detail confirmed for i
 <em>screenshot: deliver workflow refine stage</em>
 
 ## Implement Workflow
+**STAGES:[ orient → implement → summarise ]**
 
 An agent-side workflow that orients against the brief, implements the solution scenario by scenario, and writes a summary artefact on completion.
 This Workflow should play nicely with other skills supporting good software dev practices. You might use different options based on different tech stacks.
