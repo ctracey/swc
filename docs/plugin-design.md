@@ -1,6 +1,6 @@
 # Sessionless Workload Context
 
-[Intent](/README.md) | [Usage](/docs/usage.md) | [Plugin Design](/docs/plugin-design.md)
+[Intent](/README.md) | [Getting Started](/docs/usage.md#getting-started) | [User Guide](/docs/usage.md#using-the-workflows) | [Plugin Design](/docs/plugin-design.md)
 
 
 ## Plugin Design
@@ -10,11 +10,25 @@ SWC is structured following the [RKSS pattern](https://github.com/ctracey/rkss_p
 Since SWC is packaged as a plugin, it can be applied where relevant using the project scope.
 SWC may be overkill for smaller, less complex projects. See [Usage](/docs/usage.md) for installation instructions.
 
+- [Workload](#workload)
 - [Persisted Context Artefacts](#persisted-context-artefacts)
 - [Workflow Orchestrator](#workflow-orchestrator)
 - [Skill Naming Convention](#skill-naming-convention)
 
-**<TODO: add workload>**
+
+## Workload
+
+Project workitems are stored in a workload backlog. This backlog can be created on command or via the plan workflow.
+
+<img src="./img/screenshot_sample-workload.png" alt="Workflow Deliver Screenshot" width="70%"/><br/>
+<em>image: sample workload report for a react project</em>
+
+ - Skills are used to manage this workload.
+ - Workitem status are updated as they progress through deliver workflow.
+ - Works well when workitems are numbered.
+ - Context is stored per work item
+
+
 
 ## Persisted Context Artefacts
 
@@ -47,7 +61,7 @@ Context documents are persisted to `.swc/` and can be included in your git repo.
 
 The workflow orchestrator manages progression through defined stages, each implemented as a discrete skill. Stages are executed sequentially, with the orchestrator evaluating exit criteria specified by each skill before proceeding to the next phase.
 
-<img src="./img/workflowDeliver_screenshot.png" alt="Workflow Deliver Screenshot" width="70%"/><br/>
+<img src="./img/screenshot_workflowDeliver.png" alt="Workflow Deliver Screenshot" width="70%"/><br/>
 
 The Workflow Orchestrator ensures:
 - Each stage skill defines its own exit criteria and success conditions
