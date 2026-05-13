@@ -26,7 +26,7 @@ NOTE: you can probably get claude code to install python when its first needed b
 ### 2. Plugin Manager
 
 Currently this plugin is not published on a public claude code plugin marketplace, so you will need to host your own.
-You can use something like [ctracey/claude-code-plugin-marketplace](https://github.com/ctracey/claude-code-plugin-marketplace) to setup a private local plugin marketplace.
+You can use something like [ccpm](https://github.com/ctracey/claude-code-plugin-marketplace) to setup a private local plugin marketplace.
 Make sure you register your marketplace with your claude code config (follow your marketplace guide)
 
 Check claude recognises your marketplace:
