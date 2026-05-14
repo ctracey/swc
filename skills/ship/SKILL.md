@@ -68,7 +68,19 @@ Append a new session entry to `changelog.md` in the active workload folder:
 
 Date is today. Description is a short phrase (not a sentence). Bullets are factual — what changed and why, not a restatement of file names.
 
-### 6. Update other docs if needed
+### 6. Check workload item status
+
+Compare the changes from step 1 against the workload items. Identify any items that appear related (by description keyword or task context).
+
+For each match found, ask the user:
+
+> "These workload items appear related to the changes — should any be updated?
+>
+> Mark any as done, leave as-is, or skip? (e.g. '5.3 done', 'skip')"
+
+Wait for a response. Apply any status changes using `workload-update`. If the user says skip or nothing matches, continue.
+
+### 7. Update other docs if needed
 
 Check whether any other workload docs need updating:
 - `notes.md` — if a decision or convention was settled this session
@@ -77,14 +89,14 @@ Check whether any other workload docs need updating:
 
 Make only changes that reflect what actually happened. Don't pad.
 
-### 7. Confirm ready to commit and push
+### 8. Confirm ready to commit and push
 
 Show the user what was written to the docs, then ask:
 > "Docs updated. Ready to commit and push?"
 
 Wait for confirmation. If they say no or want to make changes, address their feedback and re-confirm before proceeding.
 
-### 8. Commit and push
+### 9. Commit and push
 
 Stage all changes (tracked and untracked), then commit and push:
 
@@ -99,7 +111,7 @@ Write the commit message following the conventional commit format: `type(scope):
 Report the result:
 > "Committed and pushed. [short sha] on [branch]."
 
-### 9. Open or update PR
+### 10. Open or update PR
 
 If on `main`, skip this step silently.
 
