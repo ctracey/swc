@@ -1,5 +1,15 @@
 # Changelog
 
+## Session — streamline workflow-progress output `2026-05-14`
+
+- Removed bold markers from active stage and title in progress banner — cleaner output in terminal context
+- Updated skill to pipe JSON output through text extractor so bash tool shows plain text, not raw JSON
+- Added `ensure_ascii=False` to JSON output so unicode characters render directly
+- Skill now runs silently — bash tool output is the display, Claude does not re-emit
+- Updated tests to reflect no-bold behaviour; all 18 passing
+- Added workload item status check to `ship` skill — prompts user to update related items before committing
+- Marked 5.3 done
+
 ## Session — close out documentation & usage epic `2026-05-14`
 
 - Marked 2.2, 2.2.1, 2.2.2, 2.3, 2.3.1, 2.3.2 done — completes the full documentation & usage group
