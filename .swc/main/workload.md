@@ -25,9 +25,9 @@
     - [x] 2.3 build instructions
         - [x] 2.3.1 plugin usage
         - [x] 2.3.2 plugin marketplace
-- [ ] 3 optimisation
+- [-] 3 optimisation
     - [x] 3.1 single request for swc skill permission
-    - [ ] 3.2 cli tool for workfload
+    - [-] 3.2 cli tool for workfload
     - [ ] 3.3 plugin dependency for this cli tool
         - [ ] 3.3.1 plugin versioning
         - [ ] 3.3.2 plugin depdendency
