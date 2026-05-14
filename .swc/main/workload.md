@@ -40,6 +40,7 @@
     - [ ] 5.2 swc naming skill in its own plugin
     - [x] 5.3 streamline output for workflow-progress
     - [ ] 5.4 swc:about skill
+    - [ ] 5.5 swc:ship cleanup — skip or remove .swc context docs that contain only template content
 - [ ] 6 dynamic skill discovery & installation
     - [ ] 6.1 tech stack detection (infer from project files)
     - [ ] 6.2 public marketplace lookup (query Claude marketplace for stack-relevant skills)

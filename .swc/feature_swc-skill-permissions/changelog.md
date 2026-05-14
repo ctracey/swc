@@ -1,5 +1,9 @@
 # Changelog
 
+## Session — workload tidy `2026-05-14`
+
+- Added workload item 5.5: swc:ship cleanup for template-only context docs
+
 ## Session — swc skill permissions `2026-05-14`
 
 - Added `setup-permissions` skill: grants `Skill(swc:*)` and `Read` for the skills directory, written to `.claude/settings.json` on first use per project
