@@ -14,6 +14,10 @@ Read the active workload file and display work items using visual status symbols
 
 ## Steps
 
+### 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
 ### 1. Resolve the active workload
 
 Follow the `context-lookup` skill to get the path to `workload.md`. If the lookup fails or the user declines, stop.

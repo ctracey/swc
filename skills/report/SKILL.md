@@ -5,7 +5,11 @@ allowed-tools: Read, Glob
 
 # SWC Report
 
-Delegate to the three component skills in order, then add a NEXT STEP section.
+## Step 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
+Then delegate to the three component skills in order, then add a NEXT STEP section.
 
 1. Invoke `report-plan`
 2. Invoke `swc-list`

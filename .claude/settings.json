@@ -1,0 +1,11 @@
+{
+  "enabledPlugins": {
+    "swc@tracer-plugins": true
+  },
+  "permissions": {
+    "allow": [
+      "Skill(swc:*)",
+      "Read(/Users/tracer/claude-plugins/plugins/swc/skills/*)"
+    ]
+  }
+}
