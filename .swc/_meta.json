@@ -1,5 +1,6 @@
 {
   "workloads": {
-    "main": "main"
+    "main": "main",
+    "feature/swc-skill-permissions": "feature_swc-skill-permissions"
   }
 }

@@ -9,6 +9,10 @@ End-to-end session wrap-up: summarise changes, update docs, commit, push, and op
 
 ## Steps
 
+### 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
 ### 1. Summarise local changes
 
 Run these in parallel:

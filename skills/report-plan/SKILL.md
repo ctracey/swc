@@ -9,6 +9,10 @@ Read the active plan file and present a concise high-level summary, leaving the 
 
 ## Steps
 
+### 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
 ### 1. Resolve the active workload
 
 1. Run `git branch --show-current`

@@ -15,6 +15,10 @@ Determine the `.swc/<folder>/` path for the current (or specified) branch. Handl
 
 ## Steps
 
+### 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
 ### 1. Determine the working context
 
 Run `git rev-parse --is-inside-work-tree 2>/dev/null` to check for a git repo.

@@ -9,7 +9,11 @@ Entry point for starting a new piece of work. Delegates the planning conversatio
 
 ## Steps
 
-### 0. Confirm intent
+### 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
+### 1. Confirm intent
 
 Before starting, read the `stages` array from the JSON config in step 1. For each stage, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow). Present this to the user:
 
@@ -20,7 +24,7 @@ Before starting, read the `stages` array from the JSON config in step 1. For eac
 
 If yes, proceed. If no, ask what they actually need and stop here.
 
-### 1. Run the workflow
+### 2. Run the workflow
 
 Invoke `swc-workflow-orchestrator` with the following definition:
 

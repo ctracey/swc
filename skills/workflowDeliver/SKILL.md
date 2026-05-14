@@ -9,7 +9,11 @@ Entry point for delivering a work item. Delegates the delivery conversation to `
 
 ## Steps
 
-### 0. Resolve the work item
+### 0. Ensure swc skill permissions
+
+Follow the `setup-permissions` skill.
+
+### 1. Resolve the work item
 
 Locate the active workload via `context-lookup`. Read `workload.md`.
 
@@ -60,7 +64,7 @@ Do not proceed automatically. Clarify with the user:
 
 Wait for their answer and act accordingly before continuing.
 
-### 1. Confirm intent
+### 2. Confirm intent
 
 Before starting, read the `stages` array from the JSON config in step 2. For each stage, render its `name` as a bullet with a one-line description of what that stage covers. Present to the user:
 
@@ -71,11 +75,11 @@ Before starting, read the `stages` array from the JSON config in step 2. For eac
 
 If yes, proceed. If no, ask what they actually need and stop here.
 
-### 2. Mark work item in-progress
+### 3. Mark work item in-progress
 
 Before starting the workflow, silently mark the work item `[-]` by invoking `workload_item-start` with the work item number. Emit no output — this is a silent side-effect.
 
-### 3. Run the workflow
+### 4. Run the workflow
 
 **Use the Skill tool to invoke `workflow-orchestrator`.** Do not run stages inline — the orchestrator manages the progress banner, stage gates, and exit criteria checks. Pass the following workflow definition as the args:
 
