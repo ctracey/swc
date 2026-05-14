@@ -22,7 +22,7 @@ Emit a workflow progress banner framed with horizontal rules.
 Parse `title`, `stages`, and `active` from the arguments, then run:
 
 ```
-echo '{"title": "...", "stages": "...", "active": "..."}' | python3 ${CLAUDE_SKILL_DIR}/progress.py
+echo '{"title": "...", "stages": "...", "active": "..."}' | python3 ${CLAUDE_SKILL_DIR}/progress.py | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('output', d.get('error', '')))"
 ```
 
-The script outputs either `{"output": "..."}` or `{"error": "..."}`. If `output`, emit it as your text response. If `error`, emit the error message. Do not add preamble or trailing text.
+Run the command. Do not emit any text response.

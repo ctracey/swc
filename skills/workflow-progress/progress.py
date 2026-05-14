@@ -10,7 +10,7 @@ RULE_CHAR = "\u2500"
 
 def render(title: str, stages: list[str], active: str) -> str:
     if active and active not in stages:
-        return json.dumps({"error": f"Active stage '{active}' not found in stages: {stages}"})
+        return json.dumps({"error": f"Active stage '{active}' not found in stages: {stages}"}, ensure_ascii=False)
 
     total = len(stages)
     done = not active
@@ -20,7 +20,7 @@ def render(title: str, stages: list[str], active: str) -> str:
         bar = "■" * total
         position = total
     else:
-        stage_parts = [f"**{s.upper()}**" if s == active else s for s in stages]
+        stage_parts = [s.upper() if s == active else s for s in stages]
         position = stages.index(active) + 1
         bar = "".join("■" if i < position - 1 else "▣" if i == position - 1 else "□" for i in range(total))
 
@@ -34,8 +34,8 @@ def render(title: str, stages: list[str], active: str) -> str:
     rule = RULE_CHAR * rule_width
 
     padding = rule_width - len(title_prefix) - len(right)
-    title_line = f"WORKFLOW(**{title}**){' ' * padding}{right}"
-    return json.dumps({"output": "\n".join([title_line, rule, stages_line])})
+    title_line = f"WORKFLOW({title}){' ' * padding}{right}"
+    return json.dumps({"output": "\n".join([title_line, rule, stages_line])}, ensure_ascii=False)
 
 
 HELP = """

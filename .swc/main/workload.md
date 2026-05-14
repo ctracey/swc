@@ -35,10 +35,10 @@
 - [ ] 4 workload radiator
     - [ ] 4.1 workflow state captured
     - [ ] 4.2 visualise progress
-- [ ] 5 extra improvements
+- [-] 5 extra improvements
     - [ ] 5.1 skill for single use react vite thing???
     - [ ] 5.2 swc naming skill in its own plugin
-    - [ ] 5.3 streamline output for workflow-progress
+    - [x] 5.3 streamline output for workflow-progress
     - [ ] 5.4 swc:about skill
 - [ ] 6 dynamic skill discovery & installation
     - [ ] 6.1 tech stack detection (infer from project files)

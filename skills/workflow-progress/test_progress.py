@@ -7,9 +7,10 @@ ARROW = " \u2192 "
 RULE_CHAR = "\u2500"
 
 
-def test_active_stage_is_bold_and_uppercase():
+def test_active_stage_is_uppercase():
     result = json.loads(render("my workflow", ["a", "b", "c"], "b"))
-    assert "**B**" in result["output"]
+    assert "B" in result["output"]
+    assert "**B**" not in result["output"]
 
 
 def test_inactive_stages_are_lowercase():
@@ -20,9 +21,10 @@ def test_inactive_stages_are_lowercase():
     assert "c" in stages_line
 
 
-def test_title_is_bold():
+def test_title_is_not_bold():
     result = json.loads(render("my workflow", ["a", "b"], "a"))
-    assert result["output"].startswith("WORKFLOW(**my workflow**)")
+    assert result["output"].startswith("WORKFLOW(my workflow)")
+    assert "**" not in result["output"].split("\n")[0]
 
 
 def test_title_includes_position_counter():
@@ -41,9 +43,7 @@ def test_counter_and_bar_right_aligned():
     result = json.loads(render("my workflow", stages, "c"))
     title_line = result["output"].split("\n")[0]
     rule = result["output"].split("\n")[1]
-    # Strip markdown bold markers (**) from title line for visible length
-    visible_title = title_line.replace("**", "")
-    assert len(visible_title) == len(rule)
+    assert len(title_line) == len(rule)
 
 
 def test_progress_bar_first_stage():
@@ -97,7 +97,8 @@ def test_stdin_json_interface():
     )
     assert proc.returncode == 0
     result = json.loads(proc.stdout)
-    assert "**TWO**" in result["output"]
+    assert "TWO" in result["output"]
+    assert "**TWO**" not in result["output"]
 
 
 def test_help_flag():
@@ -148,4 +149,5 @@ def test_stages_with_whitespace_are_stripped():
         cwd=__file__.rsplit("/", 1)[0],
     )
     result = json.loads(proc.stdout)
-    assert "**B**" in result["output"]
+    assert "B" in result["output"]
+    assert "**B**" not in result["output"]
