@@ -14,25 +14,64 @@ The CLI is also a step toward more durable workload identity: items get a stable
 
 ## Constraints
 
-- Skills must not edit `workload.md` directly. A hook should prevent direct edits and redirect to the CLI.
+- Skills must not edit `workload.json` directly. A hook should prevent direct edits and redirect to the CLI.
 - The CLI must follow the existing branch → folder lookup via `.swc/_meta.json`.
 - Status updates must roll up to the parent automatically.
 - Status updates must never downgrade a `[x]` item silently (preserve current `workload_item-start` guard).
 - Each work item must have a stable ID that does not change across renumbering, re-ordering, or re-parenting.
-- ID format is two-part: `<branch-id>.<workitem-id>`.
 - Items can be looked up by ID or by number.
 - Numbers can change; IDs cannot.
-- New work items must not have a number prefix in the title — the CLI assigns numbers; the user does not.
-- Docs should reference items by ID, not number.
-- Reports can show or hide IDs.
+- New work items must not have a number prefix in the title — the CLI assigns numbers at render time; the user does not.
+- Numbers are display-only. They are computed on render from the item's position in the tree and are **not stored** in `workload.json`.
+- Workitem folders under `.swc/<workload>/workitems/` are named by SHA hash ID — never by number — so folder paths survive renumbering.
+- Cross-doc references (changelog, notes, plan) cite items as `[<hash>] <title>` — e.g. `[abc123] CLI tool for workload`. Hash is the durable anchor; title is for human readability and may go stale if the item is renamed.
+- Reports can show or hide hashes.
 - The CLI must handle missing/non-existent workload files with a clear error and recommend `init`.
 - Must include automated tests.
 
 ## Out of scope
 
-- Plugin packaging / dependency management (covered by 3.3).
+- Plugin packaging / dependency management beyond what's needed for the swc / swc-workload split (deeper packaging covered by 3.3).
 - MCP wrapper (covered by 3.4).
 - Workload radiator / progress visualisation (covered by 4).
+- Concurrency / merge handling — workloads are branch-scoped; the user manages merges manually for now.
+- Migration of existing markdown workloads to JSON / IDs — fresh start, no automated backfill.
+
+## Decisions
+
+Resolved during planning — moved here from Parked.
+
+### Data format
+Source of truth is `workload.json`. CLI emits plain text for terminals. The hook blocks direct edits to `workload.json` and points the agent at the CLI. Existing skills must switch to CLI invocations rather than reading or editing the file.
+
+### Tool surface
+- `swc` is a new parent command, shipped in the main swc plugin.
+- `swc workload <op>` delegates to a separate `swc-workload` command.
+- `swc-workload` lives in its own plugin (`swc-workload` plugin), installed via the marketplace.
+- When `swc-workload` is missing, `swc workload` shows an install-guidance prompt referencing the architecture docs. This leaves room for alternative backends later (local / Trello / Jira / Obsidian / etc).
+
+### Workitem ID
+SHA hash over: machine username + timestamp + branch + workitem title. Machine username (not git config) so IDs work in non-git contexts. Hash specifics (algorithm, length, timestamp resolution, username source) are still parked.
+
+### Branch & merge scope
+Workloads stay branch-scoped. No concurrency primitives, no automatic merge support — when branches merge, the user reconciles workloads manually.
+
+### Folder naming & citation
+- Workitem folders under `.swc/<workload>/workitems/` use the SHA hash as the folder name (e.g. `.swc/main/workitems/abc123/requirements.md`).
+- In-document references use `[<hash>] <title>` — e.g. `[abc123] CLI tool for workload`. The hash is the durable anchor; the title is included for readability and is allowed to go stale on rename.
+
+### Numbers are display-only
+- `workload.json` stores a tree of items (`id`, `title`, `status`, `parent` / `children`) — **no numbers**.
+- Numbers (`1.2.3`-style) are computed at render time from depth-first position in the tree.
+- CLI lookup accepts numbers as input (`swc workload show 2.3.1`) and resolves them against the current tree state.
+- `list`, `show`, and report output still display numbers — they're the human-facing reference.
+
+### Authoring — reorder & move
+- `reorder <item> <direction>` — relative movement within current parent. Directions: `up`, `down`, `top`, `bottom`. Siblings reflow; IDs unchanged.
+- `move <item> to <target>` — absolute position. May reparent (e.g. `move 2.3.1 to 3.2`) or stay within parent (e.g. `move 2.3 to 2.7`). Validates target parent exists; rejects cycles (moving an item into its own subtree).
+- Neither operation replaces existing items — siblings at the destination shift to make room.
+- When moving across parents, **both** the old parent's children and the new parent's children renumber.
+- IDs never change on reorder or move; only the rendered number changes.
 
 ## Approach direction
 
@@ -92,60 +131,46 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 
 These are open questions and design decisions to work through before specs are sealed.
 
-### Data format
-- Stay with markdown (current — human-greppable, but harder to parse reliably and can't store IDs cleanly)
-- Move to JSON / YAML (robust, structured, supports IDs, but loses the "open workload.md and read it" affordance)
-- Hybrid (e.g. JSON as source of truth, markdown as a generated view)
+### Workitem ID specifics
+- Hash algorithm — SHA-1 or SHA-256?
+- Hash length — full, or truncated git-style (7 chars)?
+- Timestamp resolution — epoch seconds, ms, ISO 8601?
+- Username source — `$USER`, `whoami`, `os.getlogin()`? Behaviour when unset.
+- Is a separate `branch-id` still needed alongside the workitem hash, or does the hash subsume it?
 
-### Branch-id scheme
-- When is `<branch-id>` assigned? On `init`?
-- Where stored — `_meta.json`? Inline in the workload file?
-- How is uniqueness guaranteed across branches that may later merge?
-- Format — short slug, hash, sequential int?
+### ID surfacing in reports
+- How hashes show in the default `list` view without making it noisy (default visibility — citation format is decided).
 
-### Workitem-id scheme
-- Sequential? Hash? UUID?
-- How are IDs assigned to existing workloads on migration?
-- Consider a git-commit-style content hash (e.g. SHA over title + timestamp + branch-id + parent-id). Content-addressed IDs make parallel additions across branches essentially collision-free without coordination — same approach git uses for commit SHAs. Trade-off: longer IDs vs sequential ints, but stable and merge-safe.
+### Reorder / move edge cases
+- Out-of-range target — `move 2.3 to 2.7` when parent 2 only has 4 children. Cap at end, or error?
+- Top-level moves — does `move 2.3 to 4` (no dot) promote an item to a new top-level position? Symmetric for demote (`move 4 to 2.3`)?
+- Boundary `up`/`down` — `reorder 2.1 up` when already at top. Silent no-op or error?
+- Self-move — `move 2.3 to 2.3`. Silent no-op?
+- Cycle prevention error semantics — message format and exit code when target is inside the source's subtree.
+- Is `reorder` redundant given `move` is a strict superset? Keep `reorder up/down/top/bottom` as ergonomic shortcuts, or fold into `move`?
 
-### Concurrency & merge
-- Atomic writes? Lock file? Or rely on git for conflict resolution?
-- What's the merge story when two parallel branches both add items to the same workload?
-
-### Migration
-- Existing workloads have no IDs. How does the CLI add IDs to current items on first run?
-- Backfill from filename / position? Generate fresh?
-
-### Reorder mechanism
-- Move-to-position (`reorder 2.3 after 2.5`)?
-- Up/down (`reorder 2.3 up`)?
-- Drag-style index assignment?
-
-### Reparent mechanism
-- Explicit (`reparent 2.4.1 --parent 2`)?
-- Promote/demote shorthand?
-
-### Tool name & invocation
-- `swc workload <op>` feels right — confirms the surface
-- Single binary `swc` with subcommands, vs separate `swc-workload` CLI?
+### Filter syntax
+- Deferred — revisit when designing `list` / `find`.
+- JSON-style filter (`filter:{status:[wip,not-started]}`) is the candidate; final shape TBC.
 
 ### Language & runtime
 - Python (matches existing `workload.py` script, no extra runtime needed beyond what skills already use)
 - Other (Node, Go, Rust)?
-- Trade-off: Python keeps things simple and consistent with the current codebase; alternatives may package better as a standalone binary for 3.3.
+- Trade-off: Python keeps things simple and consistent with the current codebase; alternatives may package better as a standalone binary in `swc-workload`.
 
-### Packaging & install location in the plugin
-- Where does the script live so it's packaged with the plugin and discoverable to skills?
-- Invocation path — relative to plugin root? On PATH?
+### Packaging & install location
+- How `swc` (in the main plugin) discovers and invokes `swc-workload` (in its own plugin).
+- Whether `swc` is on PATH or invoked via a plugin-relative wrapper.
+- Wording + content of the install-guidance prompt when `swc-workload` is missing.
+- Where the architecture docs that the prompt references will live.
 
 ### List report formatting
 - What does the default list look like? (Current `workload.py` output is a good baseline.)
 - How are IDs shown when `--show-ids` is on — inline, trailing column, separate line?
-- Filter syntax — `key:value` pairs only, or richer expressions?
 
 ### Hook design
 - Where does the pre-edit hook live? Plugin-level hook? settings.json?
-- How does it detect a `workload.md` edit attempt and redirect?
+- How does it detect a `workload.json` edit attempt and redirect?
 - What's the message shown to the agent when blocked?
 
 ### Test strategy
@@ -153,7 +178,3 @@ These are open questions and design decisions to work through before specs are s
 - Integration tests for end-to-end CLI invocations
 - Test data — sample workloads in fixtures
 - Where tests live in the plugin
-
-### Doc references by ID
-- How are existing docs migrated to reference IDs instead of numbers?
-- Convention for citing an item — `[3.2]` (number) vs `[id:abc123]` vs both?
