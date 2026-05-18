@@ -1,5 +1,13 @@
 # Changelog
 
+## Session — specs & solution design for WI-3.2 CLI `2026-05-18`
+
+- Wrote `specs.md` for WI-3.2: 31 EARS requirements covering lifecycle, authoring, status with rollup, lookup, read/report, missing prerequisites, hook, output, citation, and folder layout; Gherkin scenarios for each requirement; validation rules and business rules
+- Wrote `solution.md` for WI-3.2: Python 3 single-plugin CLI (split to `swc-workload` deferred to 3.3), `workload.json` source of truth, SHA-256 truncated 7-char hash IDs over `username + iso-timestamp + branch + title`, numbers display-only, title-only item model (no description field), `key:value` filter syntax, composite reference `N.n(<hash>)` in default output
+- Confirmed scope: build + test CLI first; migrate existing skills to call CLI as phase 2 within same WI; existing markdown workloads stay manual (no backfill)
+- Status rule: direct parent updates allowed but warn when children not all done; child updates auto-roll parent
+- Test approach: full TDD per scenario
+
 ## Session — streamline workflow-progress output `2026-05-14`
 
 - Removed bold markers from active stage and title in progress banner — cleaner output in terminal context
