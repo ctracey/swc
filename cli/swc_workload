@@ -1,0 +1,1005 @@
+#!/usr/bin/env python3
+"""swc_workload — pure tree manager for workload.json.
+
+Path-driven: takes `--workload <folder>` on every op. The folder must
+contain (or, for `init`, will contain) a `workload.json` file — the file
+name is convention-locked. Knows nothing about git branches,
+`.swc/_meta.json`, or context resolution. The user-facing
+`swc workload <op>` command (in `cli/swc`) resolves the folder and
+forwards the op here.
+
+Invocation:
+    python3 cli/swc_workload <op> --workload <folder> [args]
+"""
+
+from __future__ import annotations
+
+import argparse
+import getpass
+import hashlib
+import json
+import re
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+
+# Status markers used in the persisted JSON tree.
+STATUS_NOT_STARTED = "not-started"
+STATUS_IN_PROGRESS = "in-progress"
+STATUS_DONE = "done"
+
+# Display symbols for terminal-friendly output.
+STATUS_SYMBOLS = {
+    STATUS_DONE: "✔",
+    STATUS_IN_PROGRESS: "▣",
+    STATUS_NOT_STARTED: "□",
+}
+SYM_NOT_STARTED = STATUS_SYMBOLS[STATUS_NOT_STARTED]  # used as fallback symbol
+
+# Status alias mapping for input shorthand.
+STATUS_ALIASES = {
+    "not-started": STATUS_NOT_STARTED,
+    "not_started": STATUS_NOT_STARTED,
+    "notstarted": STATUS_NOT_STARTED,
+    "todo": STATUS_NOT_STARTED,
+    "in-progress": STATUS_IN_PROGRESS,
+    "in_progress": STATUS_IN_PROGRESS,
+    "inprogress": STATUS_IN_PROGRESS,
+    "wip": STATUS_IN_PROGRESS,
+    "done": STATUS_DONE,
+    "complete": STATUS_DONE,
+}
+
+# Reorder directions.
+DIRECTIONS = ("up", "down", "top", "bottom")
+
+# Hash length for displayed/folder IDs.
+HASH_LEN = 7
+
+# Reject titles that look like the CLI's own numbering (e.g. "2.3 foo"). A
+# single integer prefix like "12 monkeys" is allowed — only dotted numbers are
+# treated as the CLI's reserved numbering format (REQ-04).
+NUMBER_PREFIX_RE = re.compile(r"^\d+(?:\.\d+)+\s+")
+
+
+# ---------------------------------------------------------------------------
+# Error type
+# ---------------------------------------------------------------------------
+
+
+class CLIError(Exception):
+    """Raised for user-facing errors. Message goes to stderr; exit code 1."""
+
+    def __init__(self, message: str, exit_code: int = 1):
+        super().__init__(message)
+        self.exit_code = exit_code
+
+
+# ---------------------------------------------------------------------------
+# Persistence — operates on the explicit workload path
+# ---------------------------------------------------------------------------
+
+
+def workload_path_from_args(args) -> Path:
+    """Return the Path to workload.json inside the supplied --workload folder.
+
+    Validates the folder exists and is a directory. The file name is
+    convention-locked to `workload.json` — callers pass the folder, not the
+    file.
+    """
+    if not args.workload:
+        raise CLIError("--workload <folder> is required")
+    folder = Path(args.workload)
+    if not folder.exists():
+        raise CLIError(f"workload folder does not exist: {folder}")
+    if not folder.is_dir():
+        raise CLIError(f"--workload expects a folder, got a file: {folder}")
+    return folder / "workload.json"
+
+
+def load_workload(path: Path) -> dict:
+    if not path.exists():
+        raise CLIError(
+            f"no workload at {path}. Run `swc workload init` to create one."
+        )
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise CLIError(
+            f"workload.json invalid: {e.msg} at line {e.lineno}, column {e.colno}"
+        ) from e
+    _validate_shape(data)
+    return data
+
+
+def _validate_shape(data) -> None:
+    """Minimal schema check for workload.json.
+
+    Required: top-level must be a dict with `items` (list) and `complete` (bool).
+    Each item must have `id` (str), `title` (str), `status` (str), `children`
+    (list); recurse into children.
+
+    Raises CLIError with a clear message and JSON-path on first violation.
+    """
+
+    def fail(msg: str, path: str) -> None:
+        raise CLIError(f"workload.json invalid: {msg} at {path}")
+
+    if not isinstance(data, dict):
+        fail("top-level must be an object", "<root>")
+    if "items" not in data:
+        fail("missing 'items' field", "<root>")
+    if not isinstance(data["items"], list):
+        fail("'items' must be a list", "<root>.items")
+    if "complete" not in data:
+        fail("missing 'complete' field", "<root>")
+    if not isinstance(data["complete"], bool):
+        fail("'complete' must be a boolean", "<root>.complete")
+
+    def walk(items: list, path: str) -> None:
+        for i, node in enumerate(items):
+            node_path = f"{path}[{i}]"
+            if not isinstance(node, dict):
+                fail("item must be an object", node_path)
+            for field, expected_type, type_name in (
+                ("id", str, "string"),
+                ("title", str, "string"),
+                ("status", str, "string"),
+                ("children", list, "list"),
+            ):
+                if field not in node:
+                    fail(f"missing required field '{field}'", node_path)
+                if not isinstance(node[field], expected_type):
+                    fail(f"'{field}' must be a {type_name}", f"{node_path}.{field}")
+            walk(node["children"], f"{node_path}.children")
+
+    walk(data["items"], "<root>.items")
+
+
+def save_workload(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def empty_workload() -> dict:
+    return {"items": [], "complete": False}
+
+
+# ---------------------------------------------------------------------------
+# Tree helpers — items are nested dicts with id, title, status, children
+# ---------------------------------------------------------------------------
+
+
+def make_id(title: str, existing_ids: set[str]) -> str:
+    """Hash ID = SHA-256(user + ISO timestamp + title), truncated to 7 hex.
+
+    On collision within the workload, append an incrementing suffix and re-hash.
+
+    Note: the original solution.md scheme included `branch` in the payload to
+    anchor IDs to the workload they came from. With the path-driven split,
+    `swc_workload` no longer knows the branch. The workload path itself is
+    a sufficient anchor at this layer; if a stronger anchor is ever needed it
+    can be passed by `swc` as part of the payload.
+    """
+    user = getpass.getuser()
+    suffix = 0
+    while True:
+        ts = datetime.now(timezone.utc).isoformat()
+        payload = f"{user}|{ts}|{title}|{suffix}"
+        h = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:HASH_LEN]
+        if h not in existing_ids:
+            return h
+        suffix += 1
+
+
+def all_ids(items: list[dict]) -> set[str]:
+    out: set[str] = set()
+    def walk(node_list):
+        for node in node_list:
+            out.add(node["id"])
+            walk(node.get("children", []))
+    walk(items)
+    return out
+
+
+def iter_items(items: list[dict]):
+    """Yield (item, parent_list, index_in_parent, number_tuple)."""
+    def walk(node_list, prefix):
+        for idx, node in enumerate(node_list):
+            number = prefix + (idx + 1,)
+            yield node, node_list, idx, number
+            yield from walk(node.get("children", []), number)
+    yield from walk(items, ())
+
+
+def find_by_ref(items: list[dict], ref: str) -> Optional[tuple[dict, list[dict], int, tuple[int, ...]]]:
+    """Resolve ref (number like '2.3' or hash ID) to a single item.
+
+    Returns (item, parent_list, index_in_parent, number) or None.
+    """
+    is_number = bool(re.fullmatch(r"\d+(?:\.\d+)*", ref))
+    target_number = tuple(int(p) for p in ref.split(".")) if is_number else None
+    for item, parent_list, idx, number in iter_items(items):
+        if is_number:
+            if number == target_number:
+                return item, parent_list, idx, number
+        elif item["id"] == ref:
+            return item, parent_list, idx, number
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Rollup
+# ---------------------------------------------------------------------------
+
+
+def derive_parent_status(children: list[dict]) -> str:
+    if not children:
+        return STATUS_NOT_STARTED
+    statuses = [c["status"] for c in children]
+    if all(s == STATUS_DONE for s in statuses):
+        return STATUS_DONE
+    if all(s == STATUS_NOT_STARTED for s in statuses):
+        return STATUS_NOT_STARTED
+    return STATUS_IN_PROGRESS
+
+
+def rollup(items: list[dict]) -> None:
+    """Re-derive every parent's status from its children, bottom-up.
+
+    Done-sticky only applies on the direct-update path (see cmd_status); the
+    rollup path always re-derives. Leaves keep their stored status.
+    """
+    def walk(node_list):
+        for node in node_list:
+            children = node.get("children", [])
+            if children:
+                walk(children)
+                node["status"] = derive_parent_status(children)
+    walk(items)
+
+
+# ---------------------------------------------------------------------------
+# Title validation
+# ---------------------------------------------------------------------------
+
+
+def validate_title(title: str) -> None:
+    if not title or not title.strip():
+        raise CLIError("title is required and must be non-empty")
+    if NUMBER_PREFIX_RE.match(title):
+        raise CLIError(
+            f"title cannot start with a dotted-number prefix; numbers are assigned automatically. Got: {title!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Rendering
+# ---------------------------------------------------------------------------
+
+
+def render_text(items: list[dict], show_ids: bool = True) -> str:
+    lines: list[str] = []
+
+    def walk(node_list, prefix):
+        for idx, node in enumerate(node_list):
+            number = prefix + (idx + 1,)
+            num_str = ".".join(str(n) for n in number)
+            sym = STATUS_SYMBOLS.get(node["status"], SYM_NOT_STARTED)
+            hash_part = f"({node['id']}) " if show_ids else ""
+            indent = "  " * (len(number) - 1)
+            lines.append(f"{indent}{sym} {num_str} {hash_part}{node['title']}")
+            walk(node.get("children", []), number)
+
+    walk(items, ())
+    return "\n".join(lines)
+
+
+def to_json_tree(items: list[dict]) -> list[dict]:
+    """Return items annotated with number for JSON output."""
+    def walk(node_list, prefix):
+        out = []
+        for idx, node in enumerate(node_list):
+            number = prefix + (idx + 1,)
+            out.append({
+                "id": node["id"],
+                "number": ".".join(str(n) for n in number),
+                "title": node["title"],
+                "status": node["status"],
+                "children": walk(node.get("children", []), number),
+            })
+        return out
+    return walk(items, ())
+
+
+# ---------------------------------------------------------------------------
+# Status normalisation
+# ---------------------------------------------------------------------------
+
+
+def normalise_status(value: str) -> str:
+    key = value.lower().strip()
+    if key in STATUS_ALIASES:
+        return STATUS_ALIASES[key]
+    raise CLIError(
+        f"invalid status {value!r}. Use one of: not-started, in-progress, done."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Filter parsing
+# ---------------------------------------------------------------------------
+
+
+def parse_filter(spec: str) -> tuple[str, list[str]]:
+    """Parse 'key:val1,val2' into (key, [normalised values])."""
+    if ":" not in spec:
+        raise CLIError(f"filter must be key:value form, got {spec!r}")
+    key, raw = spec.split(":", 1)
+    key = key.strip()
+    if key != "status":
+        raise CLIError(f"unsupported filter key {key!r}; supported: status")
+    values = [normalise_status(v.strip()) for v in raw.split(",") if v.strip()]
+    if not values:
+        raise CLIError(f"filter {spec!r} has no values")
+    return key, values
+
+
+def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], filter_outs: list[tuple[str, list[str]]]) -> list[dict]:
+    """Return a deep-copied tree containing only items that match include filters
+    AND do not match exclude filters. Parents are kept if any descendant matches,
+    but children that don't match are dropped.
+
+    For an empty filter set: return all items.
+    """
+    def matches(node: dict) -> bool:
+        for key, values in filters:
+            if key == "status" and node["status"] not in values:
+                return False
+        for key, values in filter_outs:
+            if key == "status" and node["status"] in values:
+                return False
+        return True
+
+    def walk(node_list):
+        out = []
+        for node in node_list:
+            kids = walk(node.get("children", []))
+            self_ok = matches(node)
+            if self_ok or kids:
+                out.append({
+                    "id": node["id"],
+                    "title": node["title"],
+                    "status": node["status"],
+                    "children": kids,
+                })
+        return out
+
+    if not filters and not filter_outs:
+        return items
+    return walk(items)
+
+
+# ---------------------------------------------------------------------------
+# Commands
+# ---------------------------------------------------------------------------
+
+
+def cmd_init(args) -> int:
+    """Create a fresh workload.json inside the supplied folder.
+
+    Pure file-creation op: no branch awareness, no _meta.json registration.
+    The `swc` layer is responsible for creating the folder and registering
+    the branch→folder mapping before calling this op. We require the folder
+    to already exist — `workload_path_from_args` enforces that.
+    """
+    path = workload_path_from_args(args)
+    if path.exists():
+        raise CLIError(f"workload already exists at {path}")
+    save_workload(path, empty_workload())
+    if args.json:
+        print(json.dumps({"workload": str(path)}))
+    else:
+        print(f"initialised {path}")
+    return 0
+
+
+def _load(args) -> tuple[Path, dict]:
+    """Resolve workload path + load data for an op that requires a workload."""
+    path = workload_path_from_args(args)
+    data = load_workload(path)
+    data.setdefault("items", [])
+    return path, data
+
+
+def cmd_add(args) -> int:
+    title = args.title
+    validate_title(title)
+    path, data = _load(args)
+    items = data["items"]
+    existing = all_ids(items)
+
+    if args.parent:
+        found = find_by_ref(items, args.parent)
+        if found is None:
+            raise CLIError(f"parent {args.parent} not found")
+        parent_item, _, _, _ = found
+        children = parent_item.setdefault("children", [])
+    else:
+        children = items
+
+    new_id = make_id(title, existing)
+    node = {"id": new_id, "title": title, "status": STATUS_NOT_STARTED, "children": []}
+    children.append(node)
+
+    rollup(items)
+    save_workload(path, data)
+
+    if args.json:
+        print(json.dumps({"id": new_id, "title": title, "status": STATUS_NOT_STARTED}))
+    else:
+        print(f"added [{new_id}] {title}")
+    return 0
+
+
+def cmd_remove(args) -> int:
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    _, parent_list, idx, _ = found
+    parent_list.pop(idx)
+    rollup(items)
+    save_workload(path, data)
+    if args.json:
+        print(json.dumps({"removed": args.ref}))
+    else:
+        print(f"removed {args.ref}")
+    return 0
+
+
+def cmd_rename(args) -> int:
+    validate_title(args.title)
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    item, _, _, _ = found
+    item["title"] = args.title
+    save_workload(path, data)
+    if args.json:
+        print(json.dumps({"id": item["id"], "title": args.title}))
+    else:
+        print(f"renamed [{item['id']}] -> {args.title}")
+    return 0
+
+
+def cmd_reorder(args) -> int:
+    # argparse's `choices=DIRECTIONS` already validates args.direction.
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    item, parent_list, idx, _ = found
+
+    if args.direction == "up":
+        new_idx = max(0, idx - 1)
+    elif args.direction == "down":
+        new_idx = min(len(parent_list) - 1, idx + 1)
+    elif args.direction == "top":
+        new_idx = 0
+    else:  # bottom
+        new_idx = len(parent_list) - 1
+
+    if new_idx != idx:
+        parent_list.pop(idx)
+        parent_list.insert(new_idx, item)
+    save_workload(path, data)
+    if args.json:
+        print(json.dumps({"id": item["id"], "direction": args.direction}))
+    else:
+        print(f"reordered {args.ref} {args.direction}")
+    return 0
+
+
+def _contains_subtree(node: dict, item_id: str) -> bool:
+    if node["id"] == item_id:
+        return True
+    return any(_contains_subtree(c, item_id) for c in node.get("children", []))
+
+
+def cmd_move(args) -> int:
+    # Optional positional between ref and target is ergonomic — accept the literal
+    # word `to`, reject anything else loudly so typos like `move 2.3 too 3.2`
+    # don't quietly succeed (F-01).
+    if args.to_kw is not None and args.to_kw != "to":
+        raise CLIError(
+            f"unexpected token {args.to_kw!r} between ref and target; expected 'to' or omit it"
+        )
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    item, source_parent, source_idx, _ = found
+
+    # Resolve target without mutating — validates parent exists and cycle.
+    if not re.fullmatch(r"\d+(?:\.\d+)*", args.target):
+        raise CLIError(f"move target must be a number reference, got {args.target!r}")
+    parts = [int(p) for p in args.target.split(".")]
+    if len(parts) == 1:
+        target_parent_list = items
+    else:
+        parent_ref = ".".join(str(p) for p in parts[:-1])
+        target_found = find_by_ref(items, parent_ref)
+        if target_found is None:
+            raise CLIError(f"target parent {parent_ref} does not exist")
+        target_parent_item = target_found[0]
+        if _contains_subtree(item, target_parent_item["id"]):
+            raise CLIError(
+                f"cannot move {args.ref} to {args.target}: would create a cycle"
+            )
+        target_parent_list = target_parent_item.setdefault("children", [])
+    insert_idx = parts[-1] - 1
+
+    source_parent.pop(source_idx)
+
+    # `insert_idx` is the 0-based slot in the FINAL list. Same-parent moves
+    # need no adjustment after the pop: e.g. `move 2.1 to 2.3` against
+    # `[a, b, c]` pops a → `[b, c]`, then inserts a at index 2 → `[b, c, a]`,
+    # leaving a at final position 3 as requested.
+
+    # Out-of-range targets cap at end (siblings reflow).
+    insert_idx = max(0, min(insert_idx, len(target_parent_list)))
+
+    target_parent_list.insert(insert_idx, item)
+    rollup(items)
+    save_workload(path, data)
+    if args.json:
+        print(json.dumps({"id": item["id"], "target": args.target}))
+    else:
+        print(f"moved {args.ref} to {args.target}")
+    return 0
+
+
+def cmd_status(args) -> int:
+    new_status = normalise_status(args.status)
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    item, _, _, _ = found
+
+    # Done is sticky: silently preserve done.
+    if item["status"] == STATUS_DONE and new_status != STATUS_DONE:
+        # No file write, no error, exit 0.
+        if args.json:
+            print(json.dumps({"id": item["id"], "status": STATUS_DONE, "preserved": True}))
+        else:
+            print(f"[{item['id']}] preserved as done")
+        return 0
+
+    item["status"] = new_status
+
+    # Direct parent edits: keep the user's value, warn if children disagree,
+    # re-derive only the ancestors above. Leaf edits flow through full rollup.
+    if item.get("children"):
+        if new_status == STATUS_DONE:
+            not_done = [c for c in item["children"] if c["status"] != STATUS_DONE]
+            if not_done:
+                sys.stderr.write(
+                    f"warning: parent {args.ref} marked done while {len(not_done)} of {len(item['children'])} children are not done\n"
+                )
+        _rollup_ancestors(items, item["id"])
+    else:
+        rollup(items)
+
+    save_workload(path, data)
+    if args.json:
+        print(json.dumps({"id": item["id"], "status": new_status}))
+    else:
+        print(f"[{item['id']}] -> {new_status}")
+    return 0
+
+
+def _rollup_ancestors(items: list[dict], item_id: str) -> None:
+    """Walk path to item_id, then on the way back up, re-derive each ancestor."""
+    def walk(node_list) -> bool:
+        for node in node_list:
+            if node["id"] == item_id:
+                return True
+            if walk(node.get("children", [])):
+                # node is an ancestor — re-derive from its children.
+                node["status"] = derive_parent_status(node.get("children", []))
+                return True
+        return False
+    walk(items)
+
+
+def cmd_list(args) -> int:
+    path, data = _load(args)
+    items = data["items"]
+
+    filters = [parse_filter(f) for f in (args.filter or [])]
+    filter_outs = [parse_filter(f) for f in (args.filter_out or [])]
+    filtered = apply_filters(items, filters, filter_outs)
+
+    if args.json:
+        print(json.dumps({"items": to_json_tree(filtered)}))
+    else:
+        print(render_text(filtered, show_ids=args.show_ids))
+    return 0
+
+
+def cmd_show(args) -> int:
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    item, _, _, number = found
+    # Render this item with its real number as the root, then descend.
+    if args.json:
+        out = [_render_item_json(item, number)]
+        print(json.dumps({"items": out}))
+    else:
+        print(_render_item_text(item, number, show_ids=args.show_ids))
+    return 0
+
+
+def _render_item_json(item: dict, number: tuple[int, ...]) -> dict:
+    return {
+        "id": item["id"],
+        "number": ".".join(str(n) for n in number),
+        "title": item["title"],
+        "status": item["status"],
+        "children": [
+            _render_item_json(c, number + (i + 1,))
+            for i, c in enumerate(item.get("children", []))
+        ],
+    }
+
+
+def _render_item_text(item: dict, number: tuple[int, ...], show_ids: bool) -> str:
+    lines: list[str] = []
+
+    def walk(node, n):
+        num_str = ".".join(str(x) for x in n)
+        sym = STATUS_SYMBOLS.get(node["status"], SYM_NOT_STARTED)
+        hash_part = f"({node['id']}) " if show_ids else ""
+        # Indent by depth relative to the root being shown (root depth = 0).
+        depth = len(n) - len(number)
+        lines.append(f"{'  ' * depth}{sym} {num_str} {hash_part}{node['title']}")
+        for i, c in enumerate(node.get("children", [])):
+            walk(c, n + (i + 1,))
+
+    walk(item, number)
+    return "\n".join(lines)
+
+
+def cmd_find(args) -> int:
+    path, data = _load(args)
+    items = data["items"]
+    keyword = args.keyword.lower()
+    matches: list[tuple[dict, tuple[int, ...]]] = []
+    for item, _, _, number in iter_items(items):
+        if keyword in item["title"].lower():
+            matches.append((item, number))
+
+    if args.json:
+        out = [
+            {
+                "id": item["id"],
+                "number": ".".join(str(n) for n in number),
+                "title": item["title"],
+                "status": item["status"],
+            }
+            for item, number in matches
+        ]
+        print(json.dumps({"matches": out}))
+    else:
+        if not matches:
+            print(f"no matches for {args.keyword!r}")
+        else:
+            for item, number in matches:
+                num_str = ".".join(str(n) for n in number)
+                sym = STATUS_SYMBOLS.get(item["status"], SYM_NOT_STARTED)
+                print(f"{sym} {num_str} ({item['id']}) {item['title']}")
+    return 0
+
+
+def cmd_summary(args) -> int:
+    path, data = _load(args)
+    items = data["items"]
+    total = 0
+    done = 0
+    for item, _, _, _ in iter_items(items):
+        total += 1
+        if item["status"] == STATUS_DONE:
+            done += 1
+    pct = int(round((done / total) * 100)) if total else 0
+    if args.json:
+        print(json.dumps({"total": total, "done": done, "progress": pct}))
+    else:
+        print(f"total={total} done={done} progress={pct}%")
+    return 0
+
+
+def cmd_read(args) -> int:
+    path, data = _load(args)
+    items = data["items"]
+    found = find_by_ref(items, args.ref)
+    if found is None:
+        raise CLIError(f"item {args.ref} not found")
+    item, _, _, number = found
+
+    # Description: read from <workload-folder>/workitems/<id>/requirements.md
+    # if present. Workload folder is derived from the workload.json path.
+    folder = path.parent
+    description = ""
+    desc_path = folder / "workitems" / item["id"] / "requirements.md"
+    if desc_path.exists():
+        description = desc_path.read_text(encoding="utf-8")
+
+    payload = {
+        "id": item["id"],
+        "number": ".".join(str(n) for n in number),
+        "title": item["title"],
+        "status": item["status"],
+        "description": description,
+    }
+    if args.json:
+        print(json.dumps(payload))
+    else:
+        print(f"[{item['id']}] {payload['number']} {item['title']}")
+        print(f"status: {item['status']}")
+        if description:
+            print()
+            print(description)
+    return 0
+
+
+def cmd_complete(args) -> int:
+    """`complete?`: workload exists, has items, and `complete: true` in workload.json."""
+    path = workload_path_from_args(args)
+    if not path.exists():
+        if args.json:
+            print(json.dumps({"complete": False}))
+        else:
+            print("false")
+        return 0
+    data = load_workload(path)
+    has_items = bool(data.get("items"))
+    confirmed = bool(data.get("complete"))
+    answer = has_items and confirmed
+    if args.json:
+        print(json.dumps({"complete": answer}))
+    else:
+        print("true" if answer else "false")
+    return 0
+
+
+def cmd_exists(args) -> int:
+    """`exists`: lenient file-presence check for workload.json inside --workload.
+
+    Unique among swc_workload ops: does NOT enforce the strict folder
+    contract (folder must exist, must be a directory). `exists` is a
+    question, never an error — every "no" case returns false with exit 0
+    and nothing on stderr. This lets callers probe non-destructively
+    without try/except shenanigans.
+
+    Cases:
+      * folder missing                       → false
+      * path is a file, not a directory      → false
+      * folder exists, no workload.json      → false
+      * folder exists, workload.json present → true
+    """
+    folder = Path(args.workload) if args.workload else None
+    present = bool(
+        folder is not None
+        and folder.is_dir()
+        and (folder / "workload.json").is_file()
+    )
+    if args.json:
+        print(json.dumps({"exists": present}))
+    else:
+        print("true" if present else "false")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Arg parser
+# ---------------------------------------------------------------------------
+
+
+def _add_common(p: argparse.ArgumentParser) -> None:
+    """Common flags accepted on every subcommand."""
+    p.add_argument(
+        "--workload",
+        required=True,
+        help="Path to the workload folder (containing workload.json).",
+    )
+    p.add_argument("--json", action="store_true", help="Emit structured JSON output.")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="swc workload",
+        description=(
+            "Pure tree manager for workload.json. Every op requires --workload <folder>. "
+        ),
+    )
+
+    sub = p.add_subparsers(dest="op", required=True, metavar="<op>")
+
+    def add_sub(name: str, **kwargs) -> argparse.ArgumentParser:
+        s = sub.add_parser(name, **kwargs)
+        _add_common(s)
+        return s
+
+    ref_help = "Work item reference — number (e.g. `2.3`) or 7-char hash ID."
+
+    p_init = add_sub(
+        "init",
+        help="Create workload.json inside the supplied --workload folder.",
+        description=(
+            "Create workload.json inside the supplied --workload folder. Pure "
+            "file-creation op; does not touch .swc/_meta.json. The folder must "
+            "already exist. Fails if workload.json is already present."
+        ),
+    )
+    p_init.set_defaults(func=cmd_init)
+
+    p_ex = add_sub(
+        "exists",
+        help="Does workload.json exist inside --workload?",
+        description=(
+            "Check whether workload.json exists at the supplied --workload folder. "
+            "Lenient file-presence check; returns false (not an error) for missing "
+            "or wrong-type folders, so callers can probe non-destructively. This "
+            "is the only swc_workload op that does NOT enforce the strict folder "
+            "contract — every other op errors if --workload is missing or not a "
+            "directory."
+        ),
+    )
+    p_ex.set_defaults(func=cmd_exists)
+
+    p_list = add_sub(
+        "list",
+        help="Render the full workload tree.",
+        description="Render the workload tree with status symbols. Filters can be combined: repeating --filter ANDs across keys; comma-separated values OR within a key.",
+    )
+    p_list.add_argument("--filter", action="append",
+                        help="Include filter — key:val[,val…]. Supported keys: status. Repeatable.")
+    p_list.add_argument("--filter-out", dest="filter_out", action="append",
+                        help="Exclude filter — same syntax and supported keys as --filter.")
+    p_list.add_argument("--show-ids", dest="show_ids", action="store_true", default=True,
+                        help="Show hash IDs alongside numbers (default on).")
+    p_list.add_argument("--no-ids", dest="show_ids", action="store_false",
+                        help="Hide hash IDs from output.")
+    p_list.set_defaults(func=cmd_list)
+
+    p_show = add_sub(
+        "show",
+        help="Render an item plus its descendants.",
+        description="Render a single work item and its immediate descendants.",
+    )
+    p_show.add_argument("ref", help=ref_help)
+    p_show.add_argument("--show-ids", dest="show_ids", action="store_true", default=True,
+                        help="Show hash IDs alongside numbers (default on).")
+    p_show.add_argument("--no-ids", dest="show_ids", action="store_false",
+                        help="Hide hash IDs from output.")
+    p_show.set_defaults(func=cmd_show)
+
+    p_find = add_sub(
+        "find",
+        help="Find items by keyword in title.",
+        description="Find work items whose title contains the given keyword (case-insensitive substring match). Returns all matches; the caller decides what to do with multiple hits.",
+    )
+    p_find.add_argument("keyword", help="Substring to match against item titles (case-insensitive).")
+    p_find.set_defaults(func=cmd_find)
+
+    p_sum = add_sub(
+        "summary",
+        help="Emit total / done / progress percentage.",
+        description="Emit total count, done count, and progress percentage for the workload.",
+    )
+    p_sum.set_defaults(func=cmd_summary)
+
+    p_add = add_sub(
+        "add",
+        help="Add a work item.",
+        description="Add a new work item. The CLI assigns a stable hash ID; numbers are computed at render time and reflow on every structural change. Titles must not start with a number-prefix pattern (e.g. `1.1 something`) — numbers are auto-assigned.",
+    )
+    p_add.add_argument("title", help="Work item title. Must not start with a number-prefix pattern.")
+    p_add.add_argument("--parent", help="Parent item reference — number or hash ID. Omit to add at top level.")
+    p_add.set_defaults(func=cmd_add)
+
+    p_rn = add_sub(
+        "rename",
+        help="Rename a work item.",
+        description="Rename a work item. The hash ID, status, parent, and position are preserved. Titles must not start with a number-prefix pattern.",
+    )
+    p_rn.add_argument("ref", help=ref_help)
+    p_rn.add_argument("title", help="New title. Must not start with a number-prefix pattern.")
+    p_rn.set_defaults(func=cmd_rename)
+
+    p_rm = add_sub(
+        "remove",
+        help="Remove a work item (and its descendants).",
+        description="Remove a work item and all of its descendants. Remaining siblings reflow numbers.",
+    )
+    p_rm.add_argument("ref", help=ref_help)
+    p_rm.set_defaults(func=cmd_remove)
+
+    p_st = add_sub(
+        "status",
+        help="Set status: not-started | in-progress | done.",
+        description="Set the status of a work item. Parent statuses re-roll automatically (all-done → done; any in-progress or partial-done → in-progress; all not-started → not-started). A direct downgrade of a `done` item is silently preserved (file unchanged, exits 0).",
+    )
+    p_st.add_argument("ref", help=ref_help)
+    p_st.add_argument("status", help="New status. One of: not-started, in-progress, done.")
+    p_st.set_defaults(func=cmd_status)
+
+    p_ro = add_sub(
+        "reorder",
+        help="Reorder among siblings: up | down | top | bottom.",
+        description="Reorder a work item within its current siblings. IDs and parent are unchanged; numbers reflow.",
+    )
+    p_ro.add_argument("ref", help=ref_help)
+    p_ro.add_argument("direction", choices=DIRECTIONS,
+                      help="Relative movement among siblings.")
+    p_ro.set_defaults(func=cmd_reorder)
+
+    p_mv = add_sub(
+        "move",
+        help="Move a work item to a new position (may reparent).",
+        description="Move a work item (and its subtree) to a new position. May reparent. Both old and new parent renumber. IDs never change. Cycles (target inside source's subtree) are rejected.",
+    )
+    p_mv.add_argument("ref", help=ref_help)
+    p_mv.add_argument("to_kw", nargs="?", default=None, metavar="[to]",
+                      help="Optional literal 'to' keyword for readability (e.g. `move 2.3 to 3.2`). May be omitted.")
+    p_mv.add_argument("target", help="Destination position — number (e.g. `3.2`). Target parent must exist.")
+    p_mv.set_defaults(func=cmd_move)
+
+    p_cmp = add_sub(
+        "complete?",
+        help="Is the workload populated and confirmed complete?",
+        description="Check whether the workload is populated and marked complete. Exits 0 in both cases; the boolean is in the output.",
+    )
+    p_cmp.set_defaults(func=cmd_complete)
+
+    p_read = add_sub(
+        "read",
+        help="Emit item title + description (machine-readable).",
+        description="Emit a work item's title and description. Intended for skill consumption — pair with --json for structured output.",
+    )
+    p_read.add_argument("ref", help=ref_help)
+    p_read.set_defaults(func=cmd_read)
+
+    return p
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        return args.func(args)
+    except CLIError as e:
+        sys.stderr.write(f"{e}\n")
+        return e.exit_code
+    except OSError as e:
+        # File-system errors (permission denied, disk full, etc.) should not
+        # surface as raw Python tracebacks. Real bugs (anything not OSError /
+        # CLIError) are deliberately left uncaught so development surfaces them.
+        sys.stderr.write(f"file system error: {e}\n")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
