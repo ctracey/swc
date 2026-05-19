@@ -22,7 +22,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 2. **Author** — developer adds, renames, removes items; CLI assigns hash IDs; numbers reflow on every structural change.
 3. **Edit structure** — developer reorders within a parent or moves across parents; IDs stay stable, numbers reflow.
 4. **Status flow** — skill or developer transitions item between `not-started → in-progress → done`; parent rolls up automatically.
-5. **Read** — `list`, `show`, `find` for developer; `read`, `summary`, `exists`, `complete?` for skills.
+5. **Read** — `list`, `show`, `find` for developer; `summary`, `exists`, `complete?` for skills.
 6. **Bridge to docs** — `ship` skill queries CLI to match changed files against items.
 
 ### Non-happy / alt paths
@@ -73,7 +73,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-19** (event) — WHEN `show <item>` runs, the CLI SHALL render that item plus its immediate descendants.
 - **REQ-20** (event) — WHEN `find <keyword>` runs, the CLI SHALL return all items whose title matches.
 - **REQ-21** (event) — WHEN `summary` runs, the CLI SHALL emit total count, done count, and progress percentage.
-- **REQ-22** (event) — WHEN `read <item>` runs, the CLI SHALL emit the item's title and description in machine-readable form.
+- **REQ-22** (removed) — `read <item>` was a planned machine-readable item-detail op. Removed during phase 1 once it became clear that consumers (notably workflowDeliver_implement) can read `requirements.md` directly from `workitems/<id>/` without going through the CLI. No `read` subcommand exists on either `swc_workload` or `swc workload`.
 - **REQ-23** (event) — WHEN `exists` runs, the CLI SHALL emit a boolean for whether a workload exists for the current branch.
 - **REQ-24** (event) — WHEN `complete?` runs, the CLI SHALL emit a boolean for whether the workload is populated and confirmed complete.
 
@@ -317,12 +317,9 @@ Scenario: summary on a partially complete workload
   Then the output reports total=10, done=4, progress=40%
 ```
 
-### REQ-22 — read item details
-```gherkin
-Scenario: read item title and description
-  When I run `swc workload read 3.2 --json`
-  Then the output is JSON containing the item's title and description
-```
+### REQ-22 — removed (read item details)
+
+The `read` op was removed during phase 1. Consumers can read `workitems/<id>/requirements.md` directly. See the REQ-22 entry under Requirements above.
 
 ### REQ-23 — exists check
 ```gherkin

@@ -730,40 +730,6 @@ def cmd_summary(args) -> int:
     return 0
 
 
-def cmd_read(args) -> int:
-    path, data = _load(args)
-    items = data["items"]
-    found = find_by_ref(items, args.ref)
-    if found is None:
-        raise CLIError(f"item {args.ref} not found")
-    item, _, _, number = found
-
-    # Description: read from <workload-folder>/workitems/<id>/requirements.md
-    # if present. Workload folder is derived from the workload.json path.
-    folder = path.parent
-    description = ""
-    desc_path = folder / "workitems" / item["id"] / "requirements.md"
-    if desc_path.exists():
-        description = desc_path.read_text(encoding="utf-8")
-
-    payload = {
-        "id": item["id"],
-        "number": ".".join(str(n) for n in number),
-        "title": item["title"],
-        "status": item["status"],
-        "description": description,
-    }
-    if args.json:
-        print(json.dumps(payload))
-    else:
-        print(f"[{item['id']}] {payload['number']} {item['title']}")
-        print(f"status: {item['status']}")
-        if description:
-            print()
-            print(description)
-    return 0
-
-
 def cmd_complete(args) -> int:
     """`complete?`: workload exists, has items, and `complete: true` in workload.json."""
     path = workload_path_from_args(args)
@@ -974,13 +940,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_cmp.set_defaults(func=cmd_complete)
 
-    p_read = add_sub(
-        "read",
-        help="Emit item title + description (machine-readable).",
-        description="Emit a work item's title and description. Intended for skill consumption — pair with --json for structured output.",
-    )
-    p_read.add_argument("ref", help=ref_help)
-    p_read.set_defaults(func=cmd_read)
 
     return p
 
