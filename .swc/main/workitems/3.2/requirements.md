@@ -45,10 +45,10 @@ Resolved during planning — moved here from Parked.
 Source of truth is `workload.json`. CLI emits plain text for terminals. The hook blocks direct edits to `workload.json` and points the agent at the CLI. Existing skills must switch to CLI invocations rather than reading or editing the file.
 
 ### Tool surface
-- `swc` is a new parent command, shipped in the main swc plugin.
-- `swc workload <op>` delegates to a separate `swc-workload` command.
-- `swc-workload` lives in its own plugin (`swc-workload` plugin), installed via the marketplace.
-- When `swc-workload` is missing, `swc workload` shows an install-guidance prompt referencing the architecture docs. This leaves room for alternative backends later (local / Trello / Jira / Obsidian / etc).
+- `swc` is a new parent command, shipped in the main swc plugin. Owns context resolution (current branch → workload.json path via `.swc/_meta.json`) and forwards to the workload backend.
+- `swc workload <op>` delegates to `swc_workload --workload <resolved-path> <op>`. `swc_workload` is a pure tree manager — given a path, it manipulates that workload. No git, no `_meta.json`, no branch awareness.
+- **3.2 deliverable:** both `swc` and `swc_workload` live in `cli/` of the main `swc` plugin.
+- **3.3 deliverable:** `swc_workload` is extracted into its own `swc-workload` plugin, installed via the marketplace. When it's missing, `swc workload` shows an install-guidance prompt referencing the architecture docs (REQ-26). This leaves room for alternative backends later (local / Trello / Jira / Obsidian / etc).
 
 ### Workitem ID
 SHA hash over: machine username + timestamp + branch + workitem title. Machine username (not git config) so IDs work in non-git contexts. Hash specifics (algorithm, length, timestamp resolution, username source) are still parked.
@@ -75,7 +75,7 @@ Workloads stay branch-scoped. No concurrency primitives, no automatic merge supp
 
 ## Approach direction
 
-Consolidate all workload operations behind a single CLI. Likely invoked as `swc workload <op>` (e.g. `swc workload list`, `swc workload add`). Skills shell out to the CLI for every workload interaction. A pre-edit hook on `workload.md` blocks direct edits and points the agent at the CLI.
+Consolidate all workload operations behind a thin two-tier CLI: a context resolver (`swc`) that turns "current branch" into a workload path, and a tree manager (`swc_workload`) that operates on whatever path it's given. User-facing command is `swc workload <op>` (e.g. `swc workload list`, `swc workload add`). Skills shell out to `swc workload <op>` for every interaction. A pre-edit hook on `workload.json` blocks direct edits and points the agent at the CLI.
 
 Numbering and IDs are decoupled: numbers reflect current position in the hierarchy and can change; IDs are stable and used for cross-references. Branch-id prefixes anchor IDs to the workload they came from, which helps when workloads merge.
 

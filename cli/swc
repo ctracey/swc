@@ -1,0 +1,498 @@
+#!/usr/bin/env python3
+"""swc — user-facing entry point. Resolves context and forwards to swc_workload.
+
+Knows about the current git branch and `.swc/_meta.json` mapping. Translates
+`swc workload <op>` calls into `swc_workload --workload <resolved-path> <op>`
+invocations, passing through stdout / stderr / exit code.
+
+Subcommand surface:
+    swc workload <op> [args]      # workload tree manager (forwarded)
+    swc exists                    # branch-aware integrity check
+                                  # (lives at swc layer, never forwards)
+
+Special ops handled at this layer (do not forward):
+    swc workload init             # creates folder + registers in _meta.json,
+                                  # then forwards init to swc_workload
+    swc workload exists           # bypasses forward if no mapping; otherwise
+                                  # forwards to swc_workload exists for the
+                                  # lenient file-presence check
+    swc exists                    # branch-aware integrity check; warns on
+                                  # recoverable states (mapping ok, folder
+                                  # gone, or workload.json gone)
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Optional
+
+# Resolve sibling swc_workload executable. This file is `cli/swc`;
+# swc_workload lives at `cli/swc_workload` in the same directory.
+HERE = Path(__file__).resolve().parent
+SWC_WORKLOAD = HERE / "swc_workload"
+
+
+class SwcError(Exception):
+    """User-facing error for the swc layer."""
+
+    def __init__(self, message: str, exit_code: int = 1):
+        super().__init__(message)
+        self.exit_code = exit_code
+
+
+# ---------------------------------------------------------------------------
+# Context resolution
+# ---------------------------------------------------------------------------
+
+
+def repo_root() -> Path:
+    """Locate the .swc/ working root.
+
+    Priority:
+      1. SWC_REPO_ROOT env var (used by tests to point at a tmp dir)
+      2. git rev-parse --show-toplevel
+      3. cwd
+    """
+    override = os.environ.get("SWC_REPO_ROOT")
+    if override:
+        return Path(override)
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if out.returncode == 0:
+            return Path(out.stdout.strip())
+    except FileNotFoundError:
+        pass
+    return Path.cwd()
+
+
+def current_branch() -> str:
+    """Resolve the active git branch.
+
+    Priority:
+      1. SWC_BRANCH env var (used by tests to sidestep the git checkout)
+      2. git branch --show-current
+      3. cwd basename (graceful fallback for non-git contexts)
+    """
+    env = os.environ.get("SWC_BRANCH")
+    if env:
+        return env
+    try:
+        out = subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    except FileNotFoundError:
+        pass
+    return Path.cwd().name
+
+
+def branch_to_folder(branch: str) -> str:
+    """Mirror the convention from the context-lookup skill: `/` → `_`."""
+    return branch.replace("/", "_")
+
+
+def meta_path(root: Path) -> Path:
+    return root / ".swc" / "_meta.json"
+
+
+def read_meta(root: Path) -> dict:
+    """Read .swc/_meta.json. Raises SwcError on corrupt JSON.
+
+    A corrupt _meta.json is a load-bearing failure: silently falling back to
+    an empty mapping would let `init` overwrite the file and silently drop
+    every other branch's mapping. Fail loudly instead — the user must repair
+    or delete the file to proceed. Missing file is fine (returns empty).
+    """
+    p = meta_path(root)
+    if not p.exists():
+        return {"workloads": {}}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise SwcError(
+            f"_meta.json is corrupt and cannot be parsed: {e.msg} at line {e.lineno}, column {e.colno}"
+        ) from e
+    data.setdefault("workloads", {})
+    return data
+
+
+def write_meta(root: Path, meta: dict) -> None:
+    p = meta_path(root)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+
+
+def resolve_folder(root: Path, branch: str) -> Optional[Path]:
+    """Return the .swc/<folder>/ for branch, or None if not registered.
+
+    Order of resolution:
+      1. .swc/_meta.json mapping for the branch
+      2. Derived folder name (branch with / → _) if it exists on disk
+    """
+    meta = read_meta(root)
+    mapped = meta.get("workloads", {}).get(branch)
+    if mapped:
+        candidate = root / ".swc" / mapped
+        if candidate.exists():
+            return candidate
+    derived = root / ".swc" / branch_to_folder(branch)
+    if derived.exists():
+        return derived
+    return None
+
+
+def workload_json_for_branch(root: Path, branch: str) -> Optional[Path]:
+    folder = resolve_folder(root, branch)
+    if folder is None:
+        return None
+    return folder / "workload.json"
+
+
+# ---------------------------------------------------------------------------
+# Forwarder
+# ---------------------------------------------------------------------------
+
+
+def _python_invocation() -> list[str]:
+    """How to invoke the swc_workload script.
+
+    Use the current Python interpreter against the swc_workload file. This
+    keeps test isolation tight (same venv) and avoids dependence on the file
+    being executable or on PATH.
+    """
+    return [sys.executable, str(SWC_WORKLOAD)]
+
+
+def forward(op: str, op_args: list[str], folder: Path) -> int:
+    """Invoke swc_workload <op> --workload <folder> <args>, pass through I/O.
+
+    `folder` is the workload folder (containing workload.json), not the file.
+    swc_workload resolves <folder>/workload.json internally.
+    """
+    cmd = [*_python_invocation(), op, "--workload", str(folder), *op_args]
+    # Run with inherited stdio so output streams reach the user unchanged.
+    proc = subprocess.run(cmd)
+    return proc.returncode
+
+
+# ---------------------------------------------------------------------------
+# Special handlers at the swc layer
+# ---------------------------------------------------------------------------
+
+
+def handle_init(op_args: list[str]) -> int:
+    """Create folder, register in _meta.json, then forward init to swc_workload.
+
+    The folder name mirrors the context-lookup convention (branch with / → _).
+    We create the folder here (the wrapper owns folder creation per the
+    "option 2" design choice); swc_workload's init then creates workload.json
+    inside it. If the workload already exists, the inner CLI raises with a
+    clear message.
+
+    Order matters: read `_meta.json` BEFORE forwarding so a corrupt file
+    fails fast (no folder creation, no workload.json write). Then forward
+    `init`; only on success do we write the updated meta. A failed inner
+    init leaves `_meta.json` untouched.
+    """
+    root = repo_root()
+    branch = current_branch()
+    folder_name = branch_to_folder(branch)
+    folder = root / ".swc" / folder_name
+
+    # Fail fast on corrupt _meta.json — before mutating anything on disk.
+    meta = read_meta(root)
+
+    folder.mkdir(parents=True, exist_ok=True)
+
+    # Forward init first so that if the file already exists, we don't pollute
+    # _meta.json with a re-registration on the failure path. If init succeeds,
+    # update _meta.json.
+    rc = forward("init", op_args, folder)
+    if rc == 0:
+        meta.setdefault("workloads", {})[branch] = folder_name
+        write_meta(root, meta)
+    return rc
+
+
+# Wrapper-aware help text for the ops swc owns directly. INIT_HELP describes
+# the user-facing flow rather than the inner CLI's file-creation primitive.
+INIT_HELP = (
+    "usage: swc workload init [--json]\n"
+    "\n"
+    "Create a workload for the current branch. Creates .swc/<folder>/ (folder\n"
+    "name derived from the current git branch, / → _), writes workload.json,\n"
+    "and registers the branch → folder mapping in .swc/_meta.json. Fails if a\n"
+    "workload already exists for the branch.\n"
+    "\n"
+    "Options:\n"
+    "  --json   Emit structured JSON output."
+)
+
+# Help text for the top-level `swc exists` command. Branch-aware integrity
+# check that always emits a boolean and warns on recoverable states.
+SWC_EXISTS_HELP = (
+    "usage: swc exists [--json]\n"
+    "\n"
+    "Check whether the current branch has a fully set-up workload. Reads the\n"
+    "current git branch, looks up .swc/_meta.json for the branch → folder\n"
+    "mapping, and verifies the folder + workload.json are present.\n"
+    "\n"
+    "Always emits a boolean (never errors). Surfaces stderr warnings with an\n"
+    "init suggestion if the mapping exists but the folder or workload.json\n"
+    "is missing (recoverable states).\n"
+    "\n"
+    "Options:\n"
+    "  --json   Emit structured JSON output."
+)
+
+
+def handle_exists(op_args: list[str]) -> int:
+    """Top-level `swc exists` — branch-aware integrity check.
+
+    Always emits a boolean (never errors). Warns to stderr (with a
+    `swc workload init` suggestion) when the mapping exists but the folder
+    or workload.json is missing — these are recoverable states the user
+    likely wants surfaced.
+
+    Detects `--help` / `-h` anywhere in op_args so `swc exists --json --help`
+    short-circuits to SWC_EXISTS_HELP rather than running the check.
+    """
+    if any(a in ("--help", "-h") for a in op_args):
+        print(SWC_EXISTS_HELP)
+        return 0
+
+    root = repo_root()
+    branch = current_branch()
+    meta = read_meta(root)
+    folder_name = meta.get("workloads", {}).get(branch)
+
+    present = False
+    if folder_name:
+        folder = root / ".swc" / folder_name
+        if not folder.is_dir():
+            sys.stderr.write(
+                f"warning: context folder missing for branch {branch!r}; "
+                f"run `swc workload init` to recreate\n"
+            )
+        elif not (folder / "workload.json").is_file():
+            sys.stderr.write(
+                f"warning: context folder exists for branch {branch!r} "
+                f"but workload.json is missing; run `swc workload init` to recreate\n"
+            )
+        else:
+            present = True
+
+    if "--json" in op_args:
+        print(json.dumps({"exists": present}))
+    else:
+        print("true" if present else "false")
+    return 0
+
+
+def _emit_boolean(value: bool, op_args: list[str]) -> None:
+    """Print true/false or {"exists": value} to stdout depending on --json."""
+    if "--json" in op_args:
+        print(json.dumps({"exists": value}))
+    else:
+        print("true" if value else "false")
+
+
+def handle_init_with_help(op_args: list[str]) -> int:
+    """Wrap handle_init so --help is intercepted here, not forwarded.
+
+    Detect `--help` / `-h` anywhere in op_args, not just at position 0:
+    `swc workload init --json --help` must short-circuit to INIT_HELP, not
+    fall through to handle_init (which would mkdir the folder, see argparse
+    short-circuit on --help inside the forwarded process, then write a
+    stale `_meta.json` registration pointing at an empty folder).
+    """
+    if any(a in ("--help", "-h") for a in op_args):
+        print(INIT_HELP)
+        return 0
+    return handle_init(op_args)
+
+
+# Wrapper-aware help text for `swc workload exists`. Pass 10 (F-04): mirrors
+# the INIT_HELP interceptor pattern so the inner CLI's `--workload` flag
+# (which users never supply at the swc layer) does not leak through. Keeps
+# both wrapper-owned ops (`init` and `exists`) presenting a uniform
+# user-facing help shape.
+EXISTS_HELP = (
+    "usage: swc workload exists [--json]\n"
+    "\n"
+    "Check whether a workload exists for the current branch. Pure file-presence\n"
+    "check at the wrapper layer — returns false (exit 0) if there is no branch\n"
+    "mapping in .swc/_meta.json, otherwise delegates to swc_workload exists\n"
+    "against the resolved folder.\n"
+    "\n"
+    "For the integrity-aware check (warns if mapping exists but folder/workload\n"
+    "is gone), use `swc exists` instead.\n"
+    "\n"
+    "Options:\n"
+    "  --json   Emit structured JSON output."
+)
+
+
+def handle_workload_help() -> int:
+    """Print top-level workload help.
+
+    Delegates the body to `swc_workload --help` (which lists every subcommand)
+    and prepends a short preamble explaining the user-facing wrapper.
+    """
+    preamble = (
+        "usage: swc workload <op> [args]\n"
+        "\n"
+        "User-facing wrapper around swc_workload. `swc` resolves the current\n"
+        "branch's workload folder (via git branch + .swc/_meta.json) and\n"
+        "forwards to swc_workload. Special handling at this layer:\n"
+        "  init    — also creates .swc/<folder>/ and registers branch in _meta.json\n"
+        "  exists  — bypasses forward when no mapping exists (emits false directly);\n"
+        "            otherwise delegates to swc_workload exists for the file-presence check\n"
+        "\n"
+        "For a branch-aware integrity check (mapping + folder + workload.json all present),\n"
+        "see the top-level `swc exists`.\n"
+        "\n"
+        "Subcommand help from swc_workload below:\n"
+    )
+    print(preamble)
+    sys.stdout.flush()
+    # Forward --help to swc_workload — gets the full subcommand list.
+    cmd = [*_python_invocation(), "--help"]
+    proc = subprocess.run(cmd)
+    return proc.returncode
+
+
+def handle_subcommand_help(op: str) -> int:
+    """Forward `swc workload <op> --help` to swc_workload <op> --help.
+
+    swc_workload requires --workload on every subparser, so passing --help
+    without a workload still produces the correct per-subcommand help and
+    exits 0 (argparse short-circuits on --help before requiring flags).
+    """
+    cmd = [*_python_invocation(), op, "--help"]
+    proc = subprocess.run(cmd)
+    return proc.returncode
+
+
+# ---------------------------------------------------------------------------
+# Main dispatch
+# ---------------------------------------------------------------------------
+
+
+def handle_workload(op: Optional[str], op_args: list[str]) -> int:
+    """Dispatch a `swc workload <op>` invocation."""
+    # Top-level workload help: `swc workload`, `swc workload --help`, `swc workload -h`.
+    if op is None or op in ("--help", "-h"):
+        return handle_workload_help()
+
+    # `init` stays wrapper-owned — it creates the folder, registers in
+    # `_meta.json`, then forwards. Its help text describes the wrapper flow
+    # (folder creation + meta registration), not the inner CLI's primitive.
+    if op == "init":
+        return handle_init_with_help(op_args)
+
+    # `exists` bypasses the strict "no mapping → error" rule.
+    #
+    # Pass 10 (F-04): `--help` is intercepted at the wrapper layer with the
+    # EXISTS_HELP constant — mirrors handle_init_with_help so the inner
+    # CLI's `--workload` flag (wrapper-controlled, never user-supplied) does
+    # not leak into the rendered help.
+    #
+    # With a mapping we forward to swc_workload exists (lenient file-presence
+    # check); without a mapping we emit `false` directly because there's no
+    # folder to forward into.
+    if op == "exists":
+        if any(a in ("--help", "-h") for a in op_args):
+            print(EXISTS_HELP)
+            return 0
+        branch = current_branch()
+        meta = read_meta(repo_root())
+        folder_name = meta.get("workloads", {}).get(branch)
+        if not folder_name:
+            _emit_boolean(False, op_args)
+            return 0
+        folder = repo_root() / ".swc" / folder_name
+        return forward("exists", op_args, folder)
+
+    # Per-subcommand help for ops we forward — let the inner CLI render it.
+    #
+    # Pass 10 (F-05): detect `--help` / `-h` anywhere in op_args, not just at
+    # position 0. The positional check meant `swc workload add --json --help`
+    # on an unmapped branch fell through to the missing-workload guard below
+    # and exited 1 instead of showing add's help. Mirrors the Pass 8 fix on
+    # init / exists.
+    if any(a in ("--help", "-h") for a in op_args):
+        return handle_subcommand_help(op)
+
+    # All other ops need a resolved workload folder.
+    root = repo_root()
+    branch = current_branch()
+    folder = resolve_folder(root, branch)
+    json_path = folder / "workload.json" if folder is not None else None
+    if json_path is None or not json_path.exists():
+        sys.stderr.write(
+            f"no workload for branch {branch!r}. Run `swc workload init` to create one.\n"
+        )
+        return 1
+    return forward(op, op_args, folder)
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    args = list(sys.argv[1:] if argv is None else argv)
+
+    # Parse only enough to route. Argparse with subparsers won't pass through
+    # `--help` cleanly to a wrapped CLI, so do this by hand.
+    if not args or args[0] in ("--help", "-h"):
+        print(
+            "usage: swc <command> [args]\n"
+            "\n"
+            "  workload   Manage the workload tree for the current branch\n"
+            "  exists     Check whether the current branch has a set-up workload\n"
+            "\n"
+            "For help on a subcommand: swc <command> --help"
+        )
+        return 0
+
+    cmd = args[0]
+    rest = args[1:]
+
+    try:
+        if cmd == "workload":
+            op = rest[0] if rest else None
+            op_args = rest[1:] if rest else []
+            return handle_workload(op, op_args)
+        if cmd == "exists":
+            return handle_exists(rest)
+    except SwcError as e:
+        sys.stderr.write(f"{e}\n")
+        return e.exit_code
+    except OSError as e:
+        # File-system errors (permission denied, disk full, etc.) bubbling
+        # out of write_meta / mkdir / etc. surface as friendly errors
+        # rather than raw tracebacks. Real bugs stay uncaught.
+        sys.stderr.write(f"file system error: {e}\n")
+        return 1
+
+    sys.stderr.write(
+        f"unknown command {cmd!r}. Available: workload, exists. "
+        f"Run `swc --help` for usage.\n"
+    )
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

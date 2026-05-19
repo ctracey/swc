@@ -1,5 +1,21 @@
 # Changelog
 
+## Session — WI-3.2 phase 1 delivery: workload CLI `2026-05-19`
+
+- Delivered phase 1 of work item 3.2 — two-tier CLI in `cli/`:
+  - `swc` (wrapper): top-level command. Resolves current branch → workload folder via `.swc/_meta.json`. Owns `init` (creates folder + writes mapping + forwards) and top-level `exists` (branch-aware, integrity-checking presence check with init recovery hint on broken states).
+  - `swc_workload` (backend): pure path-driven tree manager. Takes `--workload <folder>` on every op. Knows nothing about git or `_meta.json`. Implements all 14 ops: `init`, `add`, `remove`, `rename`, `reorder`, `move`, `status`, `list`, `show`, `find`, `summary`, `read`, `exists`, `complete?`.
+- 105 scenario tests across two tiers (`tests/cli/test_swc_*` end-to-end via wrapper; `tests/cli/test_swc_workload_*` direct against the backend with tmp paths). Covers REQ-01..REQ-25, REQ-28..REQ-31 from `specs.md`.
+- 10 implementation passes captured in `summary.md` / `context.md`. Code-review verdict on final pass: PASS.
+- Tech-debt items recorded: F-05 (hash-vs-digit number ref ambiguity ~6/100M), F-06 (file size at ~945 lines — natural split point comes with 3.3's plugin extraction).
+- Motivation: consolidate all workload ops behind a single CLI so skills no longer hand-edit `workload.md`. Decouples item identity (stable hash IDs) from numbering (computed at render time) so docs survive renumbering and re-parenting.
+
+### Phase 1 of 3 — remaining phases (gated on user signal)
+
+- **Phase 2 — skill migration**: convert the 15 skills currently editing `workload.md` directly (`workload`, `workload-update`, `workload_item-start`, `ship`, `context-init`, `context-lookup`, `context--workload`, `workflowPlan_context`, `workflowPlan_delivery`, `workflowPlan_breakdown`, `workflowPlan_finalise`, `workflowDeliver`, `workflowDeliver_implement`, `workflowDeliver_refine`, `workflowImplement_orient`) to shell out to `swc workload <op>`. Includes a manual `.md` → `.json` migration of existing workloads (`swc workload init` per workload, item re-add).
+- **Phase 3 — pre-edit hook**: PreToolUse hook in plugin config that intercepts Edit/Write attempts on `.swc/**/workload.json`, denies the action, and instructs the agent to use `swc workload <op>`. Added after phase 2 so skills don't get blocked mid-migration.
+- 3.3 (plugin extraction) and 3.4 (MCP wrapper) remain follow-on work items — 3.3 will move `swc_workload` to its own marketplace plugin, leaving `swc` in this plugin as a forwarder; 3.4 adds an MCP wrapper on top of `swc workload <op>`.
+
 ## Session — specs & solution design for WI-3.2 CLI `2026-05-18`
 
 - Wrote `specs.md` for WI-3.2: 31 EARS requirements covering lifecycle, authoring, status with rollup, lookup, read/report, missing prerequisites, hook, output, citation, and folder layout; Gherkin scenarios for each requirement; validation rules and business rules
