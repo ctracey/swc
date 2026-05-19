@@ -112,7 +112,7 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 - `show <item>` — show a work item plus its child items
 - `find <keyword>` — replace ad-hoc grep usage in skills
 - `summary` — total count, done count, % progress (used by report-plan)
-- `read <item>` — fetch a single item's name + description (used by workflowDeliver_implement to brief the implementation agent)
+- ~~`read <item>` — fetch a single item's name + description~~ — **removed during phase 1.** Consumers read `workitems/<id>/requirements.md` directly; the CLI does not need to wrap this access. See REQ-22 in specs.md.
 - `exists` — boolean: does workload.md exist for this branch (cheap presence check)
 - `complete?` — is the workload populated and confirmed (used by workflowPlan_finalise)
 

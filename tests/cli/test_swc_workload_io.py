@@ -1,6 +1,6 @@
 """Tier 1 — direct tests against `cli/swc_workload --workload <tmp-folder>`.
 
-Read / report ops (list / show / find / summary / read), JSON output,
+Read / report ops (list / show / find / summary), JSON output,
 schema validation, and JSON-decode error path. These don't depend on
 branch resolution so they're covered directly.
 
@@ -194,31 +194,6 @@ def test_summary_partial(swcw_ready):
     assert payload["total"] == 10
     assert payload["done"] == 4
     assert payload["progress"] == 40
-
-
-# ---------------------------------------------------------------------------
-# REQ-22 — read emits title + description from workitems/<hash>/requirements.md
-# ---------------------------------------------------------------------------
-
-
-def test_read_emits_title_and_description(swcw_ready, tmp_path):
-    run, workload = swcw_ready
-    run("add", "the item")
-    listed = json.loads(run("list", "--json").stdout)["items"]
-    item_id = listed[0]["id"]
-
-    # The CLI looks for the description under <workload-folder>/workitems/<id>/requirements.md.
-    # `workload` here is `tmp_path / "workload.json"` so the folder is `tmp_path`.
-    folder = workload.parent
-    workitem_dir = folder / "workitems" / item_id
-    workitem_dir.mkdir(parents=True, exist_ok=True)
-    (workitem_dir / "requirements.md").write_text("the description here")
-
-    result = run("read", "1", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["title"] == "the item"
-    assert "the description here" in payload["description"]
 
 
 # ---------------------------------------------------------------------------
