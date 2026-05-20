@@ -341,7 +341,7 @@ def parse_filter(spec: str) -> tuple[str, list[str]]:
     return key, values
 
 
-def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], filter_outs: list[tuple[str, list[str]]]) -> list[dict]:
+def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], excludes: list[tuple[str, list[str]]]) -> list[dict]:
     """Return a deep-copied tree containing only items that match include filters
     AND do not match exclude filters. Parents are kept if any descendant matches,
     but children that don't match are dropped.
@@ -352,7 +352,7 @@ def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], filte
         for key, values in filters:
             if key == "status" and node["status"] not in values:
                 return False
-        for key, values in filter_outs:
+        for key, values in excludes:
             if key == "status" and node["status"] in values:
                 return False
         return True
@@ -371,7 +371,7 @@ def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], filte
                 })
         return out
 
-    if not filters and not filter_outs:
+    if not filters and not excludes:
         return items
     return walk(items)
 
@@ -651,33 +651,38 @@ def _rollup_ancestors(items: list[dict], item_id: str) -> None:
 
 
 def cmd_list(args) -> int:
+    """Render the workload tree, or — when `ref` is supplied — that item plus its subtree.
+
+    Filters (--filter / --exclude) apply to either form. With `ref`, the
+    filters are applied to the subtree rooted at the ref'd item. apply_filters
+    keeps a parent when any descendant matches (and drops non-matching
+    descendants), so the ref'd item is visible whenever something inside it
+    matches.
+    """
     path, data = _load(args)
     items = data["items"]
 
     filters = [parse_filter(f) for f in (args.filter or [])]
-    filter_outs = [parse_filter(f) for f in (args.filter_out or [])]
-    filtered = apply_filters(items, filters, filter_outs)
+    excludes = [parse_filter(f) for f in (args.exclude or [])]
 
+    if args.ref:
+        found = find_by_ref(items, args.ref)
+        if found is None:
+            raise CLIError(f"item {args.ref} not found")
+        item, _, _, number = found
+        filtered = apply_filters([item], filters, excludes)
+        if args.json:
+            out = [_render_item_json(n, number) for n in filtered]
+            print(json.dumps({"items": out}))
+        else:
+            print("\n".join(_render_item_text(n, number, show_ids=args.show_ids) for n in filtered))
+        return 0
+
+    filtered = apply_filters(items, filters, excludes)
     if args.json:
         print(json.dumps({"items": to_json_tree(filtered)}))
     else:
         print(render_text(filtered, show_ids=args.show_ids))
-    return 0
-
-
-def cmd_show(args) -> int:
-    path, data = _load(args)
-    items = data["items"]
-    found = find_by_ref(items, args.ref)
-    if found is None:
-        raise CLIError(f"item {args.ref} not found")
-    item, _, _, number = found
-    # Render this item with its real number as the root, then descend.
-    if args.json:
-        out = [_render_item_json(item, number)]
-        print(json.dumps({"items": out}))
-    else:
-        print(_render_item_text(item, number, show_ids=args.show_ids))
     return 0
 
 
@@ -849,30 +854,33 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_list = add_sub(
         "list",
-        help="Display the full workload tree (optional filters)",
-        description="Display the workload tree with status symbols. Filters can be combined: repeating --filter ANDs across keys; comma-separated values OR within a key.",
+        help="Display workload tree (optional ref to scope to a subtree; --filter/--exclude supported).",
+        description=(
+            "Display the workload tree with status symbols.\n"
+            "\n"
+            "Forms:\n"
+            "  list                       — full tree.\n"
+            "  list <ref>                 — that item plus its descendants.\n"
+            "\n"
+            "Filters:\n"
+            "  --filter key:val[,val…]    — include items matching the filter; repeatable.\n"
+            "  --exclude key:val[,val…]   — exclude items matching the filter.\n"
+            "  Supported keys: status. Filters apply to either form; with a ref they\n"
+            "  scope to the subtree (a parent is kept when any descendant matches)."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    p_list.add_argument("ref", nargs="?", default=None,
+                        help="Optional item reference (number or hash). When given, render just that item and its descendants.")
     p_list.add_argument("--filter", action="append",
                         help="Include filter — key:val[,val…]. Supported keys: status. Repeatable.")
-    p_list.add_argument("--filter-out", dest="filter_out", action="append",
+    p_list.add_argument("--exclude", dest="exclude", action="append",
                         help="Exclude filter — same syntax and supported keys as --filter.")
     p_list.add_argument("--show-ids", dest="show_ids", action="store_true", default=True,
                         help="Show hash IDs alongside numbers (default on).")
     p_list.add_argument("--no-ids", dest="show_ids", action="store_false",
                         help="Hide hash IDs from output.")
     p_list.set_defaults(func=cmd_list)
-
-    p_show = add_sub(
-        "show",
-        help="Render an item plus its descendants.",
-        description="Render a single work item and its immediate descendants.",
-    )
-    p_show.add_argument("ref", help=ref_help)
-    p_show.add_argument("--show-ids", dest="show_ids", action="store_true", default=True,
-                        help="Show hash IDs alongside numbers (default on).")
-    p_show.add_argument("--no-ids", dest="show_ids", action="store_false",
-                        help="Hide hash IDs from output.")
-    p_show.set_defaults(func=cmd_show)
 
     p_find = add_sub(
         "find",

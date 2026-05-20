@@ -12,7 +12,7 @@ def test_swc_workload_help_lists_all_ops(swc):
     result = run("workload", "--help")
     assert result.returncode == 0
     out = result.stdout
-    for op in ("init", "add", "delete", "list", "show", "status", "exists"):
+    for op in ("init", "add", "delete", "list", "status", "exists"):
         assert op in out, f"swc workload --help missing {op!r}"
     # Preamble should explain the wrapper.
     assert "swc workload" in out
