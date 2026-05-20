@@ -55,8 +55,8 @@ def test_resolve_by_number(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
-    run("add", "a", "--parent", "2")
-    run("add", "b", "--parent", "2")
+    run("add", "a", "to", "2")
+    run("add", "b", "to", "2")
 
     result = run("list", "2", "--json")
     assert result.returncode == 0, result.stderr
@@ -70,7 +70,7 @@ def test_resolve_by_hash_id(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "target")
-    run("add", "a", "--parent", "2")
+    run("add", "a", "to", "2")
 
     listed = json.loads(run("list", "--json").stdout)["items"]
     target_id = listed[1]["id"]
@@ -104,7 +104,7 @@ def test_list_renders_full_tree_with_symbols(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
-    run("add", "2a", "--parent", "2")
+    run("add", "2a", "to", "2")
     run("complete", "1")
     run("start", "2.1")
 
@@ -165,8 +165,8 @@ def test_list_with_ref_renders_item_with_children(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "parent")
-    run("add", "kid-a", "--parent", "2")
-    run("add", "kid-b", "--parent", "2")
+    run("add", "kid-a", "to", "2")
+    run("add", "kid-b", "to", "2")
 
     result = run("list", "2")
     assert result.returncode == 0
@@ -183,9 +183,9 @@ def test_list_with_ref_and_filter_scopes_to_subtree(swcw_ready):
     whenever something inside it matches."""
     run, workload = swcw_ready
     run("add", "parent")
-    run("add", "a", "--parent", "1")
-    run("add", "b", "--parent", "1")
-    run("add", "c", "--parent", "1")
+    run("add", "a", "to", "1")
+    run("add", "b", "to", "1")
+    run("add", "c", "to", "1")
     run("start", "1.2")
 
     result = run("list", "1", "--filter", "status:in-progress", "--json")
@@ -240,7 +240,7 @@ def test_list_json_is_parseable_tree(swcw_ready):
     run, workload = swcw_ready
     run("add", "a")
     run("add", "b")
-    run("add", "b1", "--parent", "2")
+    run("add", "b1", "to", "2")
 
     result = run("list", "--json")
     assert result.returncode == 0

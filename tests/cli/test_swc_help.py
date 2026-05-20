@@ -25,7 +25,7 @@ def test_swc_workload_subcommand_help_describes_flags(swc):
     assert result.returncode == 0
     out = result.stdout
     assert "add" in out
-    assert "--parent" in out
+    assert "to" in out and "at" in out
 
 
 def test_swc_top_level_help_lists_workload_command(swc):
@@ -270,7 +270,7 @@ def test_swc_workload_add_help_on_unmapped_branch_shows_help_not_error(swc):
     out = result.stdout
     # Add's help text indicators.
     assert "add" in out
-    assert "--parent" in out
+    assert "to" in out and "at" in out
 
 
 def test_swc_workload_add_json_then_help_on_unmapped_branch_shows_help(swc):
@@ -287,7 +287,7 @@ def test_swc_workload_add_json_then_help_on_unmapped_branch_shows_help(swc):
     assert "no workload for branch" not in result.stderr
     out = result.stdout
     assert "add" in out
-    assert "--parent" in out
+    assert "to" in out and "at" in out
 
 
 def test_swc_workload_add_dash_h_in_non_first_position_shows_help(swc):

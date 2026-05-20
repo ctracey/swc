@@ -35,7 +35,7 @@ def test_subcommand_help_describes_flags():
     assert result.returncode == 0
     out = result.stdout
     assert "add" in out
-    assert "--parent" in out
+    assert "to" in out and "at" in out
     assert "--workload" in out
 
 
