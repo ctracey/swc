@@ -92,6 +92,10 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-30** (ubiquitous) — Workitem folders under `.swc/<workload>/workitems/` SHALL be named by SHA hash ID, never by number.
 - **REQ-31** (ubiquitous) — Cross-doc references to items SHALL use the form `[<hash>] <title>`.
 
+### Sibling title uniqueness
+- **REQ-32** (unwanted) — IF `add` is given a title that matches an existing sibling's title (full-string match, case-insensitive), THEN the CLI SHALL reject the request with a clear collision message and leave the workload unchanged.
+- **REQ-33** (unwanted) — IF `rename` is given a title that matches another sibling's title (full-string match, case-insensitive), THEN the CLI SHALL reject the request with a clear collision message and leave the workload unchanged. The item being renamed is excluded from its own collision check, so renaming to the current title (or a case variant of it) is allowed.
+
 ## Acceptance Scenarios
 
 ### REQ-01 — init creates workload
@@ -411,11 +415,51 @@ Scenario: cross-doc reference format
   Then the citation has the form [<hash>] <title>
 ```
 
+### REQ-32 — add rejects duplicate sibling title (case-insensitive)
+```gherkin
+Scenario: exact-match duplicate at the same level
+  Given a workload with top-level item "first"
+  When I run `swc workload add "first"`
+  Then the CLI exits non-zero with a collision message
+  And no new item is added
+
+Scenario: case-variant duplicate at the same level
+  Given a workload with top-level item "ASDF"
+  When I run `swc workload add "asdf"`
+  Then the CLI exits non-zero with a collision message
+  And no new item is added
+
+Scenario: same title allowed under a different parent
+  Given a workload with top-level items "alpha", "beta"
+  When I run `swc workload add "alpha" --parent 2`
+  Then the item is added successfully
+  And both items named "alpha" exist with distinct hash IDs
+```
+
+### REQ-33 — rename rejects duplicate sibling title (case-insensitive)
+```gherkin
+Scenario: rename to a sibling's title
+  Given siblings "alpha" and "beta"
+  When I run `swc workload rename 2 "ALPHA"`
+  Then the CLI exits non-zero with a collision message
+  And the item is still titled "beta"
+
+Scenario: rename to a non-sibling's title
+  Given top-level items "alpha", "beta" and a child "gamma" under "alpha"
+  When I run `swc workload rename 2 "gamma"`
+  Then the rename succeeds (different parents, no collision)
+
+Scenario: self-rename is allowed (case-variant of own title)
+  Given an item titled "alpha"
+  When I run `swc workload rename 1 "ALPHA"`
+  Then the rename succeeds and the title becomes "ALPHA"
+```
+
 ## Validation Rules
 
 | Field | Type | Required | Rules |
 |---|---|---|---|
-| Title (add / rename) | string | yes | non-empty; must NOT start with a number-prefix pattern (digits + optional dotted digits + whitespace) |
+| Title (add / rename) | string | yes | non-empty; must NOT start with a number-prefix pattern (digits + optional dotted digits + whitespace); must NOT match an existing sibling's title (full-string, case-insensitive); `rename` excludes the item being renamed from its own collision check |
 | Status | enum | yes | one of `not-started`, `in-progress`, `done` |
 | Reorder direction | enum | yes | one of `up`, `down`, `top`, `bottom` |
 | Item reference | string | yes | number (e.g. `3.2`) or hash ID; resolves against current tree |

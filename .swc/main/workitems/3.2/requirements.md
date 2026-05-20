@@ -92,9 +92,9 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 - Cleanup — delete folder once all items complete (CLI op or stays outside? — see Parked)
 
 ### Authoring
-- `add` — add a work item (title only; CLI assigns number; validate no number prefix in title)
+- `add` — add a work item (title only; CLI assigns number; validate no number prefix in title; reject if a sibling already has the same title — full-string match, case-insensitive)
 - `delete` — delete a work item
-- `rename` — rename a work item (title only; ID and status preserved)
+- `rename` — rename a work item (title only; ID and status preserved; reject if another sibling has the same title — full-string match, case-insensitive; self-renames including case-variants of the current title are allowed)
 - ~~`reorder`~~ — folded into `move <item> <up|down|top|bottom>` during phase 1. See "Authoring — `move` (consolidated)" above.
 - `reparent` — change item hierarchy (e.g. 2.4.1 → sibling of 2.4, or sibling → child)
 

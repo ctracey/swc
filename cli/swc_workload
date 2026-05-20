@@ -408,6 +408,26 @@ def _load(args) -> tuple[Path, dict]:
     return path, data
 
 
+def _check_no_sibling_title_collision(
+    title: str, siblings: list[dict], exclude_id: Optional[str] = None
+) -> None:
+    """Reject titles that match a sibling's title (case-insensitive).
+
+    Scope: same parent only. Sibling subtrees may have items with the same
+    title. `exclude_id` lets `rename` skip its own item so renaming to the
+    current title (or a case variant of it) is not flagged as a collision.
+    """
+    needle = title.casefold()
+    for sib in siblings:
+        if exclude_id is not None and sib["id"] == exclude_id:
+            continue
+        if sib["title"].casefold() == needle:
+            raise CLIError(
+                f"title {title!r} collides with sibling [{sib['id']}] {sib['title']!r} "
+                f"(case-insensitive match)"
+            )
+
+
 def cmd_add(args) -> int:
     title = args.title
     validate_title(title)
@@ -423,6 +443,8 @@ def cmd_add(args) -> int:
         children = parent_item.setdefault("children", [])
     else:
         children = items
+
+    _check_no_sibling_title_collision(title, children)
 
     new_id = make_id(title, existing)
     node = {"id": new_id, "title": title, "status": STATUS_NOT_STARTED, "children": []}
@@ -462,7 +484,8 @@ def cmd_rename(args) -> int:
     found = find_by_ref(items, args.ref)
     if found is None:
         raise CLIError(f"item {args.ref} not found")
-    item, _, _, _ = found
+    item, parent_list, _, _ = found
+    _check_no_sibling_title_collision(args.title, parent_list, exclude_id=item["id"])
     item["title"] = args.title
     save_workload(path, data)
     if args.json:
