@@ -90,7 +90,7 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 
 ### Authoring
 - `add` — add a work item (title only; CLI assigns number; validate no number prefix in title)
-- `remove` — remove a work item
+- `delete` — delete a work item
 - `rename` — rename a work item (title only; ID and status preserved)
 - `reorder` — change item order among siblings (mechanism — see Parked)
 - `reparent` — change item hierarchy (e.g. 2.4.1 → sibling of 2.4, or sibling → child)

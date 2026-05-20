@@ -1,6 +1,6 @@
 """Tier 1 — direct tests against `cli/swc_workload --workload <tmp-path>`.
 
-Authoring ops (add / remove / rename / reorder / move) — covers the
+Authoring ops (add / delete / rename / reorder / move) — covers the
 tree-manipulation edge cases that don't depend on branch resolution:
 hash uniqueness, move keyword validation, cycle rejection, same-parent move
 semantics, downgrade-guard, schema validation.
@@ -68,11 +68,11 @@ def test_add_as_child_of_parent(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# remove
+# delete
 # ---------------------------------------------------------------------------
 
 
-def test_remove_drops_item_and_descendants_with_renumber(swcw_ready):
+def test_delete_drops_item_and_descendants_with_renumber(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
@@ -80,7 +80,7 @@ def test_remove_drops_item_and_descendants_with_renumber(swcw_ready):
     run("add", "two-a", "--parent", "2")
     run("add", "two-b", "--parent", "2")
 
-    result = run("remove", "2")
+    result = run("delete", "2")
     assert result.returncode == 0, result.stderr
     items = json.loads(run("list", "--json").stdout)["items"]
     titles = [i["title"] for i in items]
