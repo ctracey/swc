@@ -22,7 +22,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 2. **Author** — developer adds, renames, removes items; CLI assigns hash IDs; numbers reflow on every structural change.
 3. **Edit structure** — developer reorders within a parent or moves across parents; IDs stay stable, numbers reflow.
 4. **Status flow** — skill or developer transitions item between `not-started → in-progress → done`; parent rolls up automatically.
-5. **Read** — `list`, `show`, `find` for developer; `summary`, `exists`, `complete?` for skills.
+5. **Read** — `list`, `show`, `find` for developer; `summary`, `exists` for skills.
 6. **Bridge to docs** — `ship` skill queries CLI to match changed files against items.
 
 ### Non-happy / alt paths
@@ -75,7 +75,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-21** (event) — WHEN `summary` runs, the CLI SHALL emit total count, done count, and progress percentage.
 - **REQ-22** (removed) — `read <item>` was a planned machine-readable item-detail op. Removed during phase 1 once it became clear that consumers (notably workflowDeliver_implement) can read `requirements.md` directly from `workitems/<id>/` without going through the CLI. No `read` subcommand exists on either `swc_workload` or `swc workload`.
 - **REQ-23** (event) — WHEN `exists` runs, the CLI SHALL emit a boolean for whether a workload exists for the current branch.
-- **REQ-24** (event) — WHEN `complete?` runs, the CLI SHALL emit a boolean for whether the workload is populated and confirmed complete.
+- **REQ-24** (removed) — `complete?` was a planned op for checking whether a workload was populated and marked complete. Removed during phase 1 — no consumer materialised, and the underlying `complete` flag was never wired into a workflow-complete op. The `complete` boolean has also been dropped from the `workload.json` schema; it can be added back later if a future workflow-complete op needs it.
 
 ### Missing prerequisites
 - **REQ-25** (unwanted) — IF a non-`init`, non-`exists` op runs on a branch with no workload, THEN the CLI SHALL exit non-zero with an error recommending `init`.
@@ -335,18 +335,9 @@ Scenario: exists returns false
   And the CLI exits 0
 ```
 
-### REQ-24 — complete? check
-```gherkin
-Scenario: complete? on a populated, confirmed workload
-  Given the workload has items and is marked complete
-  When I run `swc workload complete?`
-  Then the output is a truthy boolean
+### REQ-24 — removed (`complete?` check)
 
-Scenario: complete? on an empty workload
-  Given the workload exists but has no items
-  When I run `swc workload complete?`
-  Then the output is a falsy boolean
-```
+The `complete?` op was removed during phase 1. See the REQ-24 entry under Requirements above.
 
 ### REQ-25 — op on missing workload
 ```gherkin
