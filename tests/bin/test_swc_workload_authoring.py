@@ -1,4 +1,4 @@
-"""Tier 1 — direct tests against `cli/swc_workload --workload <tmp-path>`.
+"""Tier 1 — direct tests against `bin/swc_workload --workload <tmp-path>`.
 
 Authoring ops (add / delete / rename / move) — covers the
 tree-manipulation edge cases that don't depend on branch resolution:

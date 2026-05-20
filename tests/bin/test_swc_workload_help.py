@@ -1,4 +1,4 @@
-"""Tier 1 — direct tests against `cli/swc_workload --help` and subcommand help.
+"""Tier 1 — direct tests against `bin/swc_workload --help` and subcommand help.
 
 These confirm REQ-29 holds at the bottom layer; the swc-tier equivalents
 (swc workload --help) are covered separately and exercise the wrapper's
@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SWC_WORKLOAD = Path(__file__).resolve().parent.parent.parent / "cli" / "swc_workload"
+SWC_WORKLOAD = Path(__file__).resolve().parent.parent.parent / "bin" / "swc_workload"
 
 
 def _run(*args):

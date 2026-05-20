@@ -1,4 +1,4 @@
-"""Tier 1 — direct tests against `cli/swc_workload --workload <tmp-folder>`.
+"""Tier 1 — direct tests against `bin/swc_workload --workload <tmp-folder>`.
 
 Read / report ops (list / show / find / summary), JSON output,
 schema validation, and JSON-decode error path. These don't depend on

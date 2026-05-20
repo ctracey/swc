@@ -1,4 +1,4 @@
-"""Tier 2 — scenario tests against the user-facing `cli/swc workload <op>` wrapper.
+"""Tier 2 — scenario tests against the user-facing `bin/swc workload <op>` wrapper.
 
 Lifecycle: REQ-01 (init creates workload + registers in _meta.json),
 REQ-02 (init refuses to overwrite existing).

@@ -2,11 +2,11 @@
 
 Two tiers live here:
 
-* `tests/cli/test_swc_workload_*.py` — direct tests against `cli/swc_workload`.
+* `tests/bin/test_swc_workload_*.py` — direct tests against `bin/swc_workload`.
   No git, no _meta.json. Tests pass `--workload <tmp-path>` explicitly.
 
-* `tests/cli/test_swc_*.py` — scenario tests against the user-facing
-  `cli/swc workload <op>` wrapper. Need a git-aware repo; uses the
+* `tests/bin/test_swc_*.py` — scenario tests against the user-facing
+  `bin/swc workload <op>` wrapper. Need a git-aware repo; uses the
   `swc_repo` fixture below which creates a tmp git repo + branch.
 
 Both tiers invoke the CLIs via subprocess so the argparse surface (and the
@@ -23,8 +23,8 @@ from pathlib import Path
 import pytest
 
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent.parent
-SWC_WORKLOAD = PLUGIN_ROOT / "cli" / "swc_workload"
-SWC = PLUGIN_ROOT / "cli" / "swc"
+SWC_WORKLOAD = PLUGIN_ROOT / "bin" / "swc_workload"
+SWC = PLUGIN_ROOT / "bin" / "swc"
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ def _run(cmd: list[str], cwd: Path | None = None, env: dict | None = None):
 
 
 def run_swc_workload(*args, workload: Path | None = None):
-    """Invoke `cli/swc_workload` as a subprocess.
+    """Invoke `bin/swc_workload` as a subprocess.
 
     `args` is the full arg list as passed on the command line — including
     `--workload` if the test wants to position it elsewhere. If `workload`
@@ -127,7 +127,7 @@ def swc_repo(tmp_path):
 
 
 def run_swc(*args, cwd: Path):
-    """Invoke `cli/swc` against the given repo cwd.
+    """Invoke `bin/swc` against the given repo cwd.
 
     Uses SWC_REPO_ROOT and SWC_BRANCH to lock context resolution to the
     fixture's repo regardless of where pytest is invoked from. The CLI

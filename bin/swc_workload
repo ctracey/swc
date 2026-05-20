@@ -5,11 +5,11 @@ Path-driven: takes `--workload <folder>` on every op. The folder must
 contain (or, for `init`, will contain) a `workload.json` file — the file
 name is convention-locked. Knows nothing about git branches,
 `.swc/_meta.json`, or context resolution. The user-facing
-`swc workload <op>` command (in `cli/swc`) resolves the folder and
+`swc workload <op>` command (in `bin/swc`) resolves the folder and
 forwards the op here.
 
 Invocation:
-    python3 cli/swc_workload <op> --workload <folder> [args]
+    python3 bin/swc_workload <op> --workload <folder> [args]
 """
 
 from __future__ import annotations

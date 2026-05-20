@@ -1,4 +1,4 @@
-"""Tier 1 — direct tests against `cli/swc_workload --workload <tmp-path>`.
+"""Tier 1 — direct tests against `bin/swc_workload --workload <tmp-path>`.
 
 Status updates, rollup, downgrade-guard, and the parent-marked-done warning
 path. These are the highest-risk behaviours per solution.md, so they're
