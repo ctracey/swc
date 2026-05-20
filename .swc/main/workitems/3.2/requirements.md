@@ -167,9 +167,9 @@ These are open questions and design decisions to work through before specs are s
 - Wording + content of the install-guidance prompt when `swc-workload` is missing.
 - Where the architecture docs that the prompt references will live.
 
-### List report formatting
-- What does the default list look like? (Current `workload.py` output is a good baseline.)
-- How are IDs shown when `--show-ids` is on — inline, trailing column, separate line?
+### List report formatting (resolved)
+- Default list mirrors the existing `workload.py` shape: one item per line, indented by depth, prefixed with the status symbol, then the number, hash in parentheses, title.
+- Hash IDs are shown by default. Opt out with `--no-ids` (there is no `--show-ids` flag — it would always be a no-op).
 
 ### Hook design
 - Where does the pre-edit hook live? Plugin-level hook? settings.json?
