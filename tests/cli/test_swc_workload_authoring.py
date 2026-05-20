@@ -29,15 +29,21 @@ def test_add_appends_top_level_item_with_hash_id(swcw_ready):
     assert len(items[2]["id"]) == 7
 
 
-def test_add_assigns_unique_hashes_when_titles_collide(swcw_ready):
-    """Hash uniqueness — same title added twice must produce two distinct IDs."""
+def test_add_assigns_unique_hashes_when_titles_collide_across_parents(swcw_ready):
+    """Hash uniqueness — same title under different parents must produce
+    distinct hash IDs (sibling-collision check is same-parent only, so the
+    duplicate is allowed across parents).
+    """
     run, workload = swcw_ready
     run("add", "duplicate title")
-    run("add", "duplicate title")
+    run("add", "duplicate title", "--parent", "1")
     listed = run("list", "--json")
-    items = json.loads(listed.stdout)["items"]
-    ids = [i["id"] for i in items]
-    assert len(set(ids)) == 2, f"expected unique hash IDs, got {ids}"
+    top = json.loads(listed.stdout)["items"][0]
+    child = top["children"][0]
+    assert top["id"] != child["id"], (
+        f"expected distinct hashes for same title under different parents, "
+        f"got {top['id']} and {child['id']}"
+    )
 
 
 def test_add_rejects_dotted_number_prefix_title(swcw_ready):
@@ -64,6 +70,38 @@ def test_add_as_child_of_parent(swcw_ready):
     assert result.returncode == 0, result.stderr
     items = json.loads(run("list", "--json").stdout)["items"]
     assert items[1]["children"][0]["title"] == "sub item"
+    assert items[1]["children"][0]["number"] == "2.1"
+
+
+def test_add_rejects_duplicate_sibling_title(swcw_ready):
+    """Two siblings cannot share a title (full-string match, case-insensitive)."""
+    run, workload = swcw_ready
+    run("add", "first")
+    result = run("add", "first")
+    assert result.returncode != 0
+    msg = result.stderr.lower()
+    assert "collide" in msg or "first" in msg
+
+
+def test_add_rejects_case_variant_duplicate_sibling_title(swcw_ready):
+    """ASDF and asdf are considered the same title for sibling-collision purposes."""
+    run, workload = swcw_ready
+    run("add", "ASDF")
+    result = run("add", "asdf")
+    assert result.returncode != 0
+    assert "collide" in result.stderr.lower()
+
+
+def test_add_allows_same_title_under_different_parent(swcw_ready):
+    """Sibling-collision is same-parent only — different parents may share titles."""
+    run, workload = swcw_ready
+    run("add", "alpha")  # top-level 1
+    run("add", "beta")   # top-level 2
+    result = run("add", "alpha", "--parent", "2")
+    assert result.returncode == 0, result.stderr
+    items = json.loads(run("list", "--json").stdout)["items"]
+    assert items[0]["title"] == "alpha"
+    assert items[1]["children"][0]["title"] == "alpha"
     assert items[1]["children"][0]["number"] == "2.1"
 
 
@@ -123,6 +161,50 @@ def test_rename_rejects_dotted_number_prefix(swcw_ready):
     assert result.returncode != 0
     items = json.loads(run("list", "--json").stdout)["items"]
     assert items[0]["title"] == "first"
+
+
+def test_rename_rejects_duplicate_sibling_title(swcw_ready):
+    """Renaming an item to a sibling's title is rejected (case-insensitive)."""
+    run, workload = swcw_ready
+    run("add", "alpha")
+    run("add", "beta")
+    result = run("rename", "2", "ALPHA")
+    assert result.returncode != 0
+    msg = result.stderr.lower()
+    assert "collide" in msg or "alpha" in msg
+    items = json.loads(run("list", "--json").stdout)["items"]
+    # Original title preserved.
+    assert items[1]["title"] == "beta"
+
+
+def test_rename_allows_no_op_self_rename(swcw_ready):
+    """Renaming an item to its current title is a no-op, not a collision."""
+    run, workload = swcw_ready
+    run("add", "alpha")
+    result = run("rename", "1", "alpha")
+    assert result.returncode == 0, result.stderr
+
+
+def test_rename_allows_case_change_of_own_title(swcw_ready):
+    """Renaming an item to a case-variant of its own title is allowed
+    (the item is excluded from its own collision check)."""
+    run, workload = swcw_ready
+    run("add", "alpha")
+    result = run("rename", "1", "ALPHA")
+    assert result.returncode == 0, result.stderr
+    items = json.loads(run("list", "--json").stdout)["items"]
+    assert items[0]["title"] == "ALPHA"
+
+
+def test_rename_allows_same_title_as_non_sibling(swcw_ready):
+    """Renaming to a title that exists elsewhere in the tree (but not as a
+    sibling) is allowed."""
+    run, workload = swcw_ready
+    run("add", "alpha")  # 1
+    run("add", "beta")   # 2
+    run("add", "gamma", "--parent", "1")  # 1.1
+    result = run("rename", "2", "gamma")  # not a sibling of 1.1
+    assert result.returncode == 0, result.stderr
 
 
 # ---------------------------------------------------------------------------
