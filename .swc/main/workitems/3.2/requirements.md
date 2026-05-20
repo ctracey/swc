@@ -99,7 +99,7 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 - `reparent` — change item hierarchy (e.g. 2.4.1 → sibling of 2.4, or sibling → child)
 
 ### Status
-- Set status (`done` / `in-progress` / `not-started`)
+- Set status via three single-argument subcommands: `reset <ref>` → not-started, `start <ref>` → in-progress, `complete <ref>` → done
 - Roll up parent automatically
 - Never downgrade `[x]` silently
 

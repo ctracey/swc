@@ -595,8 +595,16 @@ def cmd_move(args) -> int:
     )
 
 
-def cmd_status(args) -> int:
-    new_status = normalise_status(args.status)
+def _set_status(args, new_status: str, *, allow_downgrade: bool = False) -> int:
+    """Shared status-mutation logic for `reset`, `start`, `complete`.
+
+    `allow_downgrade=True` (used by `reset`) bypasses the done-sticky guard so
+    an explicit `reset <done item>` actually resets. Otherwise, a transition
+    that would downgrade `done` is silently preserved (file unchanged, exit 0).
+
+    Parent edits keep the user's value with a stderr warning when children
+    disagree; leaf edits flow through full rollup.
+    """
     path, data = _load(args)
     items = data["items"]
     found = find_by_ref(items, args.ref)
@@ -604,8 +612,11 @@ def cmd_status(args) -> int:
         raise CLIError(f"item {args.ref} not found")
     item, _, _, _ = found
 
-    # Done is sticky: silently preserve done.
-    if item["status"] == STATUS_DONE and new_status != STATUS_DONE:
+    if (
+        not allow_downgrade
+        and item["status"] == STATUS_DONE
+        and new_status != STATUS_DONE
+    ):
         # No file write, no error, exit 0.
         if args.json:
             print(json.dumps({"id": item["id"], "status": STATUS_DONE, "preserved": True}))
@@ -615,8 +626,6 @@ def cmd_status(args) -> int:
 
     item["status"] = new_status
 
-    # Direct parent edits: keep the user's value, warn if children disagree,
-    # re-derive only the ancestors above. Leaf edits flow through full rollup.
     if item.get("children"):
         if new_status == STATUS_DONE:
             not_done = [c for c in item["children"] if c["status"] != STATUS_DONE]
@@ -634,6 +643,21 @@ def cmd_status(args) -> int:
     else:
         print(f"[{item['id']}] -> {new_status}")
     return 0
+
+
+def cmd_reset(args) -> int:
+    """Set status to not-started. Done items ARE reset — this is an explicit verb."""
+    return _set_status(args, STATUS_NOT_STARTED, allow_downgrade=True)
+
+
+def cmd_start(args) -> int:
+    """Set status to in-progress. Silently preserved if item is already done."""
+    return _set_status(args, STATUS_IN_PROGRESS)
+
+
+def cmd_complete(args) -> int:
+    """Set status to done. Warns on stderr if the item has children that aren't all done."""
+    return _set_status(args, STATUS_DONE)
 
 
 def _rollup_ancestors(items: list[dict], item_id: str) -> None:
@@ -921,14 +945,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_del.add_argument("ref", help=ref_help)
     p_del.set_defaults(func=cmd_delete)
 
-    p_st = add_sub(
-        "status",
-        help="Set status: not-started | in-progress | done.",
-        description="Set the status of a work item. Parent statuses re-roll automatically (all-done → done; any in-progress or partial-done → in-progress; all not-started → not-started). A direct downgrade of a `done` item is silently preserved (file unchanged, exits 0).",
+    p_reset = add_sub(
+        "reset",
+        help="Mark a work item as not-started (re-opens done items too).",
+        description="Set the work item's status to not-started. Parent ancestors re-roll. `reset` is an explicit verb — it WILL re-open a done item, unlike `start`, which preserves done.",
     )
-    p_st.add_argument("ref", help=ref_help)
-    p_st.add_argument("status", help="New status. One of: not-started, in-progress, done.")
-    p_st.set_defaults(func=cmd_status)
+    p_reset.add_argument("ref", help=ref_help)
+    p_reset.set_defaults(func=cmd_reset)
+
+    p_start = add_sub(
+        "start",
+        help="Mark a work item as in-progress.",
+        description="Set the work item's status to in-progress. Parent ancestors re-roll. A done item is silently preserved (file unchanged, exits 0).",
+    )
+    p_start.add_argument("ref", help=ref_help)
+    p_start.set_defaults(func=cmd_start)
+
+    p_complete = add_sub(
+        "complete",
+        help="Mark a work item as done.",
+        description="Set the work item's status to done. Parent ancestors re-roll. If the item has children that are not all done, a warning is emitted to stderr but the change is accepted.",
+    )
+    p_complete.add_argument("ref", help=ref_help)
+    p_complete.set_defaults(func=cmd_complete)
 
     p_mv = add_sub(
         "move",

@@ -105,8 +105,8 @@ def test_list_renders_full_tree_with_symbols(swcw_ready):
     run("add", "one")
     run("add", "two")
     run("add", "2a", "--parent", "2")
-    run("status", "1", "done")
-    run("status", "2.1", "in-progress")
+    run("complete", "1")
+    run("start", "2.1")
 
     result = run("list")
     assert result.returncode == 0
@@ -126,8 +126,8 @@ def test_list_filter_status_in_progress(swcw_ready):
     run("add", "a")
     run("add", "b")
     run("add", "c")
-    run("status", "1", "done")
-    run("status", "2", "in-progress")
+    run("complete", "1")
+    run("start", "2")
 
     result = run("list", "--filter", "status:in-progress", "--json")
     assert result.returncode == 0
@@ -143,8 +143,8 @@ def test_list_exclude_status_done(swcw_ready):
     run("add", "a")
     run("add", "b")
     run("add", "c")
-    run("status", "1", "done")
-    run("status", "2", "in-progress")
+    run("complete", "1")
+    run("start", "2")
 
     result = run("list", "--exclude", "status:done", "--json")
     assert result.returncode == 0
@@ -186,7 +186,7 @@ def test_list_with_ref_and_filter_scopes_to_subtree(swcw_ready):
     run("add", "a", "--parent", "1")
     run("add", "b", "--parent", "1")
     run("add", "c", "--parent", "1")
-    run("status", "1.2", "in-progress")
+    run("start", "1.2")
 
     result = run("list", "1", "--filter", "status:in-progress", "--json")
     assert result.returncode == 0, result.stderr
@@ -208,9 +208,9 @@ def test_summary_partial(swcw_ready):
     for i in range(10):
         run("add", f"item {i}")
     for i in range(1, 5):
-        run("status", str(i), "done")
+        run("complete", str(i))
     for i in range(5, 8):
-        run("status", str(i), "in-progress")
+        run("start", str(i))
 
     result = run("summary", "--json")
     assert result.returncode == 0
@@ -225,7 +225,7 @@ def test_summary_text_includes_wip(swcw_ready):
     run, workload = swcw_ready
     run("add", "a")
     run("add", "b")
-    run("status", "1", "in-progress")
+    run("start", "1")
     result = run("summary")
     assert result.returncode == 0
     assert "wip=1" in result.stdout
