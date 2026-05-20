@@ -21,7 +21,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 1. **Init** — developer runs `swc workload init` on a new branch; CLI creates `workload.json` and registers branch in `_meta.json`.
 2. **Author** — developer adds, renames, deletes items; CLI assigns hash IDs; numbers reflow on every structural change.
 3. **Edit structure** — developer reorders within a parent or moves across parents; IDs stay stable, numbers reflow.
-4. **Status flow** — skill or developer transitions item between `not-started → in-progress → done`; parent rolls up automatically.
+4. **Status flow** — skill or developer transitions item between `not-started → in-progress → done` via `reset` / `start` / `complete`; parent rolls up automatically.
 5. **Read** — `list` (full tree or `list <ref>` for a subtree), `find` for developer; `summary`, `exists` for skills.
 6. **Bridge to docs** — `ship` skill queries CLI to match changed files against items.
 
@@ -34,7 +34,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 
 9. **Direct edit attempt** — agent tries to edit `workload.json`; pre-edit hook blocks the write and instructs use of the CLI.
 10. **Title with number prefix** — `add "1.1 something"` rejected with clear message.
-11. **Status downgrade** — `status <done item> not-started` silently preserves done.
+11. **Status downgrade** — `reset <done item>` (or `start <done item>`) silently preserves done.
 12. **Move cycle** — `move 2.3 to 2.3.1` rejected with clear cycle message.
 13. **Move target missing parent** — rejected with clear error.
 14. **Op on branch with no workload** — non-`init`, non-`exists` op exits non-zero recommending `init`.
@@ -59,8 +59,8 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-11** (unwanted) — IF the move target's parent does not exist, THEN the CLI SHALL reject with a clear error.
 
 ### Status
-- **REQ-12** (event) — WHEN `status <item> <not-started|in-progress|done>` runs, the CLI SHALL update the item and re-roll the parent (all-done → done; any-in-progress-or-partial-done → in-progress; all-not-started → not-started).
-- **REQ-13** (unwanted) — IF the requested transition would downgrade a `done` item, THEN the CLI SHALL silently preserve `done` (no error, no file change) and exit 0.
+- **REQ-12** (event) — WHEN `reset <item>` / `start <item>` / `complete <item>` runs, the CLI SHALL set the item's status (to `not-started` / `in-progress` / `done` respectively) and re-roll the parent (all-done → done; any-in-progress-or-partial-done → in-progress; all-not-started → not-started).
+- **REQ-13** (unwanted) — IF `start` is invoked on a `done` item, THEN the CLI SHALL silently preserve `done` (no error, no file change) and exit 0. `reset` is an explicit re-open verb and SHALL change a `done` item back to `not-started`.
 
 ### Lookup / resolution
 - **REQ-14** (state) — WHILE `find` or `list --filter` matches multiple items, the CLI SHALL return all matches in the output (no disambiguation prompt — caller decides what to do).
@@ -230,27 +230,33 @@ Scenario: move to non-existent parent
 
 ### REQ-12 — status update and parent rollup
 ```gherkin
-Scenario: marking a child in-progress rolls parent to in-progress
+Scenario: `start` on a child rolls parent to in-progress
   Given parent 3 has children 3.1 [ ], 3.2 [ ]
-  When I run `swc workload status 3.2 in-progress`
+  When I run `swc workload start 3.2`
   Then 3.2 is [-]
   And 3 is [-]
 
-Scenario: marking the last child done rolls parent to done
+Scenario: `complete` on the last child rolls parent to done
   Given parent 3 has children 3.1 [x], 3.2 [-]
-  When I run `swc workload status 3.2 done`
+  When I run `swc workload complete 3.2`
   Then 3.2 is [x]
   And 3 is [x]
 ```
 
-### REQ-13 — downgrade preserves done
+### REQ-13 — `start` preserves done; `reset` re-opens
 ```gherkin
-Scenario: attempt to downgrade done item
+Scenario: `start` on a done item silently preserves done
   Given item 1 is [x]
-  When I run `swc workload status 1 in-progress`
+  When I run `swc workload start 1`
   Then item 1 is still [x]
   And the CLI exits 0
   And the file on disk is unchanged
+
+Scenario: `reset` on a done item re-opens it
+  Given item 1 is [x]
+  When I run `swc workload reset 1`
+  Then item 1 is [ ]
+  And the CLI exits 0
 ```
 
 ### REQ-14 — multi-match for find / list filter
@@ -467,7 +473,7 @@ Scenario: self-rename is allowed (case-variant of own title)
 | Field | Type | Required | Rules |
 |---|---|---|---|
 | Title (add / rename) | string | yes | non-empty; must NOT start with a number-prefix pattern (digits + optional dotted digits + whitespace); must NOT match an existing sibling's title (full-string, case-insensitive); `rename` excludes the item being renamed from its own collision check |
-| Status | enum | yes | one of `not-started`, `in-progress`, `done` |
+| Status | enum | yes | one of `not-started`, `in-progress`, `done` — selected via the `reset` / `start` / `complete` subcommands rather than a single `status <value>` op |
 | Reorder direction | enum | yes | one of `up`, `down`, `top`, `bottom` |
 | Item reference | string | yes | number (e.g. `3.2`) or hash ID; resolves against current tree |
 | Move target | string | yes | number or top-level number; parent path must exist; cycle rejected |

@@ -21,7 +21,7 @@ def test_marking_child_in_progress_rolls_parent_to_in_progress(swcw_ready):
     run("add", "3a", "--parent", "3")
     run("add", "3b", "--parent", "3")
 
-    result = run("status", "3.2", "in-progress")
+    result = run("start", "3.2")
     assert result.returncode == 0, result.stderr
 
     after = json.loads(run("list", "--json").stdout)["items"]
@@ -36,9 +36,9 @@ def test_marking_last_child_done_rolls_parent_to_done(swcw_ready):
     run("add", "a", "--parent", "1")
     run("add", "b", "--parent", "1")
 
-    run("status", "1.1", "done")
-    run("status", "1.2", "in-progress")
-    result = run("status", "1.2", "done")
+    run("complete", "1.1")
+    run("start", "1.2")
+    result = run("complete", "1.2")
     assert result.returncode == 0, result.stderr
 
     after = json.loads(run("list", "--json").stdout)["items"]
@@ -52,19 +52,39 @@ def test_marking_last_child_done_rolls_parent_to_done(swcw_ready):
 # ---------------------------------------------------------------------------
 
 
-def test_done_is_sticky_and_leaves_file_unchanged(swcw_ready):
+def test_start_on_done_is_sticky_and_leaves_file_unchanged(swcw_ready):
+    """`start` on a done item is silently preserved — file unchanged, exit 0.
+    Done-sticky still applies to `start`; `reset` is the explicit re-open verb."""
     run, workload = swcw_ready
     run("add", "leaf")
-    run("status", "1", "done")
+    run("complete", "1")
 
     original = workload.read_text()
-    result = run("status", "1", "in-progress")
+    result = run("start", "1")
     assert result.returncode == 0, result.stderr
 
     assert workload.read_text() == original
 
     after = json.loads(run("list", "--json").stdout)["items"]
     assert after[0]["status"] == "done"
+
+
+def test_reset_on_done_re_opens_it(swcw_ready):
+    """`reset` is an explicit verb and DOES re-open a done item.
+
+    This is the deliberate exception to the done-sticky rule that applies to
+    `start`: `reset` is unambiguous user intent to re-open.
+    """
+    run, workload = swcw_ready
+    run("add", "leaf")
+    run("complete", "1")
+    assert json.loads(run("list", "--json").stdout)["items"][0]["status"] == "done"
+
+    result = run("reset", "1")
+    assert result.returncode == 0, result.stderr
+
+    after = json.loads(run("list", "--json").stdout)["items"]
+    assert after[0]["status"] == "not-started"
 
 
 # ---------------------------------------------------------------------------
@@ -79,10 +99,10 @@ def test_parent_marked_done_with_undone_children_warns_on_stderr(swcw_ready):
     run("add", "b", "--parent", "1")
     run("add", "c", "--parent", "1")
 
-    run("status", "1.1", "done")
+    run("complete", "1.1")
     before = workload.read_text()
 
-    result = run("status", "1", "done")
+    result = run("complete", "1")
     assert result.returncode == 0, result.stderr
     msg = result.stderr.lower()
     assert "warning" in msg

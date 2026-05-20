@@ -138,7 +138,7 @@ def test_rename_preserves_id_status_position(swcw_ready):
     run("add", "x", "--parent", "2")
     run("add", "y", "--parent", "2")
     run("add", "target", "--parent", "2")
-    run("status", "2.3", "in-progress")
+    run("start", "2.3")
 
     before = json.loads(run("list", "--json").stdout)["items"]
     target_id = before[1]["children"][2]["id"]
@@ -370,7 +370,7 @@ def test_move_leaves_orphaned_parent_status_untouched(swcw_ready):
     run("add", "one")
     run("add", "parent")
     run("add", "kid", "--parent", "2")
-    run("status", "2.1", "in-progress")
+    run("start", "2.1")
 
     before = json.loads(run("list", "--json").stdout)["items"]
     assert before[1]["status"] == "in-progress"
