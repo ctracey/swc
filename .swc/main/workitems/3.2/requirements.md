@@ -66,12 +66,15 @@ Workloads stay branch-scoped. No concurrency primitives, no automatic merge supp
 - CLI lookup accepts numbers as input (`swc workload show 2.3.1`) and resolves them against the current tree state.
 - `list`, `show`, and report output still display numbers — they're the human-facing reference.
 
-### Authoring — reorder & move
-- `reorder <item> <direction>` — relative movement within current parent. Directions: `up`, `down`, `top`, `bottom`. Siblings reflow; IDs unchanged.
-- `move <item> to <target>` — absolute position. May reparent (e.g. `move 2.3.1 to 3.2`) or stay within parent (e.g. `move 2.3 to 2.7`). Validates target parent exists; rejects cycles (moving an item into its own subtree).
-- Neither operation replaces existing items — siblings at the destination shift to make room.
+### Authoring — `move` (consolidated)
+A single `move` subcommand handles both relative shifts and absolute repositioning, dispatched on the second positional:
+- `move <item> <up|down|top|bottom>` — relative shift within current parent. Siblings reflow; IDs and parent unchanged.
+- `move <item> to <target>` — absolute position. The literal `to` keyword is **required**. May reparent (e.g. `move 2.3.1 to 3.2`) or stay within parent (e.g. `move 2.3 to 2.7`). Validates target parent exists; rejects cycles (moving an item into its own subtree).
+- Neither form replaces existing items — siblings at the destination shift to make room.
 - When moving across parents, **both** the old parent's children and the new parent's children renumber.
-- IDs never change on reorder or move; only the rendered number changes.
+- IDs never change on move; only the rendered number changes.
+
+The original separate `reorder` subcommand was folded into `move` during phase 1 — single verb, single concept, dispatched on the second positional.
 
 ## Approach direction
 
@@ -92,7 +95,7 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 - `add` — add a work item (title only; CLI assigns number; validate no number prefix in title)
 - `delete` — delete a work item
 - `rename` — rename a work item (title only; ID and status preserved)
-- `reorder` — change item order among siblings (mechanism — see Parked)
+- ~~`reorder`~~ — folded into `move <item> <up|down|top|bottom>` during phase 1. See "Authoring — `move` (consolidated)" above.
 - `reparent` — change item hierarchy (e.g. 2.4.1 → sibling of 2.4, or sibling → child)
 
 ### Status
