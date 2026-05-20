@@ -72,7 +72,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-18** (event) — WHEN `list` runs with `--filter` / `--filter-out`, the CLI SHALL respect the filter and render only matching / non-matching items.
 - **REQ-19** (event) — WHEN `show <item>` runs, the CLI SHALL render that item plus its immediate descendants.
 - **REQ-20** (event) — WHEN `find <keyword>` runs, the CLI SHALL return all items whose title matches.
-- **REQ-21** (event) — WHEN `summary` runs, the CLI SHALL emit total count, done count, and progress percentage.
+- **REQ-21** (event) — WHEN `summary` runs, the CLI SHALL emit total count, done count, in-progress (wip) count, and progress percentage.
 - **REQ-22** (removed) — `read <item>` was a planned machine-readable item-detail op. Removed during phase 1 once it became clear that consumers (notably workflowDeliver_implement) can read `requirements.md` directly from `workitems/<id>/` without going through the CLI. No `read` subcommand exists on either `swc_workload` or `swc workload`.
 - **REQ-23** (event) — WHEN `exists` runs, the CLI SHALL emit a boolean for whether a workload exists for the current branch.
 - **REQ-24** (removed) — `complete?` was a planned op for checking whether a workload was populated and marked complete. Removed during phase 1 — no consumer materialised, and the underlying `complete` flag was never wired into a workflow-complete op. The `complete` boolean has also been dropped from the `workload.json` schema; it can be added back later if a future workflow-complete op needs it.
@@ -318,9 +318,9 @@ Scenario: find single match
 ### REQ-21 — summary
 ```gherkin
 Scenario: summary on a partially complete workload
-  Given a workload with 10 items, 4 of which are [x]
+  Given a workload with 10 items, 4 of which are [x] and 3 of which are [-]
   When I run `swc workload summary`
-  Then the output reports total=10, done=4, progress=40%
+  Then the output reports total=10, done=4, wip=3, progress=40%
 ```
 
 ### REQ-22 — removed (read item details)
