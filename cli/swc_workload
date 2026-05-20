@@ -823,8 +823,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_list = add_sub(
         "list",
-        help="Render the full workload tree.",
-        description="Render the workload tree with status symbols. Filters can be combined: repeating --filter ANDs across keys; comma-separated values OR within a key.",
+        help="Display the full workload tree (optional filters)",
+        description="Display the workload tree with status symbols. Filters can be combined: repeating --filter ANDs across keys; comma-separated values OR within a key.",
     )
     p_list.add_argument("--filter", action="append",
                         help="Include filter — key:val[,val…]. Supported keys: status. Repeatable.")
