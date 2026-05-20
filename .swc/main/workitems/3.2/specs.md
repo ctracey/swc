@@ -22,7 +22,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 2. **Author** — developer adds, renames, deletes items; CLI assigns hash IDs; numbers reflow on every structural change.
 3. **Edit structure** — developer reorders within a parent or moves across parents; IDs stay stable, numbers reflow.
 4. **Status flow** — skill or developer transitions item between `not-started → in-progress → done`; parent rolls up automatically.
-5. **Read** — `list`, `show`, `find` for developer; `summary`, `exists` for skills.
+5. **Read** — `list` (full tree or `list <ref>` for a subtree), `find` for developer; `summary`, `exists` for skills.
 6. **Bridge to docs** — `ship` skill queries CLI to match changed files against items.
 
 ### Non-happy / alt paths
@@ -68,9 +68,9 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-16** (unwanted) — IF a reference does not resolve to exactly one item, THEN the CLI SHALL exit non-zero with a clear "not found" message.
 
 ### Read / report
-- **REQ-17** (event) — WHEN `list` runs with no filters, the CLI SHALL render the full tree with visual status symbols.
-- **REQ-18** (event) — WHEN `list` runs with `--filter` / `--filter-out`, the CLI SHALL respect the filter and render only matching / non-matching items.
-- **REQ-19** (event) — WHEN `show <item>` runs, the CLI SHALL render that item plus its immediate descendants.
+- **REQ-17** (event) — WHEN `list` runs with no `ref` and no filters, the CLI SHALL render the full tree with visual status symbols.
+- **REQ-18** (event) — WHEN `list` runs with `--filter` / `--exclude` and no `ref`, the CLI SHALL respect the filter and render only matching / non-matching items.
+- **REQ-19** (event) — WHEN `list <ref>` runs (item reference supplied), the CLI SHALL render that item plus its descendants. Filters (`--filter` / `--exclude`) are also accepted and apply to the subtree — a parent is kept when any descendant matches.
 - **REQ-20** (event) — WHEN `find <keyword>` runs, the CLI SHALL return all items whose title matches.
 - **REQ-21** (event) — WHEN `summary` runs, the CLI SHALL emit total count, done count, in-progress (wip) count, and progress percentage.
 - **REQ-22** (removed) — `read <item>` was a planned machine-readable item-detail op. Removed during phase 1 once it became clear that consumers (notably workflowDeliver_implement) can read `requirements.md` directly from `workitems/<id>/` without going through the CLI. No `read` subcommand exists on either `swc_workload` or `swc workload`.
@@ -265,20 +265,20 @@ Scenario: find with multiple matches
 ### REQ-15 — resolve single by number or ID
 ```gherkin
 Scenario: resolve by number
-  When I run `swc workload show 3.2`
+  When I run `swc workload list 3.2`
   Then the CLI prints the item at number 3.2 and its children
   And the CLI exits 0
 
 Scenario: resolve by hash ID
   Given item 3.2 has hash <H>
-  When I run `swc workload show <H>`
+  When I run `swc workload list <H>`
   Then the CLI prints the same item
 ```
 
 ### REQ-16 — reference not found
 ```gherkin
 Scenario: reference does not resolve
-  When I run `swc workload show 9.9`
+  When I run `swc workload list 9.9`
   Then the CLI exits non-zero
   And the error states the item was not found
 ```
@@ -298,18 +298,25 @@ Scenario: list with match filter
   Then only items whose status is [-] are printed
 
 Scenario: list with exclude filter
-  When I run `swc workload list --filter-out status:done`
+  When I run `swc workload list --exclude status:done`
   Then items with status [x] are omitted
   And all other items are printed
 ```
 
-### REQ-19 — show item with children
+### REQ-19 — `list <ref>` renders item plus descendants
 ```gherkin
-Scenario: show item plus children
+Scenario: list a single item plus its children
   Given item 3 has children 3.1, 3.2
-  When I run `swc workload show 3`
+  When I run `swc workload list 3`
   Then the output contains item 3
   And the output contains items 3.1 and 3.2
+
+Scenario: list with ref + filter scopes to the subtree
+  Given item 3 has children 3.1 [ ], 3.2 [-], 3.3 [ ]
+  When I run `swc workload list 3 --filter status:in-progress`
+  Then the output contains item 3
+  And the output contains item 3.2
+  And the output does NOT contain items 3.1 or 3.3
 ```
 
 ### REQ-20 — find by keyword

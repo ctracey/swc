@@ -58,7 +58,7 @@ def test_resolve_by_number(swcw_ready):
     run("add", "a", "--parent", "2")
     run("add", "b", "--parent", "2")
 
-    result = run("show", "2", "--json")
+    result = run("list", "2", "--json")
     assert result.returncode == 0, result.stderr
     items = json.loads(result.stdout)["items"]
     assert items[0]["number"] == "2"
@@ -75,7 +75,7 @@ def test_resolve_by_hash_id(swcw_ready):
     listed = json.loads(run("list", "--json").stdout)["items"]
     target_id = listed[1]["id"]
 
-    result = run("show", target_id, "--json")
+    result = run("list", target_id, "--json")
     assert result.returncode == 0
     items = json.loads(result.stdout)["items"]
     assert items[0]["id"] == target_id
@@ -90,7 +90,7 @@ def test_resolve_by_hash_id(swcw_ready):
 def test_reference_not_found(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
-    result = run("show", "9.9")
+    result = run("list", "9.9")
     assert result.returncode != 0
     assert "not found" in result.stderr.lower()
 
@@ -117,7 +117,7 @@ def test_list_renders_full_tree_with_symbols(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# REQ-18 — list with filter / filter-out
+# REQ-18 — list with --filter / --exclude
 # ---------------------------------------------------------------------------
 
 
@@ -138,7 +138,7 @@ def test_list_filter_status_in_progress(swcw_ready):
     assert "c" not in titles
 
 
-def test_list_filter_out_status_done(swcw_ready):
+def test_list_exclude_status_done(swcw_ready):
     run, workload = swcw_ready
     run("add", "a")
     run("add", "b")
@@ -146,7 +146,7 @@ def test_list_filter_out_status_done(swcw_ready):
     run("status", "1", "done")
     run("status", "2", "in-progress")
 
-    result = run("list", "--filter-out", "status:done", "--json")
+    result = run("list", "--exclude", "status:done", "--json")
     assert result.returncode == 0
     items = json.loads(result.stdout)["items"]
     titles = [i["title"] for i in items]
@@ -156,24 +156,46 @@ def test_list_filter_out_status_done(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# REQ-19 — show item plus children
+# REQ-19 — `list <ref>` renders that item plus its descendants
+# (folded into `list` from the former `show` subcommand)
 # ---------------------------------------------------------------------------
 
 
-def test_show_item_with_children(swcw_ready):
+def test_list_with_ref_renders_item_with_children(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "parent")
     run("add", "kid-a", "--parent", "2")
     run("add", "kid-b", "--parent", "2")
 
-    result = run("show", "2")
+    result = run("list", "2")
     assert result.returncode == 0
     out = result.stdout
     assert "parent" in out
     assert "kid-a" in out
     assert "kid-b" in out
     assert "one" not in out
+
+
+def test_list_with_ref_and_filter_scopes_to_subtree(swcw_ready):
+    """Filters apply to the subtree rooted at the ref'd item. apply_filters
+    keeps a parent when any descendant matches, so the ref'd item shows up
+    whenever something inside it matches."""
+    run, workload = swcw_ready
+    run("add", "parent")
+    run("add", "a", "--parent", "1")
+    run("add", "b", "--parent", "1")
+    run("add", "c", "--parent", "1")
+    run("status", "1.2", "in-progress")
+
+    result = run("list", "1", "--filter", "status:in-progress", "--json")
+    assert result.returncode == 0, result.stderr
+    items = json.loads(result.stdout)["items"]
+    # `parent` survives because a descendant matches; only the matching child remains.
+    assert len(items) == 1
+    assert items[0]["title"] == "parent"
+    titles = [c["title"] for c in items[0]["children"]]
+    assert titles == ["b"]
 
 
 # ---------------------------------------------------------------------------

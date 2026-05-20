@@ -63,8 +63,8 @@ Workloads stay branch-scoped. No concurrency primitives, no automatic merge supp
 ### Numbers are display-only
 - `workload.json` stores a tree of items (`id`, `title`, `status`, `parent` / `children`) — **no numbers**.
 - Numbers (`1.2.3`-style) are computed at render time from depth-first position in the tree.
-- CLI lookup accepts numbers as input (`swc workload show 2.3.1`) and resolves them against the current tree state.
-- `list`, `show`, and report output still display numbers — they're the human-facing reference.
+- CLI lookup accepts numbers as input (`swc workload list 2.3.1`) and resolves them against the current tree state.
+- `list` and report output still display numbers — they're the human-facing reference.
 
 ### Authoring — `move` (consolidated)
 A single `move` subcommand handles both relative shifts and absolute repositioning, dispatched on the second positional:
@@ -111,8 +111,8 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 ### Read / report
 - `list` — full workload, visual rendering with status symbols
 - `list --filter status:in-progress` — match filter (only items matching)
-- `list --filter-out status:done` — exclude filter (everything except matches)
-- `show <item>` — show a work item plus its child items
+- `list --exclude status:done` — exclude filter (everything except matches)
+- `list <item>` — render that work item plus its descendants. Filters also apply in this form, scoped to the subtree. (Folded in from the original `show` subcommand during phase 1 — one verb covers both the full tree and a single subtree.)
 - `find <keyword>` — replace ad-hoc grep usage in skills
 - `summary` — total count, done count, wip (in-progress) count, % progress (used by report-plan)
 - ~~`read <item>` — fetch a single item's name + description~~ — **removed during phase 1.** Consumers read `workitems/<id>/requirements.md` directly; the CLI does not need to wrap this access. See REQ-22 in specs.md.

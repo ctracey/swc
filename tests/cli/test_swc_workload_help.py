@@ -24,7 +24,7 @@ def test_top_level_help_lists_all_ops():
     result = _run("--help")
     assert result.returncode == 0
     out = result.stdout
-    for op in ("init", "add", "delete", "list", "show", "status", "exists"):
+    for op in ("init", "add", "delete", "list", "status", "exists"):
         assert op in out, f"top-level help missing {op!r}"
     # Should mention the required --workload flag.
     assert "--workload" in out or "swc workload" in out.lower()

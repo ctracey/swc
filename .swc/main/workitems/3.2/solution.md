@@ -56,7 +56,7 @@ Full TDD — write the test for each scenario in `specs.md` before implementing,
   - `--filter key:val` — single value.
   - `--filter key:val1,val2` — OR within key.
   - Repeating `--filter` — AND across keys.
-  - `--filter-out` — negation; same value semantics.
+  - `--exclude` — negation; same value semantics.
   - Supported keys for v1: `status`. Other keys deferred.
 - **Branch / file resolution (owned by `swc`):** `swc` reads `git branch --show-current` and looks up `.swc/_meta.json` to resolve a `workload.json` path. `swc init` writes the branch→folder mapping. `swc_workload` never touches `_meta.json` or git.
 - **CLI entry points:**
