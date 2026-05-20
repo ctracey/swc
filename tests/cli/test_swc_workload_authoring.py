@@ -1,6 +1,6 @@
 """Tier 1 — direct tests against `cli/swc_workload --workload <tmp-path>`.
 
-Authoring ops (add / delete / rename / reorder / move) — covers the
+Authoring ops (add / delete / rename / move) — covers the
 tree-manipulation edge cases that don't depend on branch resolution:
 hash uniqueness, move keyword validation, cycle rejection, same-parent move
 semantics, downgrade-guard, schema validation.
@@ -126,11 +126,11 @@ def test_rename_rejects_dotted_number_prefix(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# reorder
+# move — direction form (relative shift among siblings)
 # ---------------------------------------------------------------------------
 
 
-def test_reorder_up_preserves_ids(swcw_ready):
+def test_move_up_preserves_ids(swcw_ready):
     run, workload = swcw_ready
     run("add", "parent")
     for label in ("a", "b", "c"):
@@ -138,7 +138,7 @@ def test_reorder_up_preserves_ids(swcw_ready):
     before = json.loads(run("list", "--json").stdout)["items"][0]["children"]
     ids = [c["id"] for c in before]
 
-    result = run("reorder", "1.3", "up")
+    result = run("move", "1.3", "up")
     assert result.returncode == 0, result.stderr
 
     after = json.loads(run("list", "--json").stdout)["items"][0]["children"]
@@ -146,20 +146,31 @@ def test_reorder_up_preserves_ids(swcw_ready):
     assert {c["id"] for c in after} == set(ids)
 
 
-def test_reorder_top_moves_to_first_slot(swcw_ready):
+def test_move_top_moves_to_first_slot(swcw_ready):
     run, workload = swcw_ready
     run("add", "p")
     for label in ("a", "b", "c"):
         run("add", label, "--parent", "1")
-    result = run("reorder", "1.3", "top")
+    result = run("move", "1.3", "top")
     assert result.returncode == 0
     after = json.loads(run("list", "--json").stdout)["items"][0]["children"]
     assert [c["title"] for c in after] == ["c", "a", "b"]
     assert after[0]["number"] == "1.1"
 
 
+def test_move_direction_rejects_unexpected_target(swcw_ready):
+    """Direction form must not accept a target. `move 2 up 3` is an error."""
+    run, workload = swcw_ready
+    run("add", "one")
+    run("add", "two")
+    result = run("move", "2", "up", "1")
+    assert result.returncode != 0
+    msg = result.stderr.lower()
+    assert "unexpected" in msg or "up" in msg
+
+
 # ---------------------------------------------------------------------------
-# move — keyword validation, cycle, missing-parent, same-parent semantics
+# move — `to <target>` form (absolute reposition; may reparent)
 # ---------------------------------------------------------------------------
 
 
@@ -218,8 +229,10 @@ def test_move_rejects_missing_target_parent(swcw_ready):
     assert after == before
 
 
-def test_move_rejects_unexpected_keyword_between_ref_and_target(swcw_ready):
-    """F-01: typo `too` instead of literal `to` must fail loudly and leave the tree untouched."""
+def test_move_rejects_unknown_second_token(swcw_ready):
+    """Second positional must be a direction or the literal `to`. Anything
+    else (typo, garbage) errors loudly and leaves the tree untouched.
+    """
     run, workload = swcw_ready
     for label in ("one", "two"):
         run("add", label)
@@ -230,26 +243,40 @@ def test_move_rejects_unexpected_keyword_between_ref_and_target(swcw_ready):
     result = run("move", "2.1", "too", "2.2")
     assert result.returncode != 0
     msg = result.stderr.lower()
-    assert "too" in msg or "unexpected" in msg or "'to'" in msg
+    assert "too" in msg or "expected" in msg or "'to'" in msg
     after = json.loads(run("list", "--json").stdout)["items"]
     assert after == before
 
 
-def test_move_accepts_literal_to_keyword(swcw_ready):
-    """F-01 sibling: the literal `to` between ref and target still works."""
+def test_move_to_requires_target(swcw_ready):
+    """`move <ref> to` without a target must error — `to` form requires a target."""
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
-    result = run("move", "2", "to", "1")
-    assert result.returncode == 0, result.stderr
+    result = run("move", "2", "to")
+    assert result.returncode != 0
+    assert "target" in result.stderr.lower()
 
 
-def test_move_accepts_omitted_to_keyword(swcw_ready):
-    """F-01 sibling: the optional keyword may be omitted entirely."""
+def test_move_target_without_to_errors(swcw_ready):
+    """Omitting the literal `to` between ref and target is now an error
+    (previously was an accepted shorthand)."""
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
     result = run("move", "2", "1")
+    assert result.returncode != 0
+    msg = result.stderr.lower()
+    # Bare "1" isn't a direction or "to", so the dispatcher rejects it.
+    assert "expected" in msg or "'to'" in msg or "1" in msg
+
+
+def test_move_to_target_works(swcw_ready):
+    """The canonical absolute form `move <ref> to <target>` works."""
+    run, workload = swcw_ready
+    run("add", "one")
+    run("add", "two")
+    result = run("move", "2", "to", "1")
     assert result.returncode == 0, result.stderr
 
 

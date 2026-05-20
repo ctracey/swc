@@ -472,35 +472,6 @@ def cmd_rename(args) -> int:
     return 0
 
 
-def cmd_reorder(args) -> int:
-    # argparse's `choices=DIRECTIONS` already validates args.direction.
-    path, data = _load(args)
-    items = data["items"]
-    found = find_by_ref(items, args.ref)
-    if found is None:
-        raise CLIError(f"item {args.ref} not found")
-    item, parent_list, idx, _ = found
-
-    if args.direction == "up":
-        new_idx = max(0, idx - 1)
-    elif args.direction == "down":
-        new_idx = min(len(parent_list) - 1, idx + 1)
-    elif args.direction == "top":
-        new_idx = 0
-    else:  # bottom
-        new_idx = len(parent_list) - 1
-
-    if new_idx != idx:
-        parent_list.pop(idx)
-        parent_list.insert(new_idx, item)
-    save_workload(path, data)
-    if args.json:
-        print(json.dumps({"id": item["id"], "direction": args.direction}))
-    else:
-        print(f"reordered {args.ref} {args.direction}")
-    return 0
-
-
 def _contains_subtree(node: dict, item_id: str) -> bool:
     if node["id"] == item_id:
         return True
@@ -508,57 +479,97 @@ def _contains_subtree(node: dict, item_id: str) -> bool:
 
 
 def cmd_move(args) -> int:
-    # Optional positional between ref and target is ergonomic — accept the literal
-    # word `to`, reject anything else loudly so typos like `move 2.3 too 3.2`
-    # don't quietly succeed (F-01).
-    if args.to_kw is not None and args.to_kw != "to":
-        raise CLIError(
-            f"unexpected token {args.to_kw!r} between ref and target; expected 'to' or omit it"
-        )
-    path, data = _load(args)
-    items = data["items"]
-    found = find_by_ref(items, args.ref)
-    if found is None:
-        raise CLIError(f"item {args.ref} not found")
-    item, source_parent, source_idx, _ = found
+    """Move a work item — relative (up|down|top|bottom) or absolute (to <target>).
 
-    # Resolve target without mutating — validates parent exists and cycle.
-    if not re.fullmatch(r"\d+(?:\.\d+)*", args.target):
-        raise CLIError(f"move target must be a number reference, got {args.target!r}")
-    parts = [int(p) for p in args.target.split(".")]
-    if len(parts) == 1:
-        target_parent_list = items
-    else:
-        parent_ref = ".".join(str(p) for p in parts[:-1])
-        target_found = find_by_ref(items, parent_ref)
-        if target_found is None:
-            raise CLIError(f"target parent {parent_ref} does not exist")
-        target_parent_item = target_found[0]
-        if _contains_subtree(item, target_parent_item["id"]):
+    Two forms dispatched on the second positional:
+      move <ref> <up|down|top|bottom>    — relative shift among siblings; IDs unchanged
+      move <ref> to <target>             — absolute position; may reparent; cycles rejected
+    """
+    second = args.position_or_direction
+
+    if second in DIRECTIONS:
+        if args.target is not None:
             raise CLIError(
-                f"cannot move {args.ref} to {args.target}: would create a cycle"
+                f"unexpected token {args.target!r} after direction {second!r}; "
+                f"use `move <ref> {second}` with no target"
             )
-        target_parent_list = target_parent_item.setdefault("children", [])
-    insert_idx = parts[-1] - 1
+        path, data = _load(args)
+        items = data["items"]
+        found = find_by_ref(items, args.ref)
+        if found is None:
+            raise CLIError(f"item {args.ref} not found")
+        item, parent_list, idx, _ = found
 
-    source_parent.pop(source_idx)
+        if second == "up":
+            new_idx = max(0, idx - 1)
+        elif second == "down":
+            new_idx = min(len(parent_list) - 1, idx + 1)
+        elif second == "top":
+            new_idx = 0
+        else:  # bottom
+            new_idx = len(parent_list) - 1
 
-    # `insert_idx` is the 0-based slot in the FINAL list. Same-parent moves
-    # need no adjustment after the pop: e.g. `move 2.1 to 2.3` against
-    # `[a, b, c]` pops a → `[b, c]`, then inserts a at index 2 → `[b, c, a]`,
-    # leaving a at final position 3 as requested.
+        if new_idx != idx:
+            parent_list.pop(idx)
+            parent_list.insert(new_idx, item)
+        save_workload(path, data)
+        if args.json:
+            print(json.dumps({"id": item["id"], "direction": second}))
+        else:
+            print(f"moved {args.ref} {second}")
+        return 0
 
-    # Out-of-range targets cap at end (siblings reflow).
-    insert_idx = max(0, min(insert_idx, len(target_parent_list)))
+    if second == "to":
+        if args.target is None:
+            raise CLIError("`move <ref> to <target>` requires a target")
+        path, data = _load(args)
+        items = data["items"]
+        found = find_by_ref(items, args.ref)
+        if found is None:
+            raise CLIError(f"item {args.ref} not found")
+        item, source_parent, source_idx, _ = found
 
-    target_parent_list.insert(insert_idx, item)
-    rollup(items)
-    save_workload(path, data)
-    if args.json:
-        print(json.dumps({"id": item["id"], "target": args.target}))
-    else:
-        print(f"moved {args.ref} to {args.target}")
-    return 0
+        target = args.target
+        if not re.fullmatch(r"\d+(?:\.\d+)*", target):
+            raise CLIError(f"move target must be a number reference, got {target!r}")
+        parts = [int(p) for p in target.split(".")]
+        if len(parts) == 1:
+            target_parent_list = items
+        else:
+            parent_ref = ".".join(str(p) for p in parts[:-1])
+            target_found = find_by_ref(items, parent_ref)
+            if target_found is None:
+                raise CLIError(f"target parent {parent_ref} does not exist")
+            target_parent_item = target_found[0]
+            if _contains_subtree(item, target_parent_item["id"]):
+                raise CLIError(
+                    f"cannot move {args.ref} to {target}: would create a cycle"
+                )
+            target_parent_list = target_parent_item.setdefault("children", [])
+        insert_idx = parts[-1] - 1
+
+        source_parent.pop(source_idx)
+
+        # `insert_idx` is the 0-based slot in the FINAL list. Same-parent moves
+        # need no adjustment after the pop: e.g. `move 2.1 to 2.3` against
+        # `[a, b, c]` pops a → `[b, c]`, then inserts a at index 2 → `[b, c, a]`,
+        # leaving a at final position 3 as requested.
+
+        # Out-of-range targets cap at end (siblings reflow).
+        insert_idx = max(0, min(insert_idx, len(target_parent_list)))
+
+        target_parent_list.insert(insert_idx, item)
+        rollup(items)
+        save_workload(path, data)
+        if args.json:
+            print(json.dumps({"id": item["id"], "target": target}))
+        else:
+            print(f"moved {args.ref} to {target}")
+        return 0
+
+    raise CLIError(
+        f"expected one of up|down|top|bottom or 'to <target>', got {second!r}"
+    )
 
 
 def cmd_status(args) -> int:
@@ -887,25 +898,28 @@ def build_parser() -> argparse.ArgumentParser:
     p_st.add_argument("status", help="New status. One of: not-started, in-progress, done.")
     p_st.set_defaults(func=cmd_status)
 
-    p_ro = add_sub(
-        "reorder",
-        help="Reorder among siblings: up | down | top | bottom.",
-        description="Reorder a work item within its current siblings. IDs and parent are unchanged; numbers reflow.",
-    )
-    p_ro.add_argument("ref", help=ref_help)
-    p_ro.add_argument("direction", choices=DIRECTIONS,
-                      help="Relative movement among siblings.")
-    p_ro.set_defaults(func=cmd_reorder)
-
     p_mv = add_sub(
         "move",
-        help="Move a work item to a new position (may reparent).",
-        description="Move a work item (and its subtree) to a new position. May reparent. Both old and new parent renumber. IDs never change. Cycles (target inside source's subtree) are rejected.",
+        help="Move a work item — relative (up|down|top|bottom) or absolute (to <target>).",
+        description=(
+            "Move a work item. Two forms:\n"
+            "  move <ref> <up|down|top|bottom>  — relative shift among siblings; IDs and parent unchanged; numbers reflow.\n"
+            "  move <ref> to <target>           — absolute position; may reparent; cycles rejected; both old and new parent renumber."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p_mv.add_argument("ref", help=ref_help)
-    p_mv.add_argument("to_kw", nargs="?", default=None, metavar="[to]",
-                      help="Optional literal 'to' keyword for readability (e.g. `move 2.3 to 3.2`). May be omitted.")
-    p_mv.add_argument("target", help="Destination position — number (e.g. `3.2`). Target parent must exist.")
+    p_mv.add_argument(
+        "position_or_direction",
+        metavar="direction|to",
+        help="Direction (up|down|top|bottom) for a relative move, or the literal 'to' for an absolute move (followed by target).",
+    )
+    p_mv.add_argument(
+        "target",
+        nargs="?",
+        default=None,
+        help="Destination position — number (e.g. `3.2`). Required after 'to'; must be omitted with a direction.",
+    )
     p_mv.set_defaults(func=cmd_move)
 
     return p

@@ -53,8 +53,8 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-05** (event) — WHEN `delete <item>` runs, the CLI SHALL delete the item and its descendants; remaining siblings reflow numbers.
 - **REQ-06** (event) — WHEN `rename <item> "<new title>"` runs, the CLI SHALL update the title and preserve the item's ID, status, and position.
 - **REQ-07** (unwanted) — IF a `rename` title begins with a number-prefix pattern, THEN the CLI SHALL reject the request.
-- **REQ-08** (event) — WHEN `reorder <item> <up|down|top|bottom>` runs, the CLI SHALL move the item among its current siblings; ID and parent unchanged; numbers reflow.
-- **REQ-09** (event) — WHEN `move <item> to <target>` runs, the CLI SHALL relocate the item and its subtree to the target position, reparenting if necessary; IDs preserved; numbers reflow for both old and new parent.
+- **REQ-08** (event) — WHEN `move <item> <up|down|top|bottom>` runs (direction form), the CLI SHALL shift the item among its current siblings; ID and parent unchanged; numbers reflow.
+- **REQ-09** (event) — WHEN `move <item> to <target>` runs (absolute form, `to` keyword required), the CLI SHALL relocate the item and its subtree to the target position, reparenting if necessary; IDs preserved; numbers reflow for both old and new parent.
 - **REQ-10** (unwanted) — IF a `move` would create a cycle (target inside source's subtree), THEN the CLI SHALL reject with a clear cycle message and non-zero exit.
 - **REQ-11** (unwanted) — IF the move target's parent does not exist, THEN the CLI SHALL reject with a clear error.
 
@@ -174,22 +174,22 @@ Scenario: rename with number-prefix title
   And the title is unchanged
 ```
 
-### REQ-08 — reorder within siblings
+### REQ-08 — move direction form (relative shift among siblings)
 ```gherkin
-Scenario: reorder up
+Scenario: move up
   Given items 2.1, 2.2, 2.3 exist as siblings
-  When I run `swc workload reorder 2.3 up`
+  When I run `swc workload move 2.3 up`
   Then 2.3's previous position is now 2 and 2.2 is now at position 3
   And IDs are unchanged
   And the parent is unchanged
 
-Scenario: reorder top
-  When I run `swc workload reorder 2.3 top`
+Scenario: move top
+  When I run `swc workload move 2.3 top`
   Then the item is now numbered 2.1
   And former 2.1, 2.2 shift down by one
 ```
 
-### REQ-09 — move across parents
+### REQ-09 — move `to` form (absolute reposition; may reparent)
 ```gherkin
 Scenario: move reparents and reflows both sides
   Given item 2.3.1 exists and item 3 has two children
@@ -198,6 +198,12 @@ Scenario: move reparents and reflows both sides
   And the item's hash ID is unchanged
   And former 3.2 is now 3.3
   And numbers under parent 2.3 reflow to fill the gap
+
+Scenario: `to` keyword is required for absolute form
+  When I run `swc workload move 2.3 3.2`  # missing `to`
+  Then the CLI exits non-zero with a message that the second positional
+  must be a direction or the literal `to`
+  And the tree is unchanged
 ```
 
 ### REQ-10 — move rejects cycle
