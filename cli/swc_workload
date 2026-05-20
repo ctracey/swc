@@ -132,11 +132,6 @@ def _validate_shape(data) -> None:
         fail("missing 'items' field", "<root>")
     if not isinstance(data["items"], list):
         fail("'items' must be a list", "<root>.items")
-    if "complete" not in data:
-        fail("missing 'complete' field", "<root>")
-    if not isinstance(data["complete"], bool):
-        fail("'complete' must be a boolean", "<root>.complete")
-
     def walk(items: list, path: str) -> None:
         for i, node in enumerate(items):
             node_path = f"{path}[{i}]"
@@ -163,7 +158,7 @@ def save_workload(path: Path, data: dict) -> None:
 
 
 def empty_workload() -> dict:
-    return {"items": [], "complete": False}
+    return {"items": []}
 
 
 # ---------------------------------------------------------------------------
@@ -730,26 +725,6 @@ def cmd_summary(args) -> int:
     return 0
 
 
-def cmd_complete(args) -> int:
-    """`complete?`: workload exists, has items, and `complete: true` in workload.json."""
-    path = workload_path_from_args(args)
-    if not path.exists():
-        if args.json:
-            print(json.dumps({"complete": False}))
-        else:
-            print("false")
-        return 0
-    data = load_workload(path)
-    has_items = bool(data.get("items"))
-    confirmed = bool(data.get("complete"))
-    answer = has_items and confirmed
-    if args.json:
-        print(json.dumps({"complete": answer}))
-    else:
-        print("true" if answer else "false")
-    return 0
-
-
 def cmd_exists(args) -> int:
     """`exists`: lenient file-presence check for workload.json inside --workload.
 
@@ -932,14 +907,6 @@ def build_parser() -> argparse.ArgumentParser:
                       help="Optional literal 'to' keyword for readability (e.g. `move 2.3 to 3.2`). May be omitted.")
     p_mv.add_argument("target", help="Destination position — number (e.g. `3.2`). Target parent must exist.")
     p_mv.set_defaults(func=cmd_move)
-
-    p_cmp = add_sub(
-        "complete?",
-        help="Is the workload populated and confirmed complete?",
-        description="Check whether the workload is populated and marked complete. Exits 0 in both cases; the boolean is in the output.",
-    )
-    p_cmp.set_defaults(func=cmd_complete)
-
 
     return p
 

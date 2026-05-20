@@ -114,7 +114,7 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 - `summary` — total count, done count, % progress (used by report-plan)
 - ~~`read <item>` — fetch a single item's name + description~~ — **removed during phase 1.** Consumers read `workitems/<id>/requirements.md` directly; the CLI does not need to wrap this access. See REQ-22 in specs.md.
 - `exists` — boolean: does workload.md exist for this branch (cheap presence check)
-- `complete?` — is the workload populated and confirmed (used by workflowPlan_finalise)
+- ~~`complete?` — is the workload populated and confirmed~~ — **removed during phase 1.** No consumer materialised; `workflowPlan_finalise` can read items directly if needed. See REQ-24 in specs.md.
 
 ### Cross-doc support
 - Expose item descriptions in machine-readable form so `ship` can match changed files against items and prompt the user.

@@ -251,39 +251,6 @@ def test_text_output_includes_hash_next_to_title(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# REQ-24 — complete? at the swc_workload layer
-# ---------------------------------------------------------------------------
-
-
-def test_complete_true_when_populated_and_flag_set(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "thing")
-    data = json.loads(workload.read_text())
-    data["complete"] = True
-    workload.write_text(json.dumps(data, indent=2))
-
-    result = run("complete?")
-    assert result.returncode == 0
-    assert "true" in result.stdout.lower()
-
-
-def test_complete_false_when_empty(swcw_ready):
-    run, workload = swcw_ready
-    result = run("complete?")
-    assert result.returncode == 0
-    assert "false" in result.stdout.lower()
-
-
-def test_complete_false_when_workload_missing(swcw, tmp_path):
-    """complete? must not require a workload — it returns false if the file is missing."""
-    run, workload = swcw
-    assert not workload.exists()
-    result = run("complete?")
-    assert result.returncode == 0
-    assert "false" in result.stdout.lower()
-
-
-# ---------------------------------------------------------------------------
 # F-07 / F-09 — schema validation + JSON decode error
 # ---------------------------------------------------------------------------
 
@@ -292,7 +259,6 @@ def test_load_workload_rejects_malformed_shape(swcw_ready):
     run, workload = swcw_ready
     malformed = {
         "items": [{"id": "abc1234", "title": "broken", "children": []}],
-        "complete": False,
     }
     workload.write_text(json.dumps(malformed, indent=2))
 
@@ -314,7 +280,7 @@ def test_load_workload_rejects_top_level_non_dict(swcw_ready):
 
 def test_load_workload_json_decode_error_reports_line_and_column(swcw_ready):
     run, workload = swcw_ready
-    workload.write_text('{"items": [], "complete": false')  # truncated
+    workload.write_text('{"items": [')  # truncated
     result = run("list")
     assert result.returncode != 0
     msg = result.stderr.lower()
@@ -340,7 +306,7 @@ def test_init_creates_workload_json_inside_supplied_folder(swcw):
     assert result.returncode == 0, result.stderr
     assert workload.exists()
     data = json.loads(workload.read_text())
-    assert data == {"items": [], "complete": False}
+    assert data == {"items": []}
 
 
 def test_init_refuses_to_overwrite_existing_file(swcw_ready):
@@ -354,7 +320,7 @@ def test_init_refuses_to_overwrite_existing_file(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# Missing-workload path at the swc_workload layer (non-init/non-complete?)
+# Missing-workload path at the swc_workload layer (non-init)
 # ---------------------------------------------------------------------------
 
 
