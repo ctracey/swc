@@ -347,6 +347,18 @@ EXISTS_HELP = (
 )
 
 
+def _porcelain_help_env() -> dict:
+    """Env for forwarded `--help` invocations.
+
+    `SWC_HIDE_WORKLOAD_ARG=1` tells swc_workload to omit the `--workload` flag
+    and its plumbing-specific epilog from rendered help — porcelain users never
+    supply that flag at the swc layer.
+    """
+    env = os.environ.copy()
+    env["SWC_HIDE_WORKLOAD_ARG"] = "1"
+    return env
+
+
 def handle_workload_help() -> int:
     """Print top-level workload help.
 
@@ -372,7 +384,7 @@ def handle_workload_help() -> int:
     sys.stdout.flush()
     # Forward --help to swc_workload — gets the full subcommand list.
     cmd = [*_python_invocation(), "--help"]
-    proc = subprocess.run(cmd)
+    proc = subprocess.run(cmd, env=_porcelain_help_env())
     return proc.returncode
 
 
@@ -384,7 +396,7 @@ def handle_subcommand_help(op: str) -> int:
     exits 0 (argparse short-circuits on --help before requiring flags).
     """
     cmd = [*_python_invocation(), op, "--help"]
-    proc = subprocess.run(cmd)
+    proc = subprocess.run(cmd, env=_porcelain_help_env())
     return proc.returncode
 
 

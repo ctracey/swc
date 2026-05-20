@@ -18,6 +18,7 @@ import argparse
 import getpass
 import hashlib
 import json
+import os
 import re
 import sys
 from datetime import datetime, timezone
@@ -870,21 +871,39 @@ def cmd_exists(args) -> int:
 # ---------------------------------------------------------------------------
 
 
-def _add_common(p: argparse.ArgumentParser) -> None:
-    """Common flags accepted on every subcommand."""
+def _add_common(p: argparse.ArgumentParser, *, hide_workload: bool) -> None:
+    """Common flags accepted on every subcommand.
+
+    `hide_workload` removes `--workload` from rendered help (usage line + options
+    block) while leaving it functionally required for parsing — the `swc`
+    wrapper sets `SWC_HIDE_WORKLOAD_ARG=1` so porcelain users don't see a flag
+    they never supply.
+    """
+    workload_help = (
+        argparse.SUPPRESS
+        if hide_workload
+        else "Path to the workload folder (containing workload.json)."
+    )
     p.add_argument(
         "--workload",
         required=True,
-        help="Path to the workload folder (containing workload.json).",
+        help=workload_help,
     )
     p.add_argument("--json", action="store_true", help="Emit structured JSON output.")
 
 
 def build_parser() -> argparse.ArgumentParser:
+    hide_workload = os.environ.get("SWC_HIDE_WORKLOAD_ARG") == "1"
+
     p = argparse.ArgumentParser(
         prog="swc workload",
-        description=(
-            "Pure tree manager for workload.json. Every op requires --workload <folder>. "
+        description="Manage the workload tree — work items, status, ordering.",
+        epilog=None if hide_workload else (
+            "Folder contract: every op operates on workload.json inside the "
+            "folder passed via --workload. The folder must already exist. For "
+            "branch-aware context resolution, use the `swc workload <op>` "
+            "wrapper, which resolves the folder from the current branch and "
+            "forwards the op here."
         ),
     )
 
@@ -892,32 +911,35 @@ def build_parser() -> argparse.ArgumentParser:
 
     def add_sub(name: str, **kwargs) -> argparse.ArgumentParser:
         s = sub.add_parser(name, **kwargs)
-        _add_common(s)
+        _add_common(s, hide_workload=hide_workload)
         return s
 
     ref_help = "Work item reference — number (e.g. `2.3`) or 7-char hash ID."
 
     p_init = add_sub(
         "init",
-        help="Create workload.json inside the supplied --workload folder.",
-        description=(
-            "Create workload.json inside the supplied --workload folder. Pure "
-            "file-creation op; does not touch .swc/_meta.json. The folder must "
-            "already exist. Fails if workload.json is already present."
+        help="Initialise a fresh workload tree.",
+        description="Initialise a fresh, empty workload tree. Fails if one is already present.",
+        epilog=None if hide_workload else (
+            "Pure file-creation: writes workload.json inside the --workload "
+            "folder. Does not touch .swc/_meta.json — the `swc workload` "
+            "wrapper handles folder creation and branch registration."
         ),
     )
     p_init.set_defaults(func=cmd_init)
 
     p_ex = add_sub(
         "exists",
-        help="Does workload.json exist inside --workload?",
+        help="Check whether a workload is initialised.",
         description=(
-            "Check whether workload.json exists at the supplied --workload folder. "
-            "Lenient file-presence check; returns false (not an error) for missing "
-            "or wrong-type folders, so callers can probe non-destructively. This "
-            "is the only swc_workload op that does NOT enforce the strict folder "
-            "contract — every other op errors if --workload is missing or not a "
-            "directory."
+            "Check whether a workload is initialised. Lenient: returns false "
+            "(never errors) for missing folders, wrong-type paths, or missing "
+            "workload.json, so callers can probe non-destructively."
+        ),
+        epilog=None if hide_workload else (
+            "Unique among swc_workload ops: does NOT enforce the strict folder "
+            "contract — every other op errors if --workload is missing or not "
+            "a directory."
         ),
     )
     p_ex.set_defaults(func=cmd_exists)
