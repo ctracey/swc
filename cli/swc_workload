@@ -438,7 +438,7 @@ def cmd_add(args) -> int:
     return 0
 
 
-def cmd_remove(args) -> int:
+def cmd_delete(args) -> int:
     path, data = _load(args)
     items = data["items"]
     found = find_by_ref(items, args.ref)
@@ -449,9 +449,9 @@ def cmd_remove(args) -> int:
     rollup(items)
     save_workload(path, data)
     if args.json:
-        print(json.dumps({"removed": args.ref}))
+        print(json.dumps({"deleted": args.ref}))
     else:
-        print(f"removed {args.ref}")
+        print(f"deleted {args.ref}")
     return 0
 
 
@@ -870,13 +870,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_rn.add_argument("title", help="New title. Must not start with a number-prefix pattern.")
     p_rn.set_defaults(func=cmd_rename)
 
-    p_rm = add_sub(
-        "remove",
-        help="Remove a work item (and its descendants).",
-        description="Remove a work item and all of its descendants. Remaining siblings reflow numbers.",
+    p_del = add_sub(
+        "delete",
+        help="Delete a work item (and its descendants).",
+        description="Delete a work item and all of its descendants. Remaining siblings reflow numbers.",
     )
-    p_rm.add_argument("ref", help=ref_help)
-    p_rm.set_defaults(func=cmd_remove)
+    p_del.add_argument("ref", help=ref_help)
+    p_del.set_defaults(func=cmd_delete)
 
     p_st = add_sub(
         "status",

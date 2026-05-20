@@ -19,7 +19,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 ### Happy paths
 
 1. **Init** — developer runs `swc workload init` on a new branch; CLI creates `workload.json` and registers branch in `_meta.json`.
-2. **Author** — developer adds, renames, removes items; CLI assigns hash IDs; numbers reflow on every structural change.
+2. **Author** — developer adds, renames, deletes items; CLI assigns hash IDs; numbers reflow on every structural change.
 3. **Edit structure** — developer reorders within a parent or moves across parents; IDs stay stable, numbers reflow.
 4. **Status flow** — skill or developer transitions item between `not-started → in-progress → done`; parent rolls up automatically.
 5. **Read** — `list`, `show`, `find` for developer; `summary`, `exists` for skills.
@@ -50,7 +50,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 ### Authoring
 - **REQ-03** (event) — WHEN `add "<title>"` runs, the CLI SHALL assign a stable hash ID, append the item under the chosen parent, and include it in subsequent list output.
 - **REQ-04** (unwanted) — IF the supplied title begins with a number-prefix pattern, THEN the CLI SHALL reject with a message stating numbers are auto-assigned.
-- **REQ-05** (event) — WHEN `remove <item>` runs, the CLI SHALL remove the item and its descendants; remaining siblings reflow numbers.
+- **REQ-05** (event) — WHEN `delete <item>` runs, the CLI SHALL delete the item and its descendants; remaining siblings reflow numbers.
 - **REQ-06** (event) — WHEN `rename <item> "<new title>"` runs, the CLI SHALL update the title and preserve the item's ID, status, and position.
 - **REQ-07** (unwanted) — IF a `rename` title begins with a number-prefix pattern, THEN the CLI SHALL reject the request.
 - **REQ-08** (event) — WHEN `reorder <item> <up|down|top|bottom>` runs, the CLI SHALL move the item among its current siblings; ID and parent unchanged; numbers reflow.
@@ -145,11 +145,11 @@ Scenario: add with leading-digit title that is NOT a prefix pattern (just inside
   And the item appears in `list`
 ```
 
-### REQ-05 — remove deletes item and descendants
+### REQ-05 — delete drops item and descendants
 ```gherkin
-Scenario: remove a parent with children
+Scenario: delete a parent with children
   Given item 2 has two children 2.1 and 2.2
-  When I run `swc workload remove 2`
+  When I run `swc workload delete 2`
   Then item 2, 2.1, and 2.2 are gone
   And former item 3 is now numbered 2
   And the CLI exits 0
