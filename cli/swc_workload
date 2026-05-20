@@ -876,10 +876,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Include filter — key:val[,val…]. Supported keys: status. Repeatable.")
     p_list.add_argument("--exclude", dest="exclude", action="append",
                         help="Exclude filter — same syntax and supported keys as --filter.")
-    p_list.add_argument("--show-ids", dest="show_ids", action="store_true", default=True,
-                        help="Show hash IDs alongside numbers (default on).")
-    p_list.add_argument("--no-ids", dest="show_ids", action="store_false",
-                        help="Hide hash IDs from output.")
+    p_list.add_argument("--no-ids", dest="show_ids", action="store_false", default=True,
+                        help="Hide hash IDs from output (IDs are shown by default).")
     p_list.set_defaults(func=cmd_list)
 
     p_find = add_sub(
