@@ -187,13 +187,26 @@ def test_summary_partial(swcw_ready):
         run("add", f"item {i}")
     for i in range(1, 5):
         run("status", str(i), "done")
+    for i in range(5, 8):
+        run("status", str(i), "in-progress")
 
     result = run("summary", "--json")
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["total"] == 10
     assert payload["done"] == 4
+    assert payload["wip"] == 3
     assert payload["progress"] == 40
+
+
+def test_summary_text_includes_wip(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "a")
+    run("add", "b")
+    run("status", "1", "in-progress")
+    result = run("summary")
+    assert result.returncode == 0
+    assert "wip=1" in result.stdout
 
 
 # ---------------------------------------------------------------------------

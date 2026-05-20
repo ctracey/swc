@@ -724,15 +724,18 @@ def cmd_summary(args) -> int:
     items = data["items"]
     total = 0
     done = 0
+    wip = 0
     for item, _, _, _ in iter_items(items):
         total += 1
         if item["status"] == STATUS_DONE:
             done += 1
+        elif item["status"] == STATUS_IN_PROGRESS:
+            wip += 1
     pct = int(round((done / total) * 100)) if total else 0
     if args.json:
-        print(json.dumps({"total": total, "done": done, "progress": pct}))
+        print(json.dumps({"total": total, "done": done, "wip": wip, "progress": pct}))
     else:
-        print(f"total={total} done={done} progress={pct}%")
+        print(f"total={total} done={done} wip={wip} progress={pct}%")
     return 0
 
 
