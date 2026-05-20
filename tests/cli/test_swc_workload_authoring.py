@@ -36,7 +36,7 @@ def test_add_assigns_unique_hashes_when_titles_collide_across_parents(swcw_ready
     """
     run, workload = swcw_ready
     run("add", "duplicate title")
-    run("add", "duplicate title", "--parent", "1")
+    run("add", "duplicate title", "to", "1")
     listed = run("list", "--json")
     top = json.loads(listed.stdout)["items"][0]
     child = top["children"][0]
@@ -66,7 +66,7 @@ def test_add_as_child_of_parent(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
-    result = run("add", "sub item", "--parent", "2")
+    result = run("add", "sub item", "to", "2")
     assert result.returncode == 0, result.stderr
     items = json.loads(run("list", "--json").stdout)["items"]
     assert items[1]["children"][0]["title"] == "sub item"
@@ -97,12 +97,137 @@ def test_add_allows_same_title_under_different_parent(swcw_ready):
     run, workload = swcw_ready
     run("add", "alpha")  # top-level 1
     run("add", "beta")   # top-level 2
-    result = run("add", "alpha", "--parent", "2")
+    result = run("add", "alpha", "to", "2")
     assert result.returncode == 0, result.stderr
     items = json.loads(run("list", "--json").stdout)["items"]
     assert items[0]["title"] == "alpha"
     assert items[1]["children"][0]["title"] == "alpha"
     assert items[1]["children"][0]["number"] == "2.1"
+
+
+# ---------------------------------------------------------------------------
+# add — `to <parent>` (append under) and `at <position>` (insert at slot)
+# ---------------------------------------------------------------------------
+
+
+def test_add_at_top_level_position_shifts_siblings_down(swcw_ready):
+    """`add "x" at 2` inserts x at top-level position 2; existing siblings shift down."""
+    run, workload = swcw_ready
+    run("add", "a")
+    run("add", "b")
+    run("add", "c")
+
+    result = run("add", "x", "at", "2")
+    assert result.returncode == 0, result.stderr
+    titles = [i["title"] for i in json.loads(run("list", "--json").stdout)["items"]]
+    assert titles == ["a", "x", "b", "c"]
+
+
+def test_add_at_nested_position_uses_parent_from_target(swcw_ready):
+    """`add "x" at 2.1` inserts x as first child of item 2 (parent inferred)."""
+    run, workload = swcw_ready
+    run("add", "one")
+    run("add", "two")
+    run("add", "a", "to", "2")
+    run("add", "b", "to", "2")
+
+    result = run("add", "x", "at", "2.1")
+    assert result.returncode == 0, result.stderr
+    items = json.loads(run("list", "--json").stdout)["items"]
+    titles = [c["title"] for c in items[1]["children"]]
+    assert titles == ["x", "a", "b"]
+
+
+def test_add_at_out_of_range_caps_at_end(swcw_ready):
+    """Like `move`, an out-of-range slot caps at end — no error."""
+    run, workload = swcw_ready
+    run("add", "a")
+    run("add", "b")
+
+    result = run("add", "x", "at", "99")
+    assert result.returncode == 0, result.stderr
+    titles = [i["title"] for i in json.loads(run("list", "--json").stdout)["items"]]
+    assert titles == ["a", "b", "x"]
+
+
+def test_add_collision_uses_siblings_at_target_slot(swcw_ready):
+    """Sibling-collision check uses the siblings at the target location.
+    Inserting a same-title item under a different parent is allowed; inserting
+    one alongside an existing same-titled sibling is rejected."""
+    run, workload = swcw_ready
+    run("add", "alpha")          # 1
+    run("add", "two")            # 2
+    run("add", "alpha", "to", "2")  # 2.1 — fine, different parent
+
+    # Inserting another `alpha` at 2.2 collides with 2.1's `alpha`.
+    result = run("add", "alpha", "at", "2.2")
+    assert result.returncode != 0
+    assert "collide" in result.stderr.lower()
+
+
+def test_add_collision_is_case_insensitive_at_target_slot(swcw_ready):
+    """Sibling collision check is case-insensitive at the target slot too."""
+    run, workload = swcw_ready
+    run("add", "ALPHA")
+    result = run("add", "alpha", "at", "2")
+    assert result.returncode != 0
+    assert "collide" in result.stderr.lower()
+
+
+def test_add_at_rejects_missing_target_parent(swcw_ready):
+    """`at 9.9` when there's no item 9 is rejected with a clear error."""
+    run, workload = swcw_ready
+    run("add", "a")
+    result = run("add", "x", "at", "9.9")
+    assert result.returncode != 0
+    assert "not exist" in result.stderr.lower() or "does not" in result.stderr.lower()
+
+
+def test_add_rejects_extra_positional_after_target(swcw_ready):
+    """Argparse only declares two optional positionals after `title`. Any extra
+    args (e.g. an attempt to combine `to` and `at`) are rejected."""
+    run, workload = swcw_ready
+    run("add", "one")
+    result = run("add", "x", "at", "1.1", "to", "1")
+    assert result.returncode != 0
+    # Argparse rejects "unrecognized arguments" or similar — exit non-zero is enough.
+
+
+def test_add_to_requires_target(swcw_ready):
+    """`add <title> to` without a target must error."""
+    run, workload = swcw_ready
+    run("add", "one")
+    result = run("add", "x", "to")
+    assert result.returncode != 0
+    assert "target" in result.stderr.lower() or "to" in result.stderr.lower()
+
+
+def test_add_at_requires_target(swcw_ready):
+    """`add <title> at` without a target must error."""
+    run, workload = swcw_ready
+    run("add", "one")
+    result = run("add", "x", "at")
+    assert result.returncode != 0
+    assert "target" in result.stderr.lower() or "at" in result.stderr.lower()
+
+
+def test_add_rejects_unknown_placement_keyword(swcw_ready):
+    """Second positional must be `to` or `at` (or omitted)."""
+    run, workload = swcw_ready
+    run("add", "one")
+    result = run("add", "x", "in", "1")
+    assert result.returncode != 0
+    msg = result.stderr.lower()
+    assert "'to'" in msg or "'at'" in msg or "expected" in msg
+
+
+def test_add_at_rejects_non_numeric_target(swcw_ready):
+    """`at` target must be a dotted-number reference; hash IDs / arbitrary strings rejected."""
+    run, workload = swcw_ready
+    run("add", "a")
+    result = run("add", "x", "at", "abc1234")
+    assert result.returncode != 0
+    assert "number" in result.stderr.lower()
 
 
 # ---------------------------------------------------------------------------
@@ -115,8 +240,8 @@ def test_delete_drops_item_and_descendants_with_renumber(swcw_ready):
     run("add", "one")
     run("add", "two")
     run("add", "three")
-    run("add", "two-a", "--parent", "2")
-    run("add", "two-b", "--parent", "2")
+    run("add", "two-a", "to", "2")
+    run("add", "two-b", "to", "2")
 
     result = run("delete", "2")
     assert result.returncode == 0, result.stderr
@@ -135,9 +260,9 @@ def test_rename_preserves_id_status_position(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
-    run("add", "x", "--parent", "2")
-    run("add", "y", "--parent", "2")
-    run("add", "target", "--parent", "2")
+    run("add", "x", "to", "2")
+    run("add", "y", "to", "2")
+    run("add", "target", "to", "2")
     run("start", "2.3")
 
     before = json.loads(run("list", "--json").stdout)["items"]
@@ -202,7 +327,7 @@ def test_rename_allows_same_title_as_non_sibling(swcw_ready):
     run, workload = swcw_ready
     run("add", "alpha")  # 1
     run("add", "beta")   # 2
-    run("add", "gamma", "--parent", "1")  # 1.1
+    run("add", "gamma", "to", "1")  # 1.1
     result = run("rename", "2", "gamma")  # not a sibling of 1.1
     assert result.returncode == 0, result.stderr
 
@@ -216,7 +341,7 @@ def test_move_up_preserves_ids(swcw_ready):
     run, workload = swcw_ready
     run("add", "parent")
     for label in ("a", "b", "c"):
-        run("add", label, "--parent", "1")
+        run("add", label, "to", "1")
     before = json.loads(run("list", "--json").stdout)["items"][0]["children"]
     ids = [c["id"] for c in before]
 
@@ -232,7 +357,7 @@ def test_move_top_moves_to_first_slot(swcw_ready):
     run, workload = swcw_ready
     run("add", "p")
     for label in ("a", "b", "c"):
-        run("add", label, "--parent", "1")
+        run("add", label, "to", "1")
     result = run("move", "1.3", "top")
     assert result.returncode == 0
     after = json.loads(run("list", "--json").stdout)["items"][0]["children"]
@@ -261,10 +386,10 @@ def test_move_reparents_and_reflows_both_sides(swcw_ready):
     for label in ("one", "two", "three"):
         run("add", label)
     for label in ("2a", "2b", "2c"):
-        run("add", label, "--parent", "2")
-    run("add", "moveme", "--parent", "2.3")  # 2.3.1
+        run("add", label, "to", "2")
+    run("add", "moveme", "to", "2.3")  # 2.3.1
     for label in ("3a", "3b"):
-        run("add", label, "--parent", "3")
+        run("add", label, "to", "3")
 
     before = json.loads(run("list", "--json").stdout)["items"]
     target_id = before[1]["children"][2]["children"][0]["id"]
@@ -285,8 +410,8 @@ def test_move_rejects_cycle(swcw_ready):
     run("add", "one")
     run("add", "two")
     for label in ("2a", "2b", "2c"):
-        run("add", label, "--parent", "2")
-    run("add", "deep", "--parent", "2.3")  # 2.3.1
+        run("add", label, "to", "2")
+    run("add", "deep", "to", "2.3")  # 2.3.1
 
     before = json.loads(run("list", "--json").stdout)["items"]
     result = run("move", "2", "to", "2.3.1")
@@ -300,7 +425,7 @@ def test_move_rejects_missing_target_parent(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
-    run("add", "2a", "--parent", "2")
+    run("add", "2a", "to", "2")
 
     before = json.loads(run("list", "--json").stdout)["items"]
     result = run("move", "2.1", "to", "9.9")
@@ -319,7 +444,7 @@ def test_move_rejects_unknown_second_token(swcw_ready):
     for label in ("one", "two"):
         run("add", label)
     for label in ("2a", "2b"):
-        run("add", label, "--parent", "2")
+        run("add", label, "to", "2")
 
     before = json.loads(run("list", "--json").stdout)["items"]
     result = run("move", "2.1", "too", "2.2")
@@ -369,7 +494,7 @@ def test_move_leaves_orphaned_parent_status_untouched(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "parent")
-    run("add", "kid", "--parent", "2")
+    run("add", "kid", "to", "2")
     run("start", "2.1")
 
     before = json.loads(run("list", "--json").stdout)["items"]
@@ -390,7 +515,7 @@ def test_move_same_parent_source_after_target_lands_at_requested_position(swcw_r
     run("add", "one")
     run("add", "two")
     for label in ("2a", "2b", "2c"):
-        run("add", label, "--parent", "2")
+        run("add", label, "to", "2")
 
     result = run("move", "2.3", "to", "2.1")
     assert result.returncode == 0, result.stderr
@@ -411,7 +536,7 @@ def test_move_same_parent_source_before_target_lands_at_requested_position(swcw_
     run("add", "one")
     run("add", "two")
     for label in ("a", "b", "c"):
-        run("add", label, "--parent", "2")
+        run("add", label, "to", "2")
 
     ids_before = {c["title"]: c["id"]
                   for c in json.loads(run("list", "--json").stdout)["items"][1]["children"]}

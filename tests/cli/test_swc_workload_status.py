@@ -18,8 +18,8 @@ def test_marking_child_in_progress_rolls_parent_to_in_progress(swcw_ready):
     run("add", "one")
     run("add", "two")
     run("add", "three")
-    run("add", "3a", "--parent", "3")
-    run("add", "3b", "--parent", "3")
+    run("add", "3a", "to", "3")
+    run("add", "3b", "to", "3")
 
     result = run("start", "3.2")
     assert result.returncode == 0, result.stderr
@@ -33,8 +33,8 @@ def test_marking_child_in_progress_rolls_parent_to_in_progress(swcw_ready):
 def test_marking_last_child_done_rolls_parent_to_done(swcw_ready):
     run, workload = swcw_ready
     run("add", "p")
-    run("add", "a", "--parent", "1")
-    run("add", "b", "--parent", "1")
+    run("add", "a", "to", "1")
+    run("add", "b", "to", "1")
 
     run("complete", "1.1")
     run("start", "1.2")
@@ -95,9 +95,9 @@ def test_reset_on_done_re_opens_it(swcw_ready):
 def test_parent_marked_done_with_undone_children_warns_on_stderr(swcw_ready):
     run, workload = swcw_ready
     run("add", "p")
-    run("add", "a", "--parent", "1")
-    run("add", "b", "--parent", "1")
-    run("add", "c", "--parent", "1")
+    run("add", "a", "to", "1")
+    run("add", "b", "to", "1")
+    run("add", "c", "to", "1")
 
     run("complete", "1.1")
     before = workload.read_text()

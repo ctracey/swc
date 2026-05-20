@@ -48,7 +48,7 @@ Invokes the CLI programmatically from inside a skill chain. Parses JSON output (
 - **REQ-02** (unwanted) — IF `init` runs on a branch that already has a workload, THEN the CLI SHALL refuse to overwrite and report the existing path.
 
 ### Authoring
-- **REQ-03** (event) — WHEN `add "<title>"` runs, the CLI SHALL assign a stable hash ID, append the item under the chosen parent, and include it in subsequent list output.
+- **REQ-03** (event) — WHEN `add "<title>"` runs, the CLI SHALL assign a stable hash ID and place the item. Three forms (positional, mirroring `move`'s `to` keyword): bare `add "<title>"` appends at top level; `add "<title>" to <ref>` appends as the last child of `<ref>`; `add "<title>" at <ref>` inserts at the position `<ref>` (siblings shift down; out-of-range slot caps at end, same as `move`).
 - **REQ-04** (unwanted) — IF the supplied title begins with a number-prefix pattern, THEN the CLI SHALL reject with a message stating numbers are auto-assigned.
 - **REQ-05** (event) — WHEN `delete <item>` runs, the CLI SHALL delete the item and its descendants; remaining siblings reflow numbers.
 - **REQ-06** (event) — WHEN `rename <item> "<new title>"` runs, the CLI SHALL update the title and preserve the item's ID, status, and position.
@@ -119,7 +119,7 @@ Scenario: init when workload already exists
   And the CLI exits non-zero
 ```
 
-### REQ-03 — add appends an item
+### REQ-03 — add places an item (default end; `to`/`at` for explicit placement)
 ```gherkin
 Scenario: add a top-level item
   Given a workload with N top-level items
@@ -128,11 +128,38 @@ Scenario: add a top-level item
   And `swc workload list` shows the item at position N+1
   And the CLI exits 0
 
-Scenario: add a child item
+Scenario: add a child item — `to <parent>`
   Given a workload with item 2
-  When I run `swc workload add "sub item" --parent 2`
+  When I run `swc workload add "sub item" to 2`
   Then the item is appended as a child of item 2
   And it appears in `list` numbered 2.<last>
+
+Scenario: add at a specific top-level position — `at <position>`
+  Given top-level items [a, b, c]
+  When I run `swc workload add "x" at 2`
+  Then top-level items are [a, x, b, c]
+  And the CLI exits 0
+
+Scenario: add at a specific nested position
+  Given item 2 has children [a, b]
+  When I run `swc workload add "x" at 2.1`
+  Then item 2's children are [x, a, b]
+  And the CLI exits 0
+
+Scenario: add at an out-of-range slot caps at end
+  Given a workload with 2 top-level items
+  When I run `swc workload add "x" at 99`
+  Then x appears at the end (same semantics as `move`)
+
+Scenario: only one placement keyword is accepted
+  When I run `swc workload add "x" at 2.1 to 1`
+  Then the CLI exits non-zero (argparse rejects unrecognised arguments)
+
+Scenario: sibling-collision uses siblings at the target location
+  Given top-level item 1 "alpha" and a child 2.1 "alpha" under top-level item 2
+  When I run `swc workload add "alpha" at 2.2`
+  Then the CLI exits non-zero with a collision message
+  (the new sibling at 2.x would collide with the existing 2.1 "alpha")
 ```
 
 ### REQ-04 — add rejects number-prefix title
@@ -444,7 +471,7 @@ Scenario: case-variant duplicate at the same level
 
 Scenario: same title allowed under a different parent
   Given a workload with top-level items "alpha", "beta"
-  When I run `swc workload add "alpha" --parent 2`
+  When I run `swc workload add "alpha" to 2`
   Then the item is added successfully
   And both items named "alpha" exist with distinct hash IDs
 ```

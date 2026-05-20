@@ -92,7 +92,7 @@ Compiled from the catalog in notes.md plus new requirements in this conversation
 - Cleanup — delete folder once all items complete (CLI op or stays outside? — see Parked)
 
 ### Authoring
-- `add` — add a work item (title only; CLI assigns number; validate no number prefix in title; reject if a sibling already has the same title — full-string match, case-insensitive)
+- `add` — add a work item (title only; CLI assigns number; validate no number prefix in title; reject if a sibling already has the same title — full-string match, case-insensitive). Three positional forms mirroring `move`: bare `add "<title>"` (append at top level), `add "<title>" to <ref>` (append as last child of `<ref>`), `add "<title>" at <ref>` (insert at that position; encodes parent + slot together; out-of-range slot caps at end). Sibling-collision check uses siblings at the target slot.
 - `delete` — delete a work item
 - `rename` — rename a work item (title only; ID and status preserved; reject if another sibling has the same title — full-string match, case-insensitive; self-renames including case-variants of the current title are allowed)
 - ~~`reorder`~~ — folded into `move <item> <up|down|top|bottom>` during phase 1. See "Authoring — `move` (consolidated)" above.
