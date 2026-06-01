@@ -1,6 +1,6 @@
 ---
-description: Scaffold a new .swc/<folder>/ with stub planning docs. Use when starting a fresh piece of work after the folder has been located by context-lookup.
-allowed-tools: Write
+description: Scaffold a new .swc/<folder>/ with stub planning docs and initialise the MCP-owned workload artefact. Use when starting a fresh piece of work after the folder has been located by context-lookup.
+allowed-tools: Write, Skill, mcp__swc-workload__init
 ---
 
 # SWC Init
@@ -21,13 +21,7 @@ Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp
 
 Write the following files into `.swc/<folder>/`. Each file gets a title and section headers only — no content.
 
-**`workload.md`**
-```markdown
-# Workload
-
-## Work Items
-
-```
+The workload artefact is owned by the `swc-workload` MCP and is created in step 2 below — do not write `workload.md` (or `workload.json`) from this skill.
 
 **`plan.md`**
 ```markdown
@@ -95,10 +89,16 @@ Write the following files into `.swc/<folder>/`. Each file gets a title and sect
 <What the human needs to see to accept the work. Not automated — narrative. Or "Not applicable — verified by test suite only.">
 ```
 
-### 2. Return
+### 2. Initialise the workload via MCP
+
+Invoke `mcp__swc-workload__init` against the resolved folder path so the workload artefact is created at `.swc/<folder>/`. The MCP owns the artefact's shape and location — this skill does not write or read it directly.
+
+If the MCP call fails, surface the error to the calling skill and stop. The stub files written in step 1 stay in place — the caller decides whether to retry or clean up.
+
+### 3. Return
 
 Return the folder path to the calling skill. Print nothing — the calling skill handles confirmation.
 
 ## Exit criteria
 
-**Done when** all six stub files exist at `.swc/<folder>/`.
+**Done when** the five narrative stubs (`plan.md`, `architecture.md`, `notes.md`, `changelog.md`, `pipeline.md`) exist at `.swc/<folder>/` AND `mcp__swc-workload__init` has succeeded for that folder.

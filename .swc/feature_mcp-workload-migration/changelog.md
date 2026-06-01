@@ -1,5 +1,11 @@
 # Changelog
 
+## Session — context-init delegates workload artefact to MCP `2026-06-01`
+
+- `skills/context-init/SKILL.md` — dropped the `workload.md` stub block; added a new Step 2 that invokes `mcp__swc-workload__init` against the resolved folder; renumbered return to Step 3.
+- Frontmatter `allowed-tools` updated to include `Skill` (for `mcp-check`) and `mcp__swc-workload__init`.
+- Marked workload items 3.1, 3.2, 3.3 done; item 3 (Adapt `context-init`) rolls up to done.
+
 ## Session — setup-permissions allowlists MCP tools `2026-06-01`
 
 - `skills/setup-permissions/SKILL.md` — added `mcp__swc-workload__*` to the allowlist Step 4 writes; Step 2 idempotency check now verifies all three entries (`Skill(swc:*)`, `Read(<swc_skills_path>/*)`, `mcp__swc-workload__*`) so existing projects re-run picks up the new MCP entry.
