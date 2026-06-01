@@ -24,8 +24,9 @@
 - [-] **4. Reframe `context-lookup` output**
   - [x] 4.1. Replace `workload.md` display strings with structured `Found context {...}` output
   - [x] 4.2. Populate `workload: exists/missing` field via MCP `exists` call
-  - [ ] 4.3. Update multi‑folder case to list candidates with workload status per row
+  - [x] 4.3. Update multi‑folder case to list candidates with workload status per row
   - [ ] 4.4. Fix misleading "No workload found under .swc/" → "No context found under .swc/"
+  - [x] 4.5. Back `context-lookup` with a Python helper (`context-lookup.py`) — single-call probe replaces 5–7 model-driven tool calls on the happy path; interactive cases and the single MCP `exists` call remain in the skill
 
 - [ ] **5. Rewrite workflow touchpoints**
   - [ ] 5.1. `workflowPlan_context` — use MCP `exists` for existing‑workload detection
@@ -57,3 +58,8 @@
   - [ ] 8.1. Remove tests exercising `workload.py` rendering and markdown checkbox parsing
   - [ ] 8.2. Decide MCP test strategy (mock vs real fixture) and document the choice
   - [ ] 8.3. Add coverage for the new MCP‑backed touchpoints in at least one workflow skill
+
+- [x] **9. Enforce workload-context consistency via PreToolUse hook**
+  - [x] 9.1. Add `hooks/swc-workload-guard.py` — resolves branch→folder from `_meta.json`, validates the call's `workload` arg, denies with informative reason on mismatch / missing / no mapping
+  - [x] 9.2. Wire it via `hooks/hooks.json` with matcher `mcp__swc-workload__.*`
+  - [x] 9.3. Smoke-tested: mismatched arg denies with a clear reason; matching arg allows silently
