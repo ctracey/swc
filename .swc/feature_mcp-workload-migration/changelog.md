@@ -1,5 +1,11 @@
 # Changelog
 
+## Session — usage docs: MCP setup steps `2026-06-01`
+
+- `docs/usage.md` — added Step 2 substeps (2.1 trigger setup by attempting an SWC workflow, 2.2 follow guide or have it installed by the MCP setup skill, 2.3 what gets installed) and a new Step 3 smoke test.
+- Marked workload items 1.1 (MCP server config registered manually outside this session) and 1.3 (docs updated) done.
+- Motivation: complete the user-facing setup story for item 1 plumbing — first-time users now have a clear "trigger → guide → install → verify" path.
+
 ## Session — MCP dependency check + placeholder install guide `2026-06-01`
 
 - Added `swc:mcp-check` skill — silent dependency probe; delegates to `swc:mcp-install` when the `mcp__swc-workload__*` tool namespace is unavailable.

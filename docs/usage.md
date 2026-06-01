@@ -3,6 +3,9 @@
 [Intent](/README.md) | [Getting Started](/docs/usage.md) | [User Guide](/docs/usage.md#using-the-workflows) | [Plugin Design](/docs/plugin-design.md)
 
 - [Setup](#setup)
+  - [STEP 1: Install SWC Plugin](#step-1-install-swc-plugin)
+  - [STEP 2: Register SWC Workload Manager (MCP Server)](#step-2-register-swc-workload-manager-mcp-server)
+  - [STEP 3: Try starting a new project](#step-3-try-starting-a-new-project)
 - [Start using SWC](#start-using-swc)
 - [Using the Workflows](#using-the-workflows)
   - [Plan Workflow](#plan-workflow)
@@ -13,7 +16,7 @@
 ## Setup
 
 
-### 1. Pre-requisites
+### Pre-requisites
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=flat&logo=apple&logoColor=white)
 ![Bash](https://img.shields.io/badge/Bash-4EAA25?style=flat&logo=gnubash&logoColor=white)
@@ -23,7 +26,12 @@
 NOTE: you can probably get claude code to install python when its first needed by the SWC workflow reports.
 
 
-### 2. Plugin Manager
+### STEP 1: Install SWC Plugin
+---
+
+Claude Code installs plugins from a marketplace. We can add this plugin to a local marketplace for claude code to install.
+
+### 1.1 Plugin Manager
 
 Currently this plugin is not published on a public claude code plugin marketplace, so you will need to host your own.
 You can use something like [ccpm](https://github.com/ctracey/claude-code-plugin-marketplace) to setup a private local plugin marketplace.
@@ -33,8 +41,7 @@ Check claude recognises your marketplace:
 
 `claude plugins marketplace list`
 
-
-### 3. Add this SWC Plugin to your marketplace
+### 1.2 Add this SWC Plugin to your marketplace
 
 Once you have your claude code marketplace setup you can install this plugin.
 Follow your marketplace guide. Should be something like this
@@ -43,8 +50,7 @@ Follow your marketplace guide. Should be something like this
  - Add this plugin to the marketplace
  - Check marketplace recognises the plugin
 
-
-### 4. Install this plugin
+### 1.3 Install this plugin
 
 Once this plugin is available via a marketplace you can install it. Recommend installed with project scope
 
@@ -52,6 +58,34 @@ Once this plugin is available via a marketplace you can install it. Recommend in
  - run `claude plugin install swc@<MARKETPLACE_NAME> --scope project`
 
 You should now be setup to use the SWC plugin.
+
+
+### STEP 2: Register SWC Workload Manager (MCP Server)
+---
+
+This plugin uses the [SWC Workload MCP Server](https://github.com/ctracey/swc-workload-mcp) to manage the tree of workitems
+
+### 2.1 Trigger the setup by attempting to start an SWC workflow
+
+You don't need to install the MCP server up front. Start an SWC workflow — e.g. prompt `lets start a new project`, or run `/swc:workflowPlan` — and the plugin will notice the missing MCP server and surface the setup guide.
+
+### 2.2 Follow the install guide — or have it installed for you
+
+Once the missing MCP is detected, you will be referred to the [SWC Workload MCP Setup docs](https://github.com/ctracey/swc-workload-mcp/blob/main/docs/usage.md). You can follow them yourself, or prompt the SWC Workload MCP setup skill to install it for you.
+
+### 2.3 What will be installed
+
+- The MCP server source will be cloned locally
+- Its dependencies will be installed
+- It will be registered with Claude Code for your project
+
+After install, restart your Claude Code session so the new MCP tools are loaded.
+
+
+### STEP 3: Try starting a new project
+---
+
+Now that the plugin and MCP server are both set up, run a real workflow to confirm everything is wired up. Prompt: `lets start a new project`
 
 
 ## Start using SWC
