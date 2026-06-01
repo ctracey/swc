@@ -13,6 +13,10 @@ End-to-end session wrap-up: summarise changes, update docs, commit, push, and op
 
 Follow the `setup-permissions` skill.
 
+### 0a. Verify MCP dependency
+
+Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` — stop here, ship needs MCP access to read workload state.
+
 ### 1. Summarise local changes
 
 Run these in parallel:

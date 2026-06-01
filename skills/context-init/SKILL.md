@@ -13,6 +13,10 @@ Receives the resolved folder path, e.g. `.swc/feature_my-work/`.
 
 ## Steps
 
+### 0. Verify MCP dependency
+
+Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` which surfaces the guide — stop and return control to the caller. Do not proceed to scaffolding when the MCP is not registered.
+
 ### 1. Create stub files
 
 Write the following files into `.swc/<folder>/`. Each file gets a title and section headers only — no content.

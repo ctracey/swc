@@ -13,6 +13,10 @@ Entry point for starting a new piece of work. Delegates the planning conversatio
 
 Follow the `setup-permissions` skill.
 
+### 0a. Verify MCP dependency
+
+Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` and the workflow cannot proceed — stop here.
+
 ### 1. Confirm intent
 
 Before starting, read the `stages` array from the JSON config in step 1. For each stage, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow). Present this to the user:

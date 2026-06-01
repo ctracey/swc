@@ -53,6 +53,21 @@ Field semantics:
 
 For multiple folder candidates, list each in the same shape with its own `workload` status so the user can pick.
 
+## MCP dependency handling (agreed)
+
+The plugin treats `swc-workload-mcp` as an external dependency it does not own. Installation stays the user's responsibility — the plugin checks for it and guides setup when missing.
+
+**Mechanism:**
+- A reusable check skill (`swc:mcp-check`) probes for MCP presence and is silent when present.
+- When missing, it hands off to a guide skill (`swc:mcp-install`) that walks the user through registering the MCP.
+- The check is invoked at two trigger points:
+  - **Proactive** — `context-init` runs it at workload creation so first-time setup surfaces the guide before any tool call.
+  - **Defensive** — MCP-heavy front-line skills (deliver, plan, report, ship, etc.) run it before their first MCP call.
+
+**Rejected: `PreToolUse` hook keyed on `mcp__swc-workload__*`.** Hooks cannot fire when a tool isn't registered at all, so they don't cover the "not installed" case. A hook may be added later as a safety net if call sites slip through the skill checks.
+
+**Why not pollute every skill:** the check is one skill invocation at the top of each MCP-heavy front-line skill — same shape as the existing `setup-permissions` invocation pattern. Workflow stage skills inherit context from the front-line caller, so they don't re-check.
+
 ## Confirmed scope boundaries
 
 - `_meta.json` stays plugin‑owned — MCP doesn't see it

@@ -13,6 +13,10 @@ Entry point for delivering a work item. Delegates the delivery conversation to `
 
 Follow the `setup-permissions` skill.
 
+### 0a. Verify MCP dependency
+
+Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` and the workflow cannot proceed — stop here.
+
 ### 1. Resolve the work item
 
 Locate the active workload via `context-lookup`. Read `workload.md`.
