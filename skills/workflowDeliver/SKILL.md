@@ -1,6 +1,6 @@
 ---
 description: Drive delivery of a work item — clarify requirements, define test strategy and acceptance criteria. Use when implementing a work item, delivering a task, starting implementation, "work on this", "let's build", "implement task N", or when invoked via /workflowDeliver.
-allowed-tools: Bash, Read, Write, Edit, Glob, Skill
+allowed-tools: Bash, Read, Write, Edit, Glob, Skill, mcp__swc-workload__get, mcp__swc-workload__find, mcp__swc-workload__list, mcp__swc-workload__add, mcp__swc-workload__set_status
 ---
 
 # SWC Workflow Deliver
@@ -19,18 +19,22 @@ Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp
 
 ### 1. Resolve the work item
 
-Locate the active workload via `context-lookup`. Read `workload.md`.
+Locate the active workload folder via `context-lookup` to get the resolved folder name. All MCP calls below take that folder as their `workload` argument.
 
-**If the user named a specific item** — find it by number or description match and proceed to the status check below.
+**If the user named a specific item** — resolve it via the MCP:
+- If they gave a number (`2.3`), invoke `mcp__swc-workload__get` to fetch it.
+- If they gave a description, invoke `mcp__swc-workload__find` and use the best match (ambiguous matches → surface to user).
 
-**If no item was specified** — check for items with status `[-]` (in progress):
-- Exactly one in-progress item → use that item and proceed to the status check below
-- Multiple in-progress items, or none → ask the user which item they want to deliver
+Proceed to the status check below.
+
+**If no item was specified** — invoke `mcp__swc-workload__list` filtered to status `in-progress`:
+- Exactly one in-progress item → use that item and proceed to the status check below.
+- Multiple in-progress items, or none → ask the user which item they want to deliver.
 
 **If the item does not exist on the workload** — the user has described work that isn't tracked yet. Before proceeding:
-1. Confirm the title and a one-line description with the user
-2. Add it to the workload as a new item (append under the appropriate section, or as a new top-level item if unclear — ask if unsure)
-3. Confirm the new item number, then treat it as a fresh `[ ]` item below
+1. Confirm the title and a one-line description with the user.
+2. Add it via `mcp__swc-workload__add` (under the appropriate parent, or as a new top-level item if unclear — ask if unsure).
+3. Confirm the new item number returned by the MCP, then treat it as a fresh not-started item below.
 
 ---
 
@@ -38,7 +42,7 @@ Locate the active workload via `context-lookup`. Read `workload.md`.
 
 Check the item's current status marker and any existing task-specific docs at `.swc/<folder>/workitems/<N>/`. `<N>` is the **full work item number** — e.g. `1.1`, `2.3`, not just the top-level number.
 
-**`[-]` In progress:**
+**`in-progress`:**
 Read any existing task docs (e.g. `requirements.md`, `context.md`) and summarise what has already been captured:
 > "We're continuing work on **[N]: [name]**. Here's where things stand:
 > [one bullet per doc found — what it contains, e.g. 'requirements.md — intent and approach direction captured']
@@ -47,19 +51,19 @@ Read any existing task docs (e.g. `requirements.md`, `context.md`) and summarise
 
 Wait for confirmation before proceeding.
 
-**`[ ]` Not started, but task docs exist:**
+**`not-started`, but task docs exist:**
 Surface the existing context as part of your opening:
 > "**[N]: [name]** hasn't been started yet, but I found existing context for it: [list docs found]. I'll use that as background when we begin."
 
 Proceed to step 1 without waiting — this is informational, not a gate.
 
-**`[ ]` Not started, no task docs:**
+**`not-started`, no task docs:**
 Confirm simply:
 > "I'll work on **[N]: [name]** — is that right?"
 
 Wait for confirmation before proceeding.
 
-**`[x]` Done:**
+**`done`:**
 Do not proceed automatically. Clarify with the user:
 > "**[N]: [name]** is marked as done. How would you like to proceed?
 > - If this was marked done in error, I can reopen it
@@ -81,7 +85,7 @@ If yes, proceed. If no, ask what they actually need and stop here.
 
 ### 3. Mark work item in-progress
 
-Before starting the workflow, silently mark the work item `[-]` by invoking `workload_item-start` with the work item number. Emit no output — this is a silent side-effect.
+Before starting the workflow, silently invoke `mcp__swc-workload__set_status` against the resolved folder with the work item number and status `in-progress`. The MCP handles parent rollup. Emit no output — this is a silent side-effect.
 
 ### 4. Run the workflow
 

@@ -1,6 +1,6 @@
 ---
 description: Accept stage of the delivery workflow — confirm work item completion, mark done, and commit/push via ship. Seventh stage of the delivery workflow. Use when invoked by workflowDeliver or via /workflowDeliver_accept.
-allowed-tools: Read, Write, Edit, Bash, Skill, Glob
+allowed-tools: Read, Write, Edit, Bash, Skill, Glob, mcp__swc-workload__set_status
 ---
 
 # Deliver — Accept Stage
@@ -43,7 +43,7 @@ Wait for the user's response.
 
 If the user confirms:
 
-1. Invoke `workload-update` with the work item number and status `done` to mark it `[x]`.
+1. Invoke `mcp__swc-workload__set_status` against the resolved folder with the work item number and status `done`. The MCP handles parent rollup.
 2. Invoke `ship` to commit and push.
 
 ### 4. Not ready path — collect feedback
@@ -75,7 +75,7 @@ Invoke `workflowDeliver` with the work item number as the argument.
 ## Exit criteria
 
 **Done when (happy path):**
-- Work item marked `[x]`
+- Work item marked `done` via `mcp__swc-workload__set_status`
 - `ship` invoked and completed
 - Control returned to orchestrator
 

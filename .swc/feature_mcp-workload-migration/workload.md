@@ -32,12 +32,12 @@
   - [x] 5.1. `workflowPlan_context` — use MCP `exists` for existing‑workload detection
   - [x] 5.2. `workflowPlan_delivery` — use MCP `add` to write skeleton items
   - [x] 5.3. `workflowPlan_breakdown` — use MCP `add` for full breakdown, MCP `list` for playback
-  - [ ] 5.4. `workflowDeliver` — use MCP `find`/`get`/`list(status=in-progress)`/`set_status(in-progress)`/`add` (for untracked work)
-  - [ ] 5.5. `workflowDeliver_requirements` — use MCP `get` for item entry
-  - [ ] 5.6. `workflowDeliver_implement` — use MCP `get` for agent brief
-  - [ ] 5.7. `workflowDeliver_refine` — use MCP `get`
-  - [ ] 5.8. `workflowDeliver_review` — use MCP `get`
-  - [ ] 5.9. `workflowDeliver_accept` — use MCP `set_status(done)`
+  - [x] 5.4. `workflowDeliver` — use MCP `find`/`get`/`list(status=in-progress)`/`set_status(in-progress)`/`add` (for untracked work)
+  - [x] 5.5. `workflowDeliver_requirements` — use MCP `get` for item entry
+  - [x] 5.6. `workflowDeliver_implement` — use MCP `get` for agent brief
+  - [x] 5.7. `workflowDeliver_refine` — use MCP `get`
+  - [x] 5.8. `workflowDeliver_review` — use MCP `get`
+  - [x] 5.9. `workflowDeliver_accept` — use MCP `set_status(done)`
   - [ ] 5.10. `workflowImplement_orient` — use MCP `get` and `set_status(in-progress)`
   - [ ] 5.11. `report` — use MCP `list` for render, MCP next‑not‑started for NEXT STEP
   - [ ] 5.12. `ship` — use MCP `list` to match changes → items, MCP `set_status` for updates
