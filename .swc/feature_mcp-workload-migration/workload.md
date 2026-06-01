@@ -2,9 +2,9 @@
 
 ## Work items
 
-- [-] **1. Plumbing**
+- [x] **1. Plumbing**
   - [x] 1.1. Register `swc-workload-mcp` server config (project‑level, mirrors plugin install)
-  - [ ] 1.2. Update `setup-permissions` to allowlist `mcp__swc-workload__*` alongside `Skill(swc:*)`
+  - [x] 1.2. Update `setup-permissions` to allowlist `mcp__swc-workload__*` alongside `Skill(swc:*)`
   - [x] 1.3. Update `docs/usage.md` setup section — add MCP install step pointing at MCP repo instructions
   - [x] 1.4. Add `swc:mcp-check` skill — reusable dependency check (silent on success, delegates to guide on miss)
   - [x] 1.5. Add `swc:mcp-install` skill — placeholder guide for missing MCP (prompts user; install instructions deferred)
