@@ -9,6 +9,10 @@ allowed-tools: Read, Glob
 
 Follow the `setup-permissions` skill.
 
+## Step 0a. Verify MCP dependency
+
+Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` — stop here, the report cannot run without it.
+
 Then delegate to the three component skills in order, then add a NEXT STEP section.
 
 1. Invoke `report-plan`
