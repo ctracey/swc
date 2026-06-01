@@ -21,9 +21,9 @@
   - [x] 3.2. Add MCP `init` invocation against the resolved folder
   - [x] 3.3. Confirm the other five stubs (plan/architecture/notes/changelog/pipeline) still scaffold correctly
 
-- [ ] **4. Reframe `context-lookup` output**
-  - [ ] 4.1. Replace `workload.md` display strings with structured `Found context {...}` output
-  - [ ] 4.2. Populate `workload: exists/missing` field via MCP `exists` call
+- [-] **4. Reframe `context-lookup` output**
+  - [x] 4.1. Replace `workload.md` display strings with structured `Found context {...}` output
+  - [x] 4.2. Populate `workload: exists/missing` field via MCP `exists` call
   - [ ] 4.3. Update multi‑folder case to list candidates with workload status per row
   - [ ] 4.4. Fix misleading "No workload found under .swc/" → "No context found under .swc/"
 
@@ -40,6 +40,7 @@
   - [ ] 5.10. `workflowImplement_orient` — use MCP `get` and `set_status(in-progress)`
   - [ ] 5.11. `report` — use MCP `list` for render, MCP next‑not‑started for NEXT STEP
   - [ ] 5.12. `ship` — use MCP `list` to match changes → items, MCP `set_status` for updates
+  - [x] 5.13. Re-add `/swc:workload` skill — wraps `context-lookup` + MCP `list` for the user-facing "list workitems" prompt (refactored replacement for the skill deleted in item 2.1)
 
 - [ ] **6. Update spawned‑agent prompts**
   - [ ] 6.1. `workflowDeliver_implement` agent prompt — agent uses MCP instead of reading workload file

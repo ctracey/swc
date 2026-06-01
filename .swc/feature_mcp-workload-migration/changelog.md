@@ -1,5 +1,14 @@
 # Changelog
 
+## Session — context-lookup reframe + workload skill restored `2026-06-01`
+
+- `skills/context-lookup/SKILL.md` — single-folder confirm and locate-mode return now print `Found context {type, source, name, location, workload}` instead of `Located: .swc/<folder>/workload.md`. `workload` field populated via `mcp__swc-workload__exists`.
+- `allowed-tools` updated to include `Skill` and `mcp__swc-workload__exists`.
+- New `skills/workload/SKILL.md` — wraps `context-lookup` + `mcp__swc-workload__list` + render with status symbols. Replaces the skill deleted in item 2.1, refactored to use MCP. Restores the "list workitems" entry point so context-lookup runs upstream of MCP list (otherwise the model bypassed it).
+- Tracked as new workload item 5.13 — added and marked done.
+- Marked workload items 4.1 and 4.2 done; item 4 in progress (4.3 and 4.4 still outstanding).
+- Motivation: gap surfaced during testing — "list workitems" bypassed `context-lookup` once the wrapper skill was deleted, so the new `Found context {...}` line never appeared. Bringing back the thin wrapper restores the lookup → render flow.
+
 ## Session — context-init delegates workload artefact to MCP `2026-06-01`
 
 - `skills/context-init/SKILL.md` — dropped the `workload.md` stub block; added a new Step 2 that invokes `mcp__swc-workload__init` against the resolved folder; renumbered return to Step 3.
