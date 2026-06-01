@@ -7,11 +7,11 @@
   - [ ] 1.2. Update `setup-permissions` to allowlist `mcp__swc-workload__*` alongside `Skill(swc:*)`
   - [ ] 1.3. Update `docs/usage.md` setup section — add MCP install step pointing at MCP repo instructions
 
-- [ ] **2. Delete superseded artefact‑mechanics skills**
-  - [ ] 2.1. Delete `skills/workload/` (including `workload.py`)
-  - [ ] 2.2. Delete `skills/workload-update/`
-  - [ ] 2.3. Delete `skills/workload_item-start/`
-  - [ ] 2.4. Delete `skills/context--workload/`
+- [x] **2. Delete superseded artefact‑mechanics skills**
+  - [x] 2.1. Delete `skills/workload/` (including `workload.py`)
+  - [x] 2.2. Delete `skills/workload-update/`
+  - [x] 2.3. Delete `skills/workload_item-start/`
+  - [x] 2.4. Delete `skills/context--workload/`
 
 - [ ] **3. Adapt `context-init`**
   - [ ] 3.1. Drop the `workload.md` stub block from the skill steps
