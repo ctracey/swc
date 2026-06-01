@@ -9,7 +9,7 @@ Closes the work item loop: confirms the user is ready to mark the item done, upd
 
 ## Context
 
-The work item number and name are available from the calling context. If missing, read the active workload via `context-lookup`.
+The work item number and name are available from the calling context. If missing, resolve the active context via `context-lookup`.
 
 ## Steps
 

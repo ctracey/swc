@@ -9,7 +9,7 @@ Runs after the implementation agent returns. Spawns `code-reviewer`, presents fi
 
 ## Context
 
-The work item number, name, and workload folder path are available from the calling context. If missing, read the active workload via `context-lookup`.
+The work item number, name, and context folder path are available from the calling context. If missing, resolve the active context via `context-lookup`.
 
 ## Steps
 

@@ -25,7 +25,7 @@ Workloads live in `.swc/` — one folder per branch.
 
 ## When to read
 
-- At session start, check for an active workload matching the current branch
+- At session start, check for an active context matching the current branch
 - Before starting work — check if there's prior context
 
 ## Folder resolution

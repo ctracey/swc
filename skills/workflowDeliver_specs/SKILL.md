@@ -15,7 +15,7 @@ This stage has two paths — **lightweight** and **full** — chosen based on th
 
 ## Step 1 — Load context
 
-Read from the active workload folder:
+Read from the active context folder:
 - `requirements.md` for this work item (`.swc/<folder>/workitems/<N>/requirements.md`) — `<N>` is the **full work item number**, e.g. `1.1`, `2.3`, not just the top-level number
 - `plan.md` and `architecture.md` for broader context
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## Session — close item 5: workflow touchpoints + terminology sweep `2026-06-02`
+
+- **5.1–5.3** workflowPlan_context / _delivery / _breakdown — existence detection via MCP `exists`; existing-workload summary via MCP `list`; skeleton + breakdown writes via MCP `add`; playback via the `workload` skill.
+- **5.4** workflowDeliver — item resolution via MCP `get` / `find` / `list(status=in-progress)` / `add`; mark in-progress via MCP `set_status` (replaces deleted `workload_item-start`). Status check headings now use MCP vocabulary.
+- **5.5–5.8** Deliver stage skills (requirements / implement / refine / review) — load item via MCP `get` instead of reading `workload.md`; agent prompts updated to use MCP for the work item details.
+- **5.9** workflowDeliver_accept — done transition via MCP `set_status` (replaces deleted `workload-update`).
+- **5.10** workflowImplement_orient — fetch item via MCP `get`; mark in-progress via MCP `set_status` (replaces `workload_item-start`).
+- **5.11** report — workload section via `workload` skill (which uses MCP `list`); NEXT STEP derived from MCP `list` ordering (or `find_first(status=not-started)` if exposed).
+- **5.12** ship — context via MCP `list`; status updates via MCP `set_status` (replaces `workload-update`).
+- **5.14** Terminology sweep — `report-plan`, `report-notes`, `report-changelog`, `context--files`, `context-init`, `workload`, `workflowDeliver_specs`, `workflowDeliver_accept`, `workflowDeliver_refine`, `workflowDeliver_implement`, `workflowDeliver`, `workflowImplement`, `ship`: "active workload" / "workload folder" → "active context" / "context folder" where the reference was to the parent `.swc/<folder>` rather than the MCP-owned workload artefact.
+- Frontmatter `allowed-tools` updated across affected skills to include the relevant `mcp__swc-workload__*` tools.
+
+Item 5 closed; all 14 sub-items done. The hook from item 9 guards the workload arg on every MCP call so the deferred state checks happen uniformly.
+
 ## Session — close item 4 terminology + track sweep `2026-06-02`
 
 - 4.4 — adjacent "No matching workload" → "No matching context" in Step 2 of `context-lookup/SKILL.md`. The headline string was already corrected during the script-backed refactor.

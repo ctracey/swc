@@ -5,7 +5,7 @@ allowed-tools: Skill, mcp__swc-workload__list
 
 # SWC Workload
 
-Resolve the active workload folder and render its work items as a hierarchical list with status symbols.
+Resolve the active context folder and render its workload items as a hierarchical list with status symbols.
 
 ## Arguments
 
@@ -22,9 +22,9 @@ Follow the `setup-permissions` skill.
 
 Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` — stop here.
 
-### 1. Resolve the active workload folder
+### 1. Resolve the active context folder
 
-Follow the `context-lookup` skill to get the resolved workload folder path. If lookup fails or the user declines, stop.
+Follow the `context-lookup` skill to get the resolved context folder path. If lookup fails or the user declines, stop.
 
 ### 2. List work items via MCP
 

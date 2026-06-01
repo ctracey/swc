@@ -9,7 +9,7 @@ Entry point for the implementation agent. Reads the work item and folder from co
 
 ## Context
 
-The work item number, name, and workload folder path are passed in the agent prompt by `workflowDeliver_implement`. These must be available before this skill runs.
+The work item number, name, and context folder path are passed in the agent prompt by `workflowDeliver_implement`. These must be available before this skill runs.
 
 ## Steps
 

@@ -1,6 +1,6 @@
 ---
 description: Summarise session changes, update changelog and docs, commit, push, and optionally comment on the PR. Use when the user says "update docs & changelog", "wrap up this session", "prep to commit", "push this", "ship this", or invokes /swc-ship.
-allowed-tools: Read, Write, Edit, Glob, Bash
+allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__list, mcp__swc-workload__set_status
 ---
 
 # SWC Push
@@ -27,7 +27,7 @@ git diff HEAD                 # full diff
 git branch --show-current     # active branch
 ```
 
-Also read `.swc/_meta.json` to find the active workload folder, then read `workload.md` for task context.
+Also resolve the active context folder via `context-lookup`, then invoke `mcp__swc-workload__list` against that folder for task context.
 
 ### 2. Branch check
 
@@ -65,7 +65,7 @@ If unknown, or tests were run before the most recent changes: ask the user wheth
 
 ### 5. Update workload changelog
 
-Append a new session entry to `changelog.md` in the active workload folder:
+Append a new session entry to `changelog.md` in the active context folder:
 
 ```markdown
 ## Session — <short description> `YYYY-MM-DD`
@@ -86,14 +86,14 @@ For each match found, ask the user:
 >
 > Mark any as done, leave as-is, or skip? (e.g. '5.3 done', 'skip')"
 
-Wait for a response. Apply any status changes using `workload-update`. If the user says skip or nothing matches, continue.
+Wait for a response. Apply any status changes via `mcp__swc-workload__set_status` against the resolved folder (one call per item). If the user says skip or nothing matches, continue.
 
 ### 7. Update other docs if needed
 
-Check whether any other workload docs need updating:
+Check whether any other context docs need updating:
 - `notes.md` — if a decision or convention was settled this session
 - `plan.md` — if scope changed or a goal was clarified
-- `workload.md` — if task status changed (use `workload-update` for this, never edit directly)
+- Workload status — if task status changed, use `mcp__swc-workload__set_status` (never edit `workload.json` directly)
 
 Make only changes that reflect what actually happened. Don't pad.
 
