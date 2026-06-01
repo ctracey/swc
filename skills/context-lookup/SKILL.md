@@ -1,5 +1,5 @@
 ---
-description: Locate or create the active SWC workload folder for the current branch. Single source of truth for branch→folder naming. Use when you need to find the active workload, or when invoked via /context-lookup.
+description: Locate or create the active SWC context folder for the current branch. Single source of truth for branch→folder naming. Use when you need to find the active context, or when invoked via /context-lookup.
 allowed-tools: Read, Glob, Bash, Write, Skill, mcp__swc-workload__exists
 ---
 
@@ -9,9 +9,9 @@ Determine the `.swc/<folder>/` path for the current (or specified) branch. A Pyt
 
 ## Arguments
 
-- `/context-lookup` — locate existing workload for the current branch
-- `/context-lookup <branch>` — locate existing workload for a specific branch
-- `/context-lookup --create` — locate or create the workload folder for the current branch (used by planning skills)
+- `/context-lookup` — locate existing context for the current branch
+- `/context-lookup <branch>` — locate existing context for a specific branch
+- `/context-lookup --create` — locate or create the context folder for the current branch (used by planning skills)
 
 ## Steps
 
@@ -64,7 +64,7 @@ Found context {name: <candidates[0].name>, location: <candidates[0].location>, w
 Use this? [Y/n]:
 ```
 - **Yes:** resolve to that candidate. Carry the `exists` result forward to Step 5. Continue to Step 4.
-- **No, locate mode:** stop — `No matching workload — run /swc:context-init to create one.`
+- **No, locate mode:** stop — `No matching context — run /swc:context-init to create one.`
 - **No, create mode:** use `current.derived_folder` as resolved. Continue to Step 4.
 
 **`multi_folder`** — for each candidate, invoke `mcp__swc-workload__exists` to fill workload status, then present:
@@ -76,7 +76,7 @@ Enter a number (or 'new' to start a fresh context):
 ```
 - **Number N:** resolve to `candidates[N-1].name`. Carry that row's `exists` result to Step 5. Continue to Step 4.
 - **`new`, create mode:** use `current.derived_folder`. Continue to Step 4.
-- **`new`, locate mode:** stop — `No matching workload — run /swc:context-init to create one.`
+- **`new`, locate mode:** stop — `No matching context — run /swc:context-init to create one.`
 
 ### 3. Handle `no_workload`
 
@@ -111,4 +111,4 @@ Found context {type: <type>, source: <source>, name: <name>, location: <location
 
 **Create mode:** return the resolved folder path to the calling skill. Print nothing — the calling skill handles confirmation.
 
-> **Goal:** single source of truth for branch→folder naming. Never silently load the wrong workload. When in doubt, ask.
+> **Goal:** single source of truth for branch→folder naming. Never silently load the wrong context. When in doubt, ask.

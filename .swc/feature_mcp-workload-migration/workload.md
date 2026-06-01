@@ -21,11 +21,11 @@
   - [x] 3.2. Add MCP `init` invocation against the resolved folder
   - [x] 3.3. Confirm the other five stubs (plan/architecture/notes/changelog/pipeline) still scaffold correctly
 
-- [-] **4. Reframe `context-lookup` output**
+- [x] **4. Reframe `context-lookup` output**
   - [x] 4.1. Replace `workload.md` display strings with structured `Found context {...}` output
   - [x] 4.2. Populate `workload: exists/missing` field via MCP `exists` call
   - [x] 4.3. Update multi‑folder case to list candidates with workload status per row
-  - [ ] 4.4. Fix misleading "No workload found under .swc/" → "No context found under .swc/"
+  - [x] 4.4. Fix misleading "No workload found under .swc/" → "No context found under .swc/" (plus adjacent "No matching workload" → "No matching context" for consistency)
   - [x] 4.5. Back `context-lookup` with a Python helper (`context-lookup.py`) — single-call probe replaces 5–7 model-driven tool calls on the happy path; interactive cases and the single MCP `exists` call remain in the skill
 
 - [ ] **5. Rewrite workflow touchpoints**
@@ -42,6 +42,7 @@
   - [ ] 5.11. `report` — use MCP `list` for render, MCP next‑not‑started for NEXT STEP
   - [ ] 5.12. `ship` — use MCP `list` to match changes → items, MCP `set_status` for updates
   - [x] 5.13. Re-add `/swc:workload` skill — wraps `context-lookup` + MCP `list` for the user-facing "list workitems" prompt (refactored replacement for the skill deleted in item 2.1)
+  - [ ] 5.14. Terminology sweep — after the 5.x rewrites land, audit all skills for "workload folder" / "active workload" usage that should now read "context folder" / "active context" (e.g. `report-plan`, `report-notes`, `report-changelog`, `context--files`, `workload` skill body, any remaining 5.x leftovers)
 
 - [ ] **6. Update spawned‑agent prompts**
   - [ ] 6.1. `workflowDeliver_implement` agent prompt — agent uses MCP instead of reading workload file
