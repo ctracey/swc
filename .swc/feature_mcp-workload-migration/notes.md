@@ -64,7 +64,9 @@ The plugin treats `swc-workload-mcp` as an external dependency it does not own. 
   - **Proactive** — `context-init` runs it at workload creation so first-time setup surfaces the guide before any tool call.
   - **Defensive** — MCP-heavy front-line skills (deliver, plan, report, ship, etc.) run it before their first MCP call.
 
-**Rejected: `PreToolUse` hook keyed on `mcp__swc-workload__*`.** Hooks cannot fire when a tool isn't registered at all, so they don't cover the "not installed" case. A hook may be added later as a safety net if call sites slip through the skill checks.
+**Note on the hook approach:**
+- `mcp-check` / `mcp-install` (above) cover the **not installed** case — hooks cannot fire when a tool isn't registered, so the skill-based check is the only way to surface that path.
+- A `PreToolUse` hook on `mcp__swc-workload__*` covers the **wrong workload context** case — when the model calls the MCP with a `workload` arg that doesn't match the resolved branch→folder mapping. This was initially rejected on "hooks can't fire when not installed" grounds, but that concern only applies to detecting absence; once the MCP is registered, a hook is the right enforcement layer because it catches *every* call uniformly (model bypassed the skill chain, called the MCP directly with a stale workload, etc.). The hook ships with the plugin at `hooks/hooks.json` + `hooks/swc-workload-guard.py` and denies the call with an informative reason when the arg doesn't match. The skill check and the hook are complementary, not alternatives.
 
 **Why not pollute every skill:** the check is one skill invocation at the top of each MCP-heavy front-line skill — same shape as the existing `setup-permissions` invocation pattern. Workflow stage skills inherit context from the front-line caller, so they don't re-check.
 

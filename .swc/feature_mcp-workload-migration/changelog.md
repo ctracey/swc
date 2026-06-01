@@ -1,5 +1,16 @@
 # Changelog
 
+## Session — multi-folder picker, script-backed lookup, PreToolUse hook `2026-06-02`
+
+- **4.3** Multi-folder case in `context-lookup` now lists candidates as compact `{name, location, workload}` with `mcp__swc-workload__exists` per row. Header renamed to "Multiple contexts found"; trailing prompt to "fresh context".
+- **4.5** Backed `context-lookup` with `context-lookup.py` — single-call `probe` collapses 5–7 model-driven tool calls into one for the happy path; `persist` writes `_meta.json` mapping. Interactive cases and the single MCP `exists` call stay in the skill. SKILL.md rewritten as a thin conductor.
+- **Item 9** New top-level item: PreToolUse hook for workload-context enforcement.
+  - `hooks/swc-workload-guard.py` — resolves expected workload from `_meta.json` + current branch, denies the call with an informative reason on mismatch / missing arg / no mapping. Allows silently when the arg matches.
+  - `hooks/hooks.json` — registers the matcher `mcp__swc-workload__.*` via `${CLAUDE_PLUGIN_ROOT}`.
+  - Initial hooks.json shape was missing the top-level `"hooks"` wrapper required by Claude Code's plugin hook schema — fixed once the user couldn't see hooks load even after reinstall. Hook now firing.
+- **notes.md** Updated the MCP dependency handling section — reframed the earlier `PreToolUse` hook rejection. The skill-based `mcp-check` handles the "not installed" case; the hook handles the "wrong workload arg" case. Complementary, not alternatives.
+- Motivation: testing revealed the model bypasses `context-lookup` when calling MCP tools directly (different prompt phrasings hit different code paths). The hook is the only mechanism that enforces context consistency uniformly across every MCP call.
+
 ## Session — context-lookup reframe + workload skill restored `2026-06-01`
 
 - `skills/context-lookup/SKILL.md` — single-folder confirm and locate-mode return now print `Found context {type, source, name, location, workload}` instead of `Located: .swc/<folder>/workload.md`. `workload` field populated via `mcp__swc-workload__exists`.
