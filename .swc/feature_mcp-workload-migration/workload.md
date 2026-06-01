@@ -16,10 +16,10 @@
   - [x] 2.3. Delete `skills/workload_item-start/`
   - [x] 2.4. Delete `skills/context--workload/`
 
-- [ ] **3. Adapt `context-init`**
-  - [ ] 3.1. Drop the `workload.md` stub block from the skill steps
-  - [ ] 3.2. Add MCP `init` invocation against the resolved folder
-  - [ ] 3.3. Confirm the other five stubs (plan/architecture/notes/changelog/pipeline) still scaffold correctly
+- [x] **3. Adapt `context-init`**
+  - [x] 3.1. Drop the `workload.md` stub block from the skill steps
+  - [x] 3.2. Add MCP `init` invocation against the resolved folder
+  - [x] 3.3. Confirm the other five stubs (plan/architecture/notes/changelog/pipeline) still scaffold correctly
 
 - [ ] **4. Reframe `context-lookup` output**
   - [ ] 4.1. Replace `workload.md` display strings with structured `Found context {...}` output
