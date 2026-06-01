@@ -1,6 +1,6 @@
 ---
 description: Locate or create the active SWC workload folder for the current branch. Single source of truth for branch→folder naming. Use when you need to find the active workload, or when invoked via /context-lookup.
-allowed-tools: Read, Glob, Bash, Write
+allowed-tools: Read, Glob, Bash, Write, Skill, mcp__swc-workload__exists
 ---
 
 # SWC Lookup
@@ -76,12 +76,13 @@ Stop.
 **No folders found — create mode:**
 Use the derived folder name from step 2. Proceed to step 5.
 
-**One folder found:** confirm with the user before proceeding, noting whether it matches:
+**One folder found:** invoke `mcp__swc-workload__exists` against the candidate folder path to determine whether the workload artefact is present, then confirm with the user before proceeding:
 ```
-Found one workload: .swc/<branch-subfolder>/workload.md
+Found context {type: <branch|folder>, source: <branch-name|dir-name>, name: <basename>, location: .swc/<sub>, workload: <exists|missing>}
 [MATCH] This folder matches your current branch.   ← or [NO MATCH] if it doesn't
 Use this? [Y/n]:
 ```
+Field semantics: `type` is `branch` in a git repo or `folder` for the non-git fallback; `source` is the value mapped *from* (branch name or directory name); `name` is the resolved context name (basename of `location`); `workload` is `exists` or `missing` from the MCP `exists` result.
 If the user declines:
 - Locate mode: stop.
 - Create mode: use the derived folder name from step 2 and treat as a new workload.
@@ -112,10 +113,11 @@ Write the updated file. Print nothing — this is a silent side-effect.
 
 ### 6. Return
 
-**Locate mode:** print the located path:
+**Locate mode:** invoke `mcp__swc-workload__exists` against the resolved folder, then print the structured context line:
 ```
-Located: .swc/<folder>/workload.md
+Found context {type: <branch|folder>, source: <branch-name|dir-name>, name: <basename>, location: .swc/<folder>, workload: <exists|missing>}
 ```
+Field semantics are as described in Step 4. If the `exists` call was already made for the single-candidate case in Step 4, reuse its result here rather than re-invoking.
 
 **Create mode:** return the located folder path to the calling skill. Do not print a confirmation — the calling skill handles that.
 
