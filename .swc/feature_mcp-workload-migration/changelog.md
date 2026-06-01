@@ -1,5 +1,12 @@
 # Changelog
 
+## Session — close item 4 terminology + track sweep `2026-06-02`
+
+- 4.4 — adjacent "No matching workload" → "No matching context" in Step 2 of `context-lookup/SKILL.md`. The headline string was already corrected during the script-backed refactor.
+- `context-lookup/SKILL.md` description, arguments, and goal — replaced "workload folder" / "workload" with "context folder" / "context" where they referred to the parent folder (not the MCP-owned workload artefact).
+- Added 5.14 to track a terminology sweep across other skills (`report-*`, `context--files`, `workload` skill body, any 5.x leftovers) once the bulk of 5.x is in.
+- Item 4 closed; all five sub-items done.
+
 ## Session — multi-folder picker, script-backed lookup, PreToolUse hook `2026-06-02`
 
 - **4.3** Multi-folder case in `context-lookup` now lists candidates as compact `{name, location, workload}` with `mcp__swc-workload__exists` per row. Header renamed to "Multiple contexts found"; trailing prompt to "fresh context".
