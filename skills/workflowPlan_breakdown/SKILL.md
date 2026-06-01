@@ -1,6 +1,6 @@
 ---
 description: Propose and confirm the work item breakdown for a piece of work. Fifth phase of the planning conversation. Use when creating a task list, a workload breakdown, or when invoked via /workflowPlan_breakdown.
-allowed-tools: Read, Write, Edit, Glob, Bash
+allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__add, mcp__swc-workload__list
 ---
 
 # Plan Breakdown
@@ -24,7 +24,7 @@ The user may mix these. Follow their lead — don't impose structure.
 
 ### 2. Draft the workload
 
-With the delivery shape and navigation approach in mind, draft the full work item list. Present as plain text using the `swc-list` visual format:
+With the delivery shape and navigation approach in mind, draft the full work item list. Present as plain text using the `workload` skill visual format:
 
 ```
 □ 1. First work item
@@ -44,26 +44,13 @@ Wait for explicit confirmation. Iterate if requested. Do not write until confirm
 
 ### 4. Capture
 
-Write the confirmed workload to `.swc/<folder>/workload.md`:
-
-```markdown
-# [Branch] — [work title]
-
-## Work items
-
-- [ ] **1. [First work item]**
-  - [ ] 1.1. [Sub-item]
-  - [ ] 1.2. [Sub-item]
-
-- [ ] **2. [Second work item]**
-  - [ ] 2.1. [Sub-item]
-```
+Write the confirmed workload via `mcp__swc-workload__add` against the resolved folder — invoke for each item (top-level and sub-items), or batch if the MCP supports it, preserving the parent/child hierarchy from the drafted list. The MCP owns the workload artefact; do not write to `workload.md` (or `workload.json`) directly.
 
 Work item granularity: small and specific, with a clear "done when" implied by each name. More than ~5 sub-items under one parent → consider splitting the parent.
 
 ### 5. Present
 
-Run `swc-list` to show the full workload. Then ask:
+Invoke the `workload` skill (or call `mcp__swc-workload__list` directly) to play back the full workload. Then ask:
 
 > "That's the full breakdown. Anything to adjust before we wrap up?"
 
@@ -72,7 +59,7 @@ Wait for any final adjustments, then proceed to `workflowPlan_finalise`.
 ## Exit criteria
 
 **Done when:**
-- Full workload written to `.swc/<folder>/workload.md`
+- Full workload written via `mcp__swc-workload__add` (top-level + sub-items, hierarchy preserved)
 - User confirmed the breakdown
 
 **Return control to `workflowPlan`.**

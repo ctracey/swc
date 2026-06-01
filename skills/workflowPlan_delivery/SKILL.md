@@ -1,6 +1,6 @@
 ---
 description: Understand the delivery shape — phases, milestones, and priorities. What lands first and why. Fourth phase of the planning conversation. Use when discussing rollout, sequencing, or priorities, or when invoked via /workflowPlan_delivery.
-allowed-tools: Read, Write, Edit, Glob, Bash
+allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__add
 ---
 
 # Plan Delivery
@@ -35,11 +35,11 @@ Don't categorise it — just understand what the user considers high priority an
 
 Add `## Delivery shape` to `plan.md` with 2–4 bullets summarising phases and priorities.
 
-Write a skeleton workload to `.swc/<folder>/workload.md` — one top-level work item per phase or priority area identified, no sub-items yet. This gives a starting shape for the detailed breakdown.
+Write the skeleton workload by invoking `mcp__swc-workload__add` once per identified phase or priority area — top-level items only, no sub-items yet. The MCP owns the workload artefact; do not write to `workload.md` (or `workload.json`) directly.
 
 ### 5. Present and check
 
-Run `swc-list` to show the skeleton. Then ask:
+Invoke the `workload` skill to show the skeleton. Then ask:
 
 > "Here's the rough shape as work items. Does this ordering and grouping look right before we break it down further?"
 
@@ -51,7 +51,7 @@ Transition: *"Good — let's figure out how to break it down."*
 
 **Done when:**
 - `plan.md` has `## Delivery shape`
-- Skeleton workload written to `.swc/<folder>/workload.md`
+- Skeleton workload written via `mcp__swc-workload__add` (one top-level item per phase/priority)
 - User confirmed the ordering and grouping
 
 **Return control to `workflowPlan`.**

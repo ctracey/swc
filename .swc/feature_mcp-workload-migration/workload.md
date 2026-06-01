@@ -28,10 +28,10 @@
   - [x] 4.4. Fix misleading "No workload found under .swc/" → "No context found under .swc/" (plus adjacent "No matching workload" → "No matching context" for consistency)
   - [x] 4.5. Back `context-lookup` with a Python helper (`context-lookup.py`) — single-call probe replaces 5–7 model-driven tool calls on the happy path; interactive cases and the single MCP `exists` call remain in the skill
 
-- [ ] **5. Rewrite workflow touchpoints**
-  - [ ] 5.1. `workflowPlan_context` — use MCP `exists` for existing‑workload detection
-  - [ ] 5.2. `workflowPlan_delivery` — use MCP `add` to write skeleton items
-  - [ ] 5.3. `workflowPlan_breakdown` — use MCP `add` for full breakdown, MCP `list` for playback
+- [-] **5. Rewrite workflow touchpoints**
+  - [x] 5.1. `workflowPlan_context` — use MCP `exists` for existing‑workload detection
+  - [x] 5.2. `workflowPlan_delivery` — use MCP `add` to write skeleton items
+  - [x] 5.3. `workflowPlan_breakdown` — use MCP `add` for full breakdown, MCP `list` for playback
   - [ ] 5.4. `workflowDeliver` — use MCP `find`/`get`/`list(status=in-progress)`/`set_status(in-progress)`/`add` (for untracked work)
   - [ ] 5.5. `workflowDeliver_requirements` — use MCP `get` for item entry
   - [ ] 5.6. `workflowDeliver_implement` — use MCP `get` for agent brief

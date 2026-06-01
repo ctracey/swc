@@ -1,6 +1,6 @@
 ---
 description: Confirm the working branch, check for existing workloads, and create stub planning docs. First phase of the planning conversation. Use at the start of a planning session or when invoked via /workflowPlan_context.
-allowed-tools: Read, Write, Edit, Glob, Bash
+allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__exists, mcp__swc-workload__list
 ---
 
 # Plan Context
@@ -20,11 +20,11 @@ Returns: confirmed branch name + resolved folder path `.swc/<folder>/`.
 
 ### 2. Check for an existing workload
 
-Look for `.swc/<folder>/workload.md`.
+Invoke `mcp__swc-workload__exists` against the resolved folder.
 
-**Not found** — fresh start. Go to step 3.
+**Result `missing`** — fresh start. Go to step 3.
 
-**Found** — read it and surface a brief summary (work item count, done count), then ask:
+**Result `exists`** — invoke `mcp__swc-workload__list` against the resolved folder to read its items. Surface a brief summary (work item count, done count), then ask:
 
 > I found an existing workload for `<branch>` (M work items, X done). How does this new work relate?
 >
