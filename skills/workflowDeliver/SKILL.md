@@ -19,7 +19,7 @@ Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp
 
 ### 1. Resolve the work item
 
-Locate the active workload folder via `context-lookup` to get the resolved folder name. All MCP calls below take that folder as their `workload` argument.
+Locate the active context folder via `context-lookup` to get the resolved folder name. All MCP calls below take that folder as their `workload` argument.
 
 **If the user named a specific item** — resolve it via the MCP:
 - If they gave a number (`2.3`), invoke `mcp__swc-workload__get` to fetch it.

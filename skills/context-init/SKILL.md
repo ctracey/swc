@@ -5,7 +5,7 @@ allowed-tools: Write, Skill, mcp__swc-workload__init
 
 # SWC Init
 
-Create the stub planning docs for a new workload folder. Called by `workflow_plan-context` after `context-lookup` has confirmed the folder path.
+Create the stub planning docs for a new context folder. Called by `workflow_plan-context` after `context-lookup` has confirmed the folder path.
 
 ## Arguments
 

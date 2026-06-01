@@ -28,7 +28,7 @@
   - [x] 4.4. Fix misleading "No workload found under .swc/" → "No context found under .swc/" (plus adjacent "No matching workload" → "No matching context" for consistency)
   - [x] 4.5. Back `context-lookup` with a Python helper (`context-lookup.py`) — single-call probe replaces 5–7 model-driven tool calls on the happy path; interactive cases and the single MCP `exists` call remain in the skill
 
-- [-] **5. Rewrite workflow touchpoints**
+- [x] **5. Rewrite workflow touchpoints**
   - [x] 5.1. `workflowPlan_context` — use MCP `exists` for existing‑workload detection
   - [x] 5.2. `workflowPlan_delivery` — use MCP `add` to write skeleton items
   - [x] 5.3. `workflowPlan_breakdown` — use MCP `add` for full breakdown, MCP `list` for playback
@@ -38,11 +38,11 @@
   - [x] 5.7. `workflowDeliver_refine` — use MCP `get`
   - [x] 5.8. `workflowDeliver_review` — use MCP `get`
   - [x] 5.9. `workflowDeliver_accept` — use MCP `set_status(done)`
-  - [ ] 5.10. `workflowImplement_orient` — use MCP `get` and `set_status(in-progress)`
-  - [ ] 5.11. `report` — use MCP `list` for render, MCP next‑not‑started for NEXT STEP
-  - [ ] 5.12. `ship` — use MCP `list` to match changes → items, MCP `set_status` for updates
+  - [x] 5.10. `workflowImplement_orient` — use MCP `get` and `set_status(in-progress)`
+  - [x] 5.11. `report` — use MCP `list` for render, MCP next‑not‑started for NEXT STEP
+  - [x] 5.12. `ship` — use MCP `list` to match changes → items, MCP `set_status` for updates
   - [x] 5.13. Re-add `/swc:workload` skill — wraps `context-lookup` + MCP `list` for the user-facing "list workitems" prompt (refactored replacement for the skill deleted in item 2.1)
-  - [ ] 5.14. Terminology sweep — after the 5.x rewrites land, audit all skills for "workload folder" / "active workload" usage that should now read "context folder" / "active context" (e.g. `report-plan`, `report-notes`, `report-changelog`, `context--files`, `workload` skill body, any remaining 5.x leftovers)
+  - [x] 5.14. Terminology sweep — after the 5.x rewrites land, audit all skills for "workload folder" / "active workload" usage that should now read "context folder" / "active context" (e.g. `report-plan`, `report-notes`, `report-changelog`, `context--files`, `workload` skill body, any remaining 5.x leftovers)
 
 - [ ] **6. Update spawned‑agent prompts**
   - [ ] 6.1. `workflowDeliver_implement` agent prompt — agent uses MCP instead of reading workload file

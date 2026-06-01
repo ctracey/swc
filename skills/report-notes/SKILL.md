@@ -1,5 +1,5 @@
 ---
-description: Summarise the notes and decisions captured for the active workload. Use when the user says "what notes do we have", "show me the notes", "what decisions have been made", "summarise the notes", or invokes /report-notes.
+description: Summarise the notes and decisions captured for the active context. Use when the user says "what notes do we have", "show me the notes", "what decisions have been made", "summarise the notes", or invokes /report-notes.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -13,7 +13,7 @@ Read the active notes file and present a concise overview of key decisions and c
 
 Follow the `setup-permissions` skill.
 
-### 1. Resolve the active workload
+### 1. Resolve the active context
 
 1. Run `git branch --show-current`
 2. Read `.swc/_meta.json`

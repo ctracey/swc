@@ -1,5 +1,5 @@
 ---
-description: Summarise the changelog for the active workload. Use when the user says "what changed", "show me the changelog", "what happened in task N", "what happened in work item N", "recent changes", or invokes /swc-report-changelog.
+description: Summarise the changelog for the active context. Use when the user says "what changed", "show me the changelog", "what happened in task N", "what happened in work item N", "recent changes", or invokes /swc-report-changelog.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -13,7 +13,7 @@ Read the active changelog file and present a concise overview of recent work ite
 
 Follow the `setup-permissions` skill.
 
-### 1. Resolve the active workload
+### 1. Resolve the active context
 
 1. Run `git branch --show-current`
 2. Read `.swc/_meta.json`

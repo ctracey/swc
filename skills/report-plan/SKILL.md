@@ -1,5 +1,5 @@
 ---
-description: Summarise the plan for the active workload. Use when the user says "what's the plan", "show me the plan", "summarise the plan", or invokes /report-plan.
+description: Summarise the plan for the active context. Use when the user says "what's the plan", "show me the plan", "summarise the plan", or invokes /report-plan.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -13,7 +13,7 @@ Read the active plan file and present a concise high-level summary, leaving the 
 
 Follow the `setup-permissions` skill.
 
-### 1. Resolve the active workload
+### 1. Resolve the active context
 
 1. Run `git branch --show-current`
 2. Read `.swc/_meta.json`
