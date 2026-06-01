@@ -74,7 +74,7 @@ Agent(
   description: "Implement work item [N]",
   prompt: "You are an implementation agent for work item [N].
 
-Use the context-lookup skill to find the active workload folder, then read workload.md to confirm the work item name.
+Use the context-lookup skill to find the active context folder, then invoke `mcp__swc-workload__get` (against the resolved folder) for work item [N] to confirm the name and details.
 
 Follow the workflowImplement skill to complete this work item.
 
