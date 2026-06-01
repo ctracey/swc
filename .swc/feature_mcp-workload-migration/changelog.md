@@ -1,5 +1,11 @@
 # Changelog
 
+## Session — setup-permissions allowlists MCP tools `2026-06-01`
+
+- `skills/setup-permissions/SKILL.md` — added `mcp__swc-workload__*` to the allowlist Step 4 writes; Step 2 idempotency check now verifies all three entries (`Skill(swc:*)`, `Read(<swc_skills_path>/*)`, `mcp__swc-workload__*`) so existing projects re-run picks up the new MCP entry.
+- Marked workload item 1.2 done; item 1 (Plumbing) rolls up to done.
+- Permission syntax confirmed via claude-code-guide: `mcp__<server>__*` (wildcard form) is canonical, no `Tool()`/`MCP()` wrapper needed.
+
 ## Session — usage docs: MCP setup steps `2026-06-01`
 
 - `docs/usage.md` — added Step 2 substeps (2.1 trigger setup by attempting an SWC workflow, 2.2 follow guide or have it installed by the MCP setup skill, 2.3 what gets installed) and a new Step 3 smoke test.
