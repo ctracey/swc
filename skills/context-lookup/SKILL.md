@@ -88,6 +88,31 @@ Stop.
 
 **Create mode:** use `current.derived_folder` as the resolved folder. Construct context: `type: branch`, `source: current.branch`, `name: current.derived_folder`, `location: .swc/<derived>`, `absolute_path: <pwd>/.swc/<derived>`. Continue to Step 4.
 
+### 3a. Confirm location (first-time `.swc/` creation only)
+
+Before persisting (Step 4 writes `.swc/_meta.json`, which auto-creates `.swc/` if missing), check whether `.swc/` already exists in the current working directory.
+
+- **`.swc/` already exists** — skip this step silently and proceed to Step 4.
+
+- **`.swc/` does NOT exist** — this is the first SWC use in this project. Pause and confirm with the user before any folder is created.
+
+  Resolve:
+  - `<cwd>` — current working directory
+  - `<repo_root>` — `git rev-parse --show-toplevel` (empty if not a git repo)
+
+  Show:
+  > "SWC stores its context docs in a `.swc/` folder. This is the first time you're using SWC in this project — `.swc/` will be created at:
+  >
+  >   `<cwd>`
+  >
+  > [Include the next line only if `<repo_root>` is non-empty AND `<cwd>` != `<repo_root>`:]
+  > This is not the repository root. The repo root is `<repo_root>`. SWC context usually lives at the repo root so it travels with the project — consider switching there before continuing.
+  >
+  > Proceed and create `.swc/` here? (y/n)"
+
+  - **Yes** — continue to Step 4.
+  - **No** — stop and return control to the caller. Do not persist. Do not create `.swc/`. The user is expected to change directory and re-invoke.
+
 ### 4. Persist the mapping
 
 If a `branch` value is known (i.e. not the non-git-fallback path), run:
