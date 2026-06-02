@@ -23,16 +23,17 @@ Resolve any `./` prefix on the source. Do not assume `<marketplace_root>/plugins
 
 ### 2. Check existing permissions
 
-Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissions.allow` contains **all six** of:
+Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissions.allow` contains **all seven** of:
 
 - `"Skill(swc:*)"`
 - `"Read(<swc_skills_path>/**)"`
 - `"Read(.swc/**)"`
 - `"Bash(python3 <swc_skills_path>/**)"`
+- The skill-helper JSON-parse one-liner (see step 4 for the exact JSON-encoded string)
 - `"mcp__swc-workload__*"`
 - `"mcp__plugin_swc_swc-workload__*"`
 
-**All six present:** print `swc: skill permissions already configured.` and stop.
+**All seven present:** print `swc: skill permissions already configured.` and stop.
 
 **Any missing:** proceed to step 3 — the writer in step 4 will add the missing entries while preserving any that already exist.
 
@@ -48,7 +49,7 @@ Other operations within skills (git, edit, write, non-swc bash) still ask as nor
 
 ### 4. Write permissions
 
-Add all six of the following entries to `permissions.allow` in `.claude/settings.json`, preserving all existing content. Skip any entry that is already present. Write the file.
+Add all seven of the following entries to `permissions.allow` in `.claude/settings.json`, preserving all existing content. Skip any entry that is already present. Write the file.
 
 | Rule | What it allows |
 |---|---|
@@ -56,8 +57,15 @@ Add all six of the following entries to `permissions.allow` in `.claude/settings
 | `Read(<swc_skills_path>/**)` | Reading any swc skill file (SKILL.md, helper scripts, fixtures) |
 | `Read(.swc/**)` | Reading any SWC context doc (plan, notes, changelog, workitems/, etc.) — scoped to the project's `.swc/` folder |
 | `Bash(python3 <swc_skills_path>/**)` | Running swc-shipped python helpers (e.g. `context-lookup.py`, `progress.py`) without prompting; other `python3` invocations still ask |
+| **JSON-parse one-liner** (see below) | Running the swc convention `python3 -c` helper that extracts `output` (or `error`) from a script's JSON envelope. Used by multiple skills to render their python helpers' results. Listed as an exact-string rule (not all `python3 -c`) so other one-liners still prompt. |
 | `mcp__swc-workload__*` | Calling any tool on the `swc-workload` MCP when registered at project scope (e.g. via `claude mcp add`) |
 | `mcp__plugin_swc_swc-workload__*` | Calling any tool on the `swc-workload` MCP when bundled with the swc plugin (`.mcp.json` at plugin root). Claude Code namespaces plugin-bundled MCPs as `plugin_<plugin>_<server>`. |
+
+The JSON-parse one-liner rule, exactly as it must appear in `.claude/settings.json` (JSON-encoded — copy verbatim, including the backslash escapes):
+
+```
+"Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('output', d.get\\('error', ''\\)\\)\\)\")"
+```
 
 Both MCP rules are kept because the same MCP can be active in either form depending on how it's registered. Listing both means setup works regardless.
 
