@@ -2,8 +2,11 @@
   "permissions": {
     "allow": [
       "Skill(swc:*)",
-      "Read(/Users/tracer/claude-plugins/plugins/swc_v1.1.0-PR/skills/*)",
-      "mcp__swc-workload__*"
+      "Read(/Users/tracer/claude-plugins/plugins/swc_v1.1.0-PR/skills/**)",
+      "Read(.swc/**)",
+      "Bash(python3 /Users/tracer/claude-plugins/plugins/swc_v1.1.0-PR/skills/**)",
+      "mcp__swc-workload__*",
+      "mcp__plugin_swc_swc-workload__*"
     ]
   },
   "enabledPlugins": {
