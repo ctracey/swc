@@ -1,5 +1,5 @@
 ---
-description: SWC context file structure and naming — folder-per-branch layout, branch→folder mapping, and doc file roles. Use when creating, locating, or referencing .swc/ folders or doc files (workload.md, plan.md, architecture.md, notes.md, changelog.md).
+description: SWC context file structure and naming — folder-per-branch layout, branch→folder mapping, and doc file roles. Use when creating, locating, or referencing .swc/ folders or doc files (workload.json, plan.md, architecture.md, notes.md, changelog.md).
 allowed-tools: Read
 ---
 # SWC Context File Structure
@@ -10,7 +10,7 @@ Workloads live in `.swc/` — one folder per branch.
 .swc/
 ├── _meta.json                # branch→folder mapping
 └── feature_my-work/         # branch name with / → _
-    ├── workload.md           # work item list
+    ├── workload.json         # work item list — owned by the swc-workload MCP (never edit by hand)
     ├── plan.md
     ├── architecture.md
     ├── notes.md
@@ -60,7 +60,7 @@ The canonical mapping lives in `_meta.json`:
 
 | File | Purpose | Used by |
 |------|---------|---------|
-| `workload.md` | Work item list — progress tracking | Main session |
+| `workload.json` | Work item list — progress tracking. **Managed by the `swc-workload` MCP** — never edit by hand. | Skills via `mcp__swc-workload__*` |
 | `plan.md` | **What and why** — goals, features, intent, out of scope | Main session → subagents |
 | `architecture.md` | Tech stack, folder structure, hard constraints | Main session → subagents |
 | `notes.md` | **Conventions and agreements** — naming, format, decisions that apply across work items. Stable reference. | Any actor |
