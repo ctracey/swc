@@ -261,12 +261,12 @@
     {
       "id": "2dd68f2",
       "title": "Update narrative docs",
-      "status": "not-started",
+      "status": "in-progress",
       "children": [
         {
           "id": "7bcdf29",
           "title": "`docs/plugin-design.md` \u2014 rename `workload.md` \u2192 `workload.json` in tree; note MCP ownership",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
