@@ -41,7 +41,7 @@ Context documents are persisted to `.swc/` and can be included in your git repo.
 .swc/
 ├── _meta.json                  # branch → folder mapping
 └── <branch>/                   # one folder per branch
-    ├── workload.md             # backlog of work items
+    ├── workload.json           # backlog of work items — owned by the swc-workload MCP (never edit by hand)
     ├── plan.md                 # intent, approach, open questions
     ├── architecture.md         # technical design
     ├── pipeline.md             # delivery pipeline
