@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "swc-workload": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/tracer/claude-mcp-servers/swc-workload-mcp",
+        "swc-workload-mcp"
+      ],
+      "env": {}
+    }
+  }
+}

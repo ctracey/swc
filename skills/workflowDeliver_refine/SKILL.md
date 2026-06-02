@@ -31,7 +31,7 @@ Agent(
   description: "Review code for work item [N]",
   prompt: "Review work item [N]: [name].
 
-Workload folder: .swc/<folder>/
+Context folder: .swc/<folder>/
 Work item folder: .swc/<folder>/workitems/<N>/
 
 Read requirements.md, specs.md (if present), solution.md (if present), summary.md (latest pass), context.md (latest pass), and all code files listed in the summary Changes section.
@@ -107,7 +107,7 @@ Agent(
   description: "Implement work item [N] — pass [P] (resolve review findings)",
   prompt: "You are an implementation agent for work item [N], pass [P].
 
-Use the context-lookup skill to find the active context folder, then invoke `mcp__swc-workload__get` (against the resolved folder) for work item [N] to confirm the name and details.
+Use the context-lookup skill to find the active context, then invoke `mcp__swc-workload__list` with `ref=[N]`, `json=true`, and `workload` set to the context's `absolute_path` to confirm the name and details for work item [N].
 
 Follow the workflowImplement skill to complete this pass.
 

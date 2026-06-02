@@ -1,0 +1,343 @@
+{
+  "items": [
+    {
+      "id": "a366a2d",
+      "title": "Plumbing",
+      "status": "done",
+      "children": [
+        {
+          "id": "4511c5b",
+          "title": "Register `swc-workload-mcp` server config (project\u2011level, mirrors plugin install)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "be51bda",
+          "title": "Update `setup-permissions` to allowlist `mcp__swc-workload__*` alongside `Skill(swc:*)`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "02bd220",
+          "title": "Update `docs/usage.md` setup section \u2014 add MCP install step pointing at MCP repo instructions",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "1fa0347",
+          "title": "Add `swc:mcp-check` skill \u2014 reusable dependency check (silent on success, delegates to guide on miss)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "7e547a2",
+          "title": "Add `swc:mcp-install` skill \u2014 placeholder guide for missing MCP (prompts user; install instructions deferred)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "3d6f26d",
+          "title": "Wire `mcp-check` into `context-init` and front\u2011line workflow skills (`workflowPlan`, `workflowDeliver`, `report`, `ship`)",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "3d02359",
+      "title": "Delete superseded artefact\u2011mechanics skills",
+      "status": "done",
+      "children": [
+        {
+          "id": "08e293c",
+          "title": "Delete `skills/workload/` (including `workload.py`)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "c3997fd",
+          "title": "Delete `skills/workload-update/`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "895085a",
+          "title": "Delete `skills/workload_item-start/`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "7eb44b5",
+          "title": "Delete `skills/context--workload/`",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "50bd8ff",
+      "title": "Adapt `context-init`",
+      "status": "done",
+      "children": [
+        {
+          "id": "1dfc2bc",
+          "title": "Drop the `workload.md` stub block from the skill steps",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "f2f9cae",
+          "title": "Add MCP `init` invocation against the resolved folder",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "8d30fd6",
+          "title": "Confirm the other five stubs (plan/architecture/notes/changelog/pipeline) still scaffold correctly",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "dafa065",
+      "title": "Reframe `context-lookup` output",
+      "status": "done",
+      "children": [
+        {
+          "id": "bfae6f0",
+          "title": "Replace `workload.md` display strings with structured `Found context {...}` output",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "a1c62b7",
+          "title": "Populate `workload: exists/missing` field via MCP `exists` call",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "70e06e6",
+          "title": "Update multi\u2011folder case to list candidates with workload status per row",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "e4b9d37",
+          "title": "Fix misleading \"No workload found under .swc/\" \u2192 \"No context found under .swc/\" (plus adjacent \"No matching workload\" \u2192 \"No matching context\" for consistency)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "e8975f4",
+          "title": "Back `context-lookup` with a Python helper (`context-lookup.py`) \u2014 single-call probe replaces 5\u20137 model-driven tool calls on the happy path; interactive cases and the single MCP `exists` call remain in the skill",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "1cc0194",
+      "title": "Rewrite workflow touchpoints",
+      "status": "done",
+      "children": [
+        {
+          "id": "06a5f65",
+          "title": "`workflowPlan_context` \u2014 use MCP `exists` for existing\u2011workload detection",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "3419b91",
+          "title": "`workflowPlan_delivery` \u2014 use MCP `add` to write skeleton items",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "cb75070",
+          "title": "`workflowPlan_breakdown` \u2014 use MCP `add` for full breakdown, MCP `list` for playback",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "2893d21",
+          "title": "`workflowDeliver` \u2014 use MCP `find`/`get`/`list(status=in-progress)`/`set_status(in-progress)`/`add` (for untracked work)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "b291a33",
+          "title": "`workflowDeliver_requirements` \u2014 use MCP `get` for item entry",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "7bc7213",
+          "title": "`workflowDeliver_implement` \u2014 use MCP `get` for agent brief",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "862ee25",
+          "title": "`workflowDeliver_refine` \u2014 use MCP `get`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "acfe055",
+          "title": "`workflowDeliver_review` \u2014 use MCP `get`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "685ba64",
+          "title": "`workflowDeliver_accept` \u2014 use MCP `set_status(done)`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "d1bb7f5",
+          "title": "`workflowImplement_orient` \u2014 use MCP `get` and `set_status(in-progress)`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "6ac44d6",
+          "title": "`report` \u2014 use MCP `list` for render, MCP next\u2011not\u2011started for NEXT STEP",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "dcabf28",
+          "title": "`ship` \u2014 use MCP `list` to match changes \u2192 items, MCP `set_status` for updates",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "0b8a261",
+          "title": "Re-add `/swc:workload` skill \u2014 wraps `context-lookup` + MCP `list` for the user-facing \"list workitems\" prompt (refactored replacement for the skill deleted in item 2.1)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "aa19ee6",
+          "title": "Terminology sweep \u2014 after the 5.x rewrites land, audit all skills for \"workload folder\" / \"active workload\" usage that should now read \"context folder\" / \"active context\" (e.g. `report-plan`, `report-notes`, `report-changelog`, `context--files`, `workload` skill body, any remaining 5.x leftovers)",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "4caa4be",
+      "title": "Update spawned\u2011agent prompts",
+      "status": "done",
+      "children": [
+        {
+          "id": "8ca20fa",
+          "title": "`workflowDeliver_implement` agent prompt \u2014 agent uses MCP instead of reading workload file",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "e5b914b",
+          "title": "`workflowDeliver_refine` agent prompt \u2014 same change",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "49a4d3e",
+          "title": "Confirm spawned agents inherit MCP access (no extra prompts at spawn time)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "5628aab",
+          "title": "Smoke-test: spawn a general-purpose agent that calls `mcp__swc-workload__list` to confirm hook accepts the call and no permission prompt fires at spawn time",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "2dd68f2",
+      "title": "Update narrative docs",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "7bcdf29",
+          "title": "`docs/plugin-design.md` \u2014 rename `workload.md` \u2192 `workload.json` in tree; note MCP ownership",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "014e1cb",
+          "title": "`README.md` \u2014 update folder\u2011layout references; mention MCP dependency in install path",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "c1ee1f7",
+          "title": "`skills/context--files/SKILL.md` \u2014 rename workload row in folder layout table, mark as MCP\u2011managed",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "c17498c",
+          "title": "`skills/skill--naming/SKILL.md` \u2014 drop examples referencing removed workload skills (if any)",
+          "status": "not-started",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "f35a4bd",
+      "title": "Tests",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "2bfd843",
+          "title": "Remove tests exercising `workload.py` rendering and markdown checkbox parsing",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "270f412",
+          "title": "Decide MCP test strategy (mock vs real fixture) and document the choice",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "dd665d5",
+          "title": "Add coverage for the new MCP\u2011backed touchpoints in at least one workflow skill",
+          "status": "not-started",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "61a1e26",
+      "title": "Enforce workload-context consistency via PreToolUse hook",
+      "status": "done",
+      "children": [
+        {
+          "id": "dd2482d",
+          "title": "Add `hooks/swc-workload-guard.py` \u2014 resolves branch\u2192folder from `_meta.json`, validates the call's `workload` arg, denies with informative reason on mismatch / missing / no mapping",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "f4fd16e",
+          "title": "Wire it via `hooks/hooks.json` with matcher `mcp__swc-workload__.*`",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "ad28fbe",
+          "title": "Smoke-tested: mismatched arg denies with a clear reason; matching arg allows silently",
+          "status": "done",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

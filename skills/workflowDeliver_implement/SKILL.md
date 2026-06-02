@@ -9,7 +9,7 @@ Spawns a fresh implementation agent for the active work item, then evaluates and
 
 ## Context
 
-The work item number is available from the calling context (set by `workflowDeliver` before the workflow started). If not available, resolve the active context via `context-lookup` and ask the user which item to implement. The implementation agent is responsible for discovering its own folder and work item name via `context-lookup` + `mcp__swc-workload__get`.
+The work item number is available from the calling context (set by `workflowDeliver` before the workflow started). If not available, resolve the active context via `context-lookup` and ask the user which item to implement. The implementation agent is responsible for discovering its own folder and work item name via `context-lookup` + `mcp__swc-workload__list` (with `ref=<N>`).
 
 ## Steps
 
@@ -63,7 +63,7 @@ Ask the user:
 
 ### 3. Spawn the implementation agent
 
-Use the Agent tool to spawn a general-purpose agent. Pass only the work item number — the agent uses `context-lookup` to discover the context folder and `mcp__swc-workload__get` to fetch the work item name and details.
+Use the Agent tool to spawn a general-purpose agent. Pass only the work item number — the agent uses `context-lookup` to discover the context folder and `mcp__swc-workload__list` (with `ref=<N>`) to fetch the work item name and details.
 
 If `quality-baseline.md` was written in step 2, include a note in the prompt so the agent reads it during orient.
 
@@ -74,7 +74,7 @@ Agent(
   description: "Implement work item [N]",
   prompt: "You are an implementation agent for work item [N].
 
-Use the context-lookup skill to find the active context folder, then invoke `mcp__swc-workload__get` (against the resolved folder) for work item [N] to confirm the name and details.
+Use the context-lookup skill to find the active context, then invoke `mcp__swc-workload__list` with `ref=[N]`, `json=true`, and `workload` set to the context's `absolute_path` to confirm the name and details for work item [N].
 
 Follow the workflowImplement skill to complete this work item.
 

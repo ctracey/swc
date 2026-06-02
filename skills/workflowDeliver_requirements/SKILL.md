@@ -1,6 +1,6 @@
 ---
 description: Clarify requirements for a work item before implementation — intent, constraints, and high-level solution direction. First phase of the delivery conversation. Use when clarifying what needs to be built, or when invoked via /workflowDeliver_requirements.
-allowed-tools: Read, Write, Glob, Grep, Bash, Skill, mcp__swc-workload__get
+allowed-tools: Read, Write, Glob, Grep, Bash, Skill, mcp__swc-workload__list
 ---
 
 # Deliver Requirements
@@ -15,7 +15,7 @@ Locate the active context folder via `context-lookup`, then in parallel:
 - Read `plan.md`
 - Read `architecture.md`
 - Read `notes.md`
-- Invoke `mcp__swc-workload__get` against the resolved folder to fetch the specific work item
+- Invoke `mcp__swc-workload__list` with `ref=<N>` and `json=true` against the resolved context's `absolute_path` to fetch the specific work item
 
 Also check for existing task-specific docs at `.swc/<folder>/workitems/<N>/`. `<N>` is the **full work item number** — e.g. `1.1`, `2.3`, not just the top-level number. If files exist there (e.g. a prior `requirements.md`), read them. This is a resumption — summarise what was previously captured and ask the user whether to continue from it or start fresh.
 

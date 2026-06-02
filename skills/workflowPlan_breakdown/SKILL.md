@@ -44,7 +44,7 @@ Wait for explicit confirmation. Iterate if requested. Do not write until confirm
 
 ### 4. Capture
 
-Write the confirmed workload via `mcp__swc-workload__add` against the resolved folder — invoke for each item (top-level and sub-items), or batch if the MCP supports it, preserving the parent/child hierarchy from the drafted list. The MCP owns the workload artefact; do not write to `workload.md` (or `workload.json`) directly.
+Write the confirmed workload via `mcp__swc-workload__add` against the resolved context's `absolute_path` — invoke for each item (top-level and sub-items), or batch if the MCP supports it, preserving the parent/child hierarchy from the drafted list. The MCP owns the workload artefact; do not write to `workload.md` (or `workload.json`) directly.
 
 Work item granularity: small and specific, with a clear "done when" implied by each name. More than ~5 sub-items under one parent → consider splitting the parent.
 

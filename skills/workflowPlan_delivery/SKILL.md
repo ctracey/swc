@@ -35,7 +35,7 @@ Don't categorise it — just understand what the user considers high priority an
 
 Add `## Delivery shape` to `plan.md` with 2–4 bullets summarising phases and priorities.
 
-Write the skeleton workload by invoking `mcp__swc-workload__add` once per identified phase or priority area — top-level items only, no sub-items yet. The MCP owns the workload artefact; do not write to `workload.md` (or `workload.json`) directly.
+Write the skeleton workload by invoking `mcp__swc-workload__add` against the resolved context's `absolute_path` once per identified phase or priority area — top-level items only, no sub-items yet. The MCP owns the workload artefact; do not write to `workload.md` (or `workload.json`) directly.
 
 ### 5. Present and check
 

@@ -9,7 +9,7 @@ Create the stub planning docs for a new context folder. Called by `workflow_plan
 
 ## Arguments
 
-Receives the resolved folder path, e.g. `.swc/feature_my-work/`.
+Receives the resolved context (including `absolute_path`), e.g. `/Users/.../project/.swc/feature_my-work`.
 
 ## Steps
 
@@ -91,7 +91,7 @@ The workload artefact is owned by the `swc-workload` MCP and is created in step 
 
 ### 2. Initialise the workload via MCP
 
-Invoke `mcp__swc-workload__init` against the resolved folder path so the workload artefact is created at `.swc/<folder>/`. The MCP owns the artefact's shape and location — this skill does not write or read it directly.
+Invoke `mcp__swc-workload__init` against the resolved context's `absolute_path` so the workload artefact is created at `.swc/<folder>/workload.json`. The MCP owns the artefact's shape and location — this skill does not write or read it directly.
 
 If the MCP call fails, surface the error to the calling skill and stop. The stub files written in step 1 stay in place — the caller decides whether to retry or clean up.
 

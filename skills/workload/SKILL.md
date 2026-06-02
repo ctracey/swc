@@ -22,13 +22,13 @@ Follow the `setup-permissions` skill.
 
 Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` — stop here.
 
-### 1. Resolve the active context folder
+### 1. Resolve the active context
 
-Follow the `context-lookup` skill to get the resolved context folder path. If lookup fails or the user declines, stop.
+Follow the `context-lookup` skill to get the resolved context (including `absolute_path`). If lookup fails or the user declines, stop.
 
 ### 2. List work items via MCP
 
-Invoke `mcp__swc-workload__list` against the resolved folder path.
+Invoke `mcp__swc-workload__list` against the resolved context's `absolute_path`.
 
 ### 3. Render
 
