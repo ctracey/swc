@@ -44,7 +44,7 @@ This directory isn't a git repository.
   Initialise one now? (y / n — use folder name instead):
 ```
 - **Yes:** ask for the primary branch name (default `main`), then run `git init -b <name>`. Re-run Step 1.
-- **No:** construct a synthetic context — `type: folder`, `source: current.derived_folder`, `name: current.derived_folder`, `location: .swc/<derived>`. Skip persistence (Step 4) and continue to Step 5.
+- **No:** construct a synthetic context — `type: folder`, `source: current.derived_folder`, `name: current.derived_folder`, `location: .swc/<derived>`, `absolute_path: <pwd>/.swc/<derived>`. Skip persistence (Step 4) and continue to Step 5.
 
 **`default_branch`**
 ```
@@ -55,9 +55,9 @@ This directory isn't a git repository.
   (Enter a name, or press Enter to stay on `<current.branch>`):
 ```
 - **Name provided:** run `git checkout -b <name>`, then re-run Step 1.
-- **Empty / Enter:** use `current.derived_folder` as the resolved folder. Construct context: `type: branch`, `source: current.branch`, `name: current.derived_folder`, `location: .swc/<derived>`. Continue to Step 4.
+- **Empty / Enter:** use `current.derived_folder` as the resolved folder. Construct context: `type: branch`, `source: current.branch`, `name: current.derived_folder`, `location: .swc/<derived>`, `absolute_path: <pwd>/.swc/<derived>`. Continue to Step 4.
 
-**`single_folder_no_match`** — invoke `mcp__swc-workload__exists` once against `candidates[0].name`, then confirm:
+**`single_folder_no_match`** — invoke `mcp__swc-workload__exists` once against `candidates[0].absolute_path`, then confirm:
 ```
 Found context {name: <candidates[0].name>, location: <candidates[0].location>, workload: <exists|missing>}
 [NO MATCH] This folder doesn't match your current branch.
@@ -67,7 +67,7 @@ Use this? [Y/n]:
 - **No, locate mode:** stop — `No matching context — run /swc:context-init to create one.`
 - **No, create mode:** use `current.derived_folder` as resolved. Continue to Step 4.
 
-**`multi_folder`** — for each candidate, invoke `mcp__swc-workload__exists` to fill workload status, then present:
+**`multi_folder`** — for each candidate, invoke `mcp__swc-workload__exists` against its `absolute_path` to fill workload status, then present:
 ```
 Multiple contexts found — which one?
   1. {name: <a>, location: <a-path>, workload: <exists|missing>}  [MATCH if candidates[N].match=true]
@@ -86,7 +86,7 @@ No context found under .swc/. Run /swc:context-init to create one.
 ```
 Stop.
 
-**Create mode:** use `current.derived_folder` as the resolved folder. Construct context: `type: branch`, `source: current.branch`, `name: current.derived_folder`, `location: .swc/<derived>`. Continue to Step 4.
+**Create mode:** use `current.derived_folder` as the resolved folder. Construct context: `type: branch`, `source: current.branch`, `name: current.derived_folder`, `location: .swc/<derived>`, `absolute_path: <pwd>/.swc/<derived>`. Continue to Step 4.
 
 ### 4. Persist the mapping
 
@@ -100,15 +100,17 @@ Silent on success. Skip this step in the non-git-fallback path.
 
 ### 5. Resolve workload presence
 
-If Step 2 already invoked `mcp__swc-workload__exists` for the resolved folder (single_folder_no_match or multi_folder paths), reuse that result. Otherwise invoke it once now against the resolved folder name.
+If Step 2 already invoked `mcp__swc-workload__exists` for the resolved context (single_folder_no_match or multi_folder paths), reuse that result. Otherwise invoke it once now against the resolved context's `absolute_path`.
 
 ### 6. Return
 
 **Locate mode:** print the structured line:
 ```
-Found context {type: <type>, source: <source>, name: <name>, location: <location>, workload: <exists|missing>}
+Found context {type: <type>, source: <source>, name: <name>, location: <location>, absolute_path: <absolute_path>, workload: <exists|missing>}
 ```
 
-**Create mode:** return the resolved folder path to the calling skill. Print nothing — the calling skill handles confirmation.
+**Create mode:** return the resolved context to the calling skill (including `absolute_path`). Print nothing — the calling skill handles confirmation.
 
 > **Goal:** single source of truth for branch→folder naming. Never silently load the wrong context. When in doubt, ask.
+
+> **MCP arg note:** every `mcp__swc-workload__*` call requires `absolute_path` as its `workload` argument. The underlying CLI does not resolve folder names or relative paths — it expects the full absolute path to the context folder.

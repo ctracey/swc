@@ -11,7 +11,15 @@ Grant read access for all swc skill files in this project so they load without i
 
 ### 1. Resolve the swc skills path
 
-Read `~/.claude/settings.json`. Find `extraKnownMarketplaces["tracer-plugins"].source.path` — this is the marketplace root (e.g. `/Users/tracer/claude-plugins`). The swc skills path is `<marketplace_root>/plugins/swc/skills`.
+Read `~/.claude/settings.json`. Find `extraKnownMarketplaces["tracer-plugins"].source.path` — this is the marketplace root (e.g. `/Users/tracer/claude-plugins`).
+
+Then read `<marketplace_root>/.claude-plugin/marketplace.json` and find the `plugins[]` entry with `name == "swc"`. Use its `source` field (a path relative to the marketplace root, e.g. `./plugins/swc_v1.1.0-PR`) to compose the swc skills path:
+
+```
+<swc_skills_path> = <marketplace_root> + "/" + <swc_plugin_source> + "/skills"
+```
+
+Resolve any `./` prefix on the source. Do not assume `<marketplace_root>/plugins/swc/skills` — the `swc` plugin's `source` may point to a different folder (versioned, PR branch, etc.), and hard-coding the path will create read-permission rules that don't match where skills actually load from.
 
 ### 2. Check existing permissions
 

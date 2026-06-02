@@ -1,6 +1,6 @@
 ---
 description: Summarise session changes, update changelog and docs, commit, push, and optionally comment on the PR. Use when the user says "update docs & changelog", "wrap up this session", "prep to commit", "push this", "ship this", or invokes /swc-ship.
-allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__list, mcp__swc-workload__set_status
+allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__list, mcp__swc-workload__start, mcp__swc-workload__complete, mcp__swc-workload__reset
 ---
 
 # SWC Push
@@ -27,7 +27,7 @@ git diff HEAD                 # full diff
 git branch --show-current     # active branch
 ```
 
-Also resolve the active context folder via `context-lookup`, then invoke `mcp__swc-workload__list` against that folder for task context.
+Also resolve the active context via `context-lookup`, then invoke `mcp__swc-workload__list` against its `absolute_path` for task context.
 
 ### 2. Branch check
 
@@ -86,14 +86,14 @@ For each match found, ask the user:
 >
 > Mark any as done, leave as-is, or skip? (e.g. '5.3 done', 'skip')"
 
-Wait for a response. Apply any status changes via `mcp__swc-workload__set_status` against the resolved folder (one call per item). If the user says skip or nothing matches, continue.
+Wait for a response. Apply any status changes against the resolved context's `absolute_path` (one call per item) — `mcp__swc-workload__start` for in-progress, `mcp__swc-workload__complete` for done, `mcp__swc-workload__reset` for not-started. If the user says skip or nothing matches, continue.
 
 ### 7. Update other docs if needed
 
 Check whether any other context docs need updating:
 - `notes.md` — if a decision or convention was settled this session
 - `plan.md` — if scope changed or a goal was clarified
-- Workload status — if task status changed, use `mcp__swc-workload__set_status` (never edit `workload.json` directly)
+- Workload status — if task status changed, use `mcp__swc-workload__start` / `mcp__swc-workload__complete` / `mcp__swc-workload__reset` (never edit `workload.json` directly)
 
 Make only changes that reflect what actually happened. Don't pad.
 

@@ -16,15 +16,15 @@ Invoke `context-lookup --create`. It handles:
 - Branch recommendation and confirmation
 - Folder name derivation and `_meta.json` update
 
-Returns: confirmed branch name + resolved folder path `.swc/<folder>/`.
+Returns: confirmed branch name + resolved context (including `absolute_path`).
 
 ### 2. Check for an existing workload
 
-Invoke `mcp__swc-workload__exists` against the resolved folder.
+Invoke `mcp__swc-workload__exists` against the resolved context's `absolute_path`.
 
 **Result `missing`** — fresh start. Go to step 3.
 
-**Result `exists`** — invoke `mcp__swc-workload__list` against the resolved folder to read its items. Surface a brief summary (work item count, done count), then ask:
+**Result `exists`** — invoke `mcp__swc-workload__list` against the resolved context's `absolute_path` to read its items. Surface a brief summary (work item count, done count), then ask:
 
 > I found an existing workload for `<branch>` (M work items, X done). How does this new work relate?
 >
@@ -61,7 +61,7 @@ Wait for the user's choice before proceeding.
 
 ### 3. Scaffold stub docs
 
-Invoke `swc_init` with the resolved folder path. It creates the five stub files.
+Invoke `context-init` with the resolved context (passing its `absolute_path`). It creates the five stub files.
 
 ### 4. Confirm
 
@@ -73,7 +73,7 @@ Say: "Workload ready at `.swc/<folder>/`. Let's start with what's driving this w
 - Branch confirmed (via `context-lookup`)
 - `_meta.json` updated (via `context-lookup`)
 - Existing-work mode chosen (if applicable)
-- Stub docs present at `.swc/<folder>/` (via `swc_init` or existing files)
+- Stub docs present at `.swc/<folder>/` (via `context-init` or existing files)
 - User acknowledged
 
 **Return control to the calling skill.**

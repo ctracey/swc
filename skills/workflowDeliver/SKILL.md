@@ -1,6 +1,6 @@
 ---
 description: Drive delivery of a work item — clarify requirements, define test strategy and acceptance criteria. Use when implementing a work item, delivering a task, starting implementation, "work on this", "let's build", "implement task N", or when invoked via /workflowDeliver.
-allowed-tools: Bash, Read, Write, Edit, Glob, Skill, mcp__swc-workload__get, mcp__swc-workload__find, mcp__swc-workload__list, mcp__swc-workload__add, mcp__swc-workload__set_status
+allowed-tools: Bash, Read, Write, Edit, Glob, Skill, mcp__swc-workload__list, mcp__swc-workload__find, mcp__swc-workload__add, mcp__swc-workload__start, mcp__swc-workload__complete
 ---
 
 # SWC Workflow Deliver
@@ -19,10 +19,10 @@ Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp
 
 ### 1. Resolve the work item
 
-Locate the active context folder via `context-lookup` to get the resolved folder name. All MCP calls below take that folder as their `workload` argument.
+Locate the active context folder via `context-lookup` to get the resolved context. All MCP calls below take its `absolute_path` as their `workload` argument — the underlying CLI does not resolve folder names or relative paths.
 
 **If the user named a specific item** — resolve it via the MCP:
-- If they gave a number (`2.3`), invoke `mcp__swc-workload__get` to fetch it.
+- If they gave a number (`2.3`), invoke `mcp__swc-workload__list` with `ref=2.3` and `json=true` to fetch it.
 - If they gave a description, invoke `mcp__swc-workload__find` and use the best match (ambiguous matches → surface to user).
 
 Proceed to the status check below.
@@ -85,7 +85,7 @@ If yes, proceed. If no, ask what they actually need and stop here.
 
 ### 3. Mark work item in-progress
 
-Before starting the workflow, silently invoke `mcp__swc-workload__set_status` against the resolved folder with the work item number and status `in-progress`. The MCP handles parent rollup. Emit no output — this is a silent side-effect.
+Before starting the workflow, silently invoke `mcp__swc-workload__start` against the resolved context's `absolute_path` with the work item number. The MCP handles parent rollup. Emit no output — this is a silent side-effect.
 
 ### 4. Run the workflow
 

@@ -11,16 +11,20 @@ filesystem/git checks into a single tool call.
 
 Probe output shapes (one of):
   {"status": "resolved",
-   "context": {"type": "branch"|"folder", "source": "...", "name": "...", "location": ".swc/..."},
+   "context": {"type": "branch"|"folder", "source": "...", "name": "...",
+               "location": ".swc/...", "absolute_path": "/abs/.../.swc/..."},
    "from": "meta"|"scan"}
 
   {"status": "needs_user_input",
    "reason": "not_a_git_repo"|"default_branch"|"single_folder_no_match"|"multi_folder",
    "current": {"branch": "..."|null, "derived_folder": "..."},
-   "candidates": [{"name": "...", "location": "...", "match": bool}, ...]}
+   "candidates": [{"name": "...", "location": "...", "absolute_path": "...", "match": bool}, ...]}
 
   {"status": "no_workload",
    "current": {"branch": "...", "derived_folder": "..."}}
+
+`absolute_path` is what MCP calls require for `workload`. The CLI does not
+resolve folder names or relative paths — always pass the absolute form.
 """
 from __future__ import annotations
 
@@ -89,6 +93,10 @@ def write_meta(cwd: str, meta: dict) -> None:
     (swc / "_meta.json").write_text(json.dumps(meta, indent=2) + "\n")
 
 
+def abs_swc_path(cwd: str, folder: str) -> str:
+    return str((Path(cwd).resolve() / ".swc" / folder))
+
+
 def probe(cwd: str, branch_arg: str | None) -> dict:
     if not is_git_repo(cwd):
         return {
@@ -128,6 +136,7 @@ def probe(cwd: str, branch_arg: str | None) -> dict:
                 "source": branch,
                 "name": folder,
                 "location": f".swc/{folder}",
+                "absolute_path": abs_swc_path(cwd, folder),
             },
             "from": "meta",
         }
@@ -149,6 +158,7 @@ def probe(cwd: str, branch_arg: str | None) -> dict:
                     "source": branch,
                     "name": only,
                     "location": f".swc/{only}",
+                    "absolute_path": abs_swc_path(cwd, only),
                 },
                 "from": "scan",
             }
@@ -156,7 +166,14 @@ def probe(cwd: str, branch_arg: str | None) -> dict:
             "status": "needs_user_input",
             "reason": "single_folder_no_match",
             "current": {"branch": branch, "derived_folder": derived},
-            "candidates": [{"name": only, "location": f".swc/{only}", "match": False}],
+            "candidates": [
+                {
+                    "name": only,
+                    "location": f".swc/{only}",
+                    "absolute_path": abs_swc_path(cwd, only),
+                    "match": False,
+                }
+            ],
         }
 
     return {
@@ -164,7 +181,12 @@ def probe(cwd: str, branch_arg: str | None) -> dict:
         "reason": "multi_folder",
         "current": {"branch": branch, "derived_folder": derived},
         "candidates": [
-            {"name": f, "location": f".swc/{f}", "match": f == derived}
+            {
+                "name": f,
+                "location": f".swc/{f}",
+                "absolute_path": abs_swc_path(cwd, f),
+                "match": f == derived,
+            }
             for f in folders
         ],
     }

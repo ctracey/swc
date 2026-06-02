@@ -1,6 +1,6 @@
 ---
 description: Review stage of the delivery workflow — present implementation summary and QA evidence to the human for acceptance or feedback. Sixth stage of the delivery workflow. Use when invoked by workflowDeliver or via /workflowDeliver_review.
-allowed-tools: Read, Write, Bash, Skill, Glob, mcp__swc-workload__get
+allowed-tools: Read, Write, Bash, Skill, Glob, mcp__swc-workload__list
 ---
 
 # Deliver — Review Stage
@@ -9,7 +9,7 @@ Final human review handoff. Presents what was built so the developer can answer 
 
 ## Context
 
-The work item number, name, and context folder path are available from the calling context. If missing, resolve the folder via `context-lookup` and invoke `mcp__swc-workload__get` for the work item to fetch its name and details.
+The work item number, name, and context (including `absolute_path`) are available from the calling context. If missing, resolve the context via `context-lookup` and invoke `mcp__swc-workload__list` with `ref=<N>` and `json=true` against its `absolute_path` for the work item to fetch its name and details.
 
 ## Steps
 

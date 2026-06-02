@@ -1,6 +1,6 @@
 ---
 description: Orient stage of the implementation workflow — read the full brief, understand the starting point, open a new pass section in context.md. First stage of the implementation workflow. Use when invoked by workflowImplement.
-allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__get, mcp__swc-workload__set_status
+allowed-tools: Read, Write, Edit, Glob, Bash, Skill, mcp__swc-workload__list, mcp__swc-workload__start
 ---
 
 # Implement — Orient Stage
@@ -13,9 +13,9 @@ Use the `context-lookup` skill to find the active context folder. This gives you
 
 ### 2. Confirm the work item
 
-Invoke `mcp__swc-workload__get` against the resolved folder for the work item number passed in the calling context. Note the name and description — these define the scope of this pass.
+Invoke `mcp__swc-workload__list` with `ref=<N>` and `json=true` against the resolved context's `absolute_path` for the work item number passed in the calling context. Note the name and description — these define the scope of this pass.
 
-Mark the work item in-progress by invoking `mcp__swc-workload__set_status` against the resolved folder with status `in-progress`. The MCP is idempotent on status — safe to run on pass 1, 2, or 3, and it won't downgrade a `done` item.
+Mark the work item in-progress by invoking `mcp__swc-workload__start` against the resolved context's `absolute_path` with the work item number. The MCP is idempotent on status — safe to run on pass 1, 2, or 3, and it won't downgrade a `done` item.
 
 ### 3. Read the brief
 
@@ -57,8 +57,8 @@ Do not pre-fill entries — entries are written during the implement stage at de
 ## Exit criteria
 
 - Context folder resolved
-- Work item name and description confirmed via `mcp__swc-workload__get`
-- Work item marked `in-progress` via `mcp__swc-workload__set_status`
+- Work item name and description confirmed via `mcp__swc-workload__list`
+- Work item marked `in-progress` via `mcp__swc-workload__start`
 - All brief docs read: requirements.md, specs.md, solution.md, plan.md, architecture.md
 - quality-baseline.md read if present; absence noted
 - Prior context understood, or confirmed as pass 1
