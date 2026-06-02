@@ -33,10 +33,6 @@ Skill names are structured identifiers that encode the object model. Each separa
 context-init          context object → init action
 context-lookup        context object → lookup action
 context--files        context object → files knowledge
-context--workload     context object → workload knowledge
-
-workload-update       workload object → update action
-workload_item-start   workload → item sub-object → start action
 
 workflowDemo          workflowDemo (demo is-a workflow)
 workflowDemo_start    workflowDemo → start stage (has-a)

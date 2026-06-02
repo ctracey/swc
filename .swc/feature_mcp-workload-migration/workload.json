@@ -261,7 +261,7 @@
     {
       "id": "2dd68f2",
       "title": "Update narrative docs",
-      "status": "in-progress",
+      "status": "done",
       "children": [
         {
           "id": "7bcdf29",
@@ -284,7 +284,7 @@
         {
           "id": "c17498c",
           "title": "`skills/skill--naming/SKILL.md` \u2014 drop examples referencing removed workload skills (if any)",
-          "status": "not-started",
+          "status": "done",
           "children": []
         }
       ]
