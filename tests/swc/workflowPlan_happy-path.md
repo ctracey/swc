@@ -20,6 +20,10 @@ should ask user about branch naming
 
 ```branch called feature/test-swc```
 
+### Grant permission to store SWC context in .swc/ folder
+
+```yes```
+
 
 ### Planning Workflow Stage: intent
 should ask the user about the intent for this work
