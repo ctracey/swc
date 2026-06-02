@@ -23,13 +23,16 @@ Resolve any `./` prefix on the source. Do not assume `<marketplace_root>/plugins
 
 ### 2. Check existing permissions
 
-Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissions.allow` contains **all three** of:
+Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissions.allow` contains **all six** of:
 
 - `"Skill(swc:*)"`
-- `"Read(<swc_skills_path>/*)"`
+- `"Read(<swc_skills_path>/**)"`
+- `"Read(.swc/**)"`
+- `"Bash(python3 <swc_skills_path>/**)"`
 - `"mcp__swc-workload__*"`
+- `"mcp__plugin_swc_swc-workload__*"`
 
-**All three present:** print `swc: skill permissions already configured.` and stop.
+**All six present:** print `swc: skill permissions already configured.` and stop.
 
 **Any missing:** proceed to step 3 — the writer in step 4 will add the missing entries while preserving any that already exist.
 
@@ -38,15 +41,25 @@ Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissi
 Print:
 ```
 swc: granting permissions for all swc skills in this project.
-Skill invocations and skill-file reads will run without individual prompts.
-Operations within skills (git, bash, edit, write) will still ask as normal.
+Skill invocations, skill-file reads, swc python helpers, .swc/ doc reads,
+and swc-workload MCP calls will run without individual prompts.
+Other operations within skills (git, edit, write, non-swc bash) still ask as normal.
 ```
 
 ### 4. Write permissions
 
-Add all three of `"Skill(swc:*)"`, `"Read(<swc_skills_path>/*)"`, and `"mcp__swc-workload__*"` to `permissions.allow` in `.claude/settings.json`, preserving all existing content. Skip any entry that is already present. Write the file.
+Add all six of the following entries to `permissions.allow` in `.claude/settings.json`, preserving all existing content. Skip any entry that is already present. Write the file.
 
-The `mcp__swc-workload__*` entry allowlists every tool from the `swc-workload` MCP server (e.g. `mcp__swc-workload__init`, `mcp__swc-workload__list`) so MCP calls run without per-call permission prompts.
+| Rule | What it allows |
+|---|---|
+| `Skill(swc:*)` | Invoking any swc skill |
+| `Read(<swc_skills_path>/**)` | Reading any swc skill file (SKILL.md, helper scripts, fixtures) |
+| `Read(.swc/**)` | Reading any SWC context doc (plan, notes, changelog, workitems/, etc.) — scoped to the project's `.swc/` folder |
+| `Bash(python3 <swc_skills_path>/**)` | Running swc-shipped python helpers (e.g. `context-lookup.py`, `progress.py`) without prompting; other `python3` invocations still ask |
+| `mcp__swc-workload__*` | Calling any tool on the `swc-workload` MCP when registered at project scope (e.g. via `claude mcp add`) |
+| `mcp__plugin_swc_swc-workload__*` | Calling any tool on the `swc-workload` MCP when bundled with the swc plugin (`.mcp.json` at plugin root). Claude Code namespaces plugin-bundled MCPs as `plugin_<plugin>_<server>`. |
+
+Both MCP rules are kept because the same MCP can be active in either form depending on how it's registered. Listing both means setup works regardless.
 
 ### 5. Confirm
 
