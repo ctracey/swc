@@ -292,23 +292,29 @@
     {
       "id": "f35a4bd",
       "title": "Tests",
-      "status": "not-started",
+      "status": "in-progress",
       "children": [
         {
           "id": "2bfd843",
           "title": "Remove tests exercising `workload.py` rendering and markdown checkbox parsing",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "270f412",
           "title": "Decide MCP test strategy (mock vs real fixture) and document the choice",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "dd665d5",
           "title": "Add coverage for the new MCP\u2011backed touchpoints in at least one workflow skill",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "9b94e66",
+          "title": "Manual E2E \u2014 walk through the scenario specs in `tests/swc/` against the live MCP-backed plugin and capture any gaps",
           "status": "not-started",
           "children": []
         }
