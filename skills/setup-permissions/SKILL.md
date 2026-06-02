@@ -23,7 +23,7 @@ Resolve any `./` prefix on the source. Do not assume `<marketplace_root>/plugins
 
 ### 2. Check existing permissions
 
-Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissions.allow` contains **all ten** of:
+Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissions.allow` contains **all eleven** of:
 
 - `"Skill(swc:*)"`
 - `"Read(<swc_skills_path>/**)"`
@@ -31,12 +31,13 @@ Read `.claude/settings.json` (treat as `{}` if missing). Check whether `permissi
 - `"Write(.swc/**)"`
 - `"Edit(.swc/**)"`
 - `"Bash(mkdir -p .swc/**)"`
+- `"Bash(mkdir -p .swc/*/workitems/**)"`
 - `"Bash(python3 <swc_skills_path>/**)"`
 - The skill-helper JSON-parse one-liner (see step 4 for the exact JSON-encoded string)
 - `"mcp__swc-workload__*"`
 - `"mcp__plugin_swc_swc-workload__*"`
 
-**All ten present:** print `swc: skill permissions already configured.` and stop.
+**All eleven present:** print `swc: skill permissions already configured.` and stop.
 
 **Any missing:** proceed to step 3 — the writer in step 4 will add the missing entries while preserving any that already exist.
 
@@ -52,7 +53,7 @@ Other operations within skills (git, edit, write, non-swc bash) still ask as nor
 
 ### 4. Write permissions
 
-Add all ten of the following entries to `permissions.allow` in `.claude/settings.json`, preserving all existing content. Skip any entry that is already present. Write the file.
+Add all eleven of the following entries to `permissions.allow` in `.claude/settings.json`, preserving all existing content. Skip any entry that is already present. Write the file.
 
 | Rule | What it allows |
 |---|---|
@@ -61,7 +62,8 @@ Add all ten of the following entries to `permissions.allow` in `.claude/settings
 | `Read(.swc/**)` | Reading any SWC context doc (plan, notes, changelog, workitems/, etc.) — scoped to the project's `.swc/` folder |
 | `Write(.swc/**)` | Create stub docs and workitem files under `.swc/` (context-init, etc.) |
 | `Edit(.swc/**)` | Modify SWC context docs (notes, changelog, summaries) |
-| `Bash(mkdir -p .swc/**)` | Create `.swc/<folder>/` and `workitems/<N>/` directories. **Note:** matches relative-path mkdirs only — if a skill builds an absolute mkdir path, it will still prompt. |
+| `Bash(mkdir -p .swc/**)` | Create the context folder `.swc/<folder>/` itself. **Note:** matches relative-path mkdirs only — if a skill builds an absolute mkdir path, it will still prompt. |
+| `Bash(mkdir -p .swc/*/workitems/**)` | Pre-approve workitem subfolder creation (e.g. `.swc/<folder>/workitems/<N>/`) when deliver skills mkdir before writing requirements/specs/etc. Scoped specifically to the workitems subtree so non-swc mkdir still asks. Same relative-path caveat as above. |
 | `Bash(python3 <swc_skills_path>/**)` | Running swc-shipped python helpers (e.g. `context-lookup.py`, `progress.py`) without prompting; other `python3` invocations still ask |
 | **JSON-parse one-liner** (see below) | Running the swc convention `python3 -c` helper that extracts `output` (or `error`) from a script's JSON envelope. Used by multiple skills to render their python helpers' results. Listed as an exact-string rule (not all `python3 -c`) so other one-liners still prompt. |
 | `mcp__swc-workload__*` | Calling any tool on the `swc-workload` MCP when registered at project scope (e.g. via `claude mcp add`) |
