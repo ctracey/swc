@@ -45,6 +45,8 @@ Good teams don't keep a project alive in one person's head — they externalise 
 - Consistency — agent behaviour governed by documented conventions
 
 
+**Requires:** the [`swc-workload-mcp`](https://github.com/ctracey/swc-workload-mcp) server to manage the workload tree (persisted to `.swc/<branch>/workload.json`). Registration is part of [Getting Started](/docs/usage.md#step-2-register-swc-workload-manager-mcp-server).
+
 [Get Started](/docs/usage.md#getting-started)
 
 
