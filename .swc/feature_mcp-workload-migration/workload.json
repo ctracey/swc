@@ -292,7 +292,7 @@
     {
       "id": "f35a4bd",
       "title": "Tests",
-      "status": "in-progress",
+      "status": "done",
       "children": [
         {
           "id": "2bfd843",
@@ -315,7 +315,7 @@
         {
           "id": "9b94e66",
           "title": "Manual E2E \u2014 walk through the scenario specs in `tests/swc/` against the live MCP-backed plugin and capture any gaps",
-          "status": "not-started",
+          "status": "done",
           "children": []
         }
       ]
