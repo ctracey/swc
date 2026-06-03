@@ -10,15 +10,19 @@ SWC is structured following the [RKSS pattern](https://github.com/ctracey/rkss_p
 Since SWC is packaged as a plugin, it can be applied where relevant using the project scope.
 SWC may be overkill for smaller, less complex projects. See [Usage](/docs/usage.md) for installation instructions.
 
-- [Workload](#workload)
+- [Workload](#workload-mcp-server-swc-workload-mcp)
 - [Persisted Context Artefacts](#persisted-context-artefacts)
 - [Workflow Orchestrator](#workflow-orchestrator)
 - [Skill Naming Convention](#skill-naming-convention)
 
 
-## Workload
+## Workload (MCP Server: swc-workload-mcp)
 
 Project workitems are stored in a workload backlog. This backlog can be created on command or via the plan workflow.
+
+The workload artefact (`.swc/<branch>/workload.json`) is maintained by delegating to the [`swc-workload-mcp`](https://github.com/ctracey/swc-workload-mcp) server — never edited by hand.
+
+Delegating to the MCP keeps workload mutations fast and token-efficient: scoped tool calls return only the structured data needed, avoiding repeated full-file reads and rewrites of `workload.json` by the model.
 
 <a href="./img/screenshot_sample-workload.png"><img src="./img/screenshot_sample-workload.png" alt="screenshot: sample workload report for a react project" width="70%"/></a><br/>
 <em>screenshot: sample workload report for a react project</em>
