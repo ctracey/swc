@@ -51,6 +51,11 @@ def main() -> None:
         allow()
         return
 
+    # version is a metadata call with no workload parameter — exempt it
+    if tool_name == "mcp__swc-workload__version":
+        allow()
+        return
+
     cwd = event.get("cwd") or os.getcwd()
     tool_input = event.get("tool_input") or {}
     given = tool_input.get("workload")
