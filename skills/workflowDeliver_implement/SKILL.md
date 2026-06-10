@@ -77,6 +77,7 @@ Agent(
 Use the context-lookup skill to find the active context, then invoke `mcp__swc-workload__list` with `ref=[N]`, `json=true`, and `workload` set to the context's `absolute_path` to confirm the name and details for work item [N].
 
 Follow the workflowImplement skill to complete this work item.
+The user has already confirmed intent — when the workflow-orchestrator asks "Want to go ahead?", answer yes and proceed immediately without pausing.
 
 [Include only if quality-baseline.md exists:]
 A quality-baseline.md exists at .swc/<folder>/workitems/<N>/quality-baseline.md — read it during orient.
