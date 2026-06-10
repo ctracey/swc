@@ -10,13 +10,34 @@
     {
       "id": "4a80120",
       "title": "Store workflow stage progress via MCP \u2014 triggered at stage start by orchestrator",
-      "status": "not-started",
+      "status": "done",
       "children": [],
       "meta": {}
     },
     {
       "id": "cf41a5a",
       "title": "Find a way to persist a workflow stage definition",
+      "status": "not-started",
+      "children": [],
+      "meta": {}
+    },
+    {
+      "id": "84d55e7",
+      "title": "Support picking up in-flight work items across sessions",
+      "status": "not-started",
+      "children": [],
+      "meta": {}
+    },
+    {
+      "id": "6a49ca3",
+      "title": "Streamline stage flow for low friction",
+      "status": "not-started",
+      "children": [],
+      "meta": {}
+    },
+    {
+      "id": "b930d15",
+      "title": "Add version skill to the swc plugin",
       "status": "not-started",
       "children": [],
       "meta": {}

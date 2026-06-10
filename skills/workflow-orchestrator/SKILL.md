@@ -66,6 +66,15 @@ Read the JSON argument and validate it against the input schema. If it is malfor
 
 ### 2. Run stages in order
 
+**Before the first stage — check for active work item:**
+
+Check session context for an active work item (e.g. a work item number established by the calling entry skill earlier in the conversation). If none is found, emit once (not per stage):
+> "Warning: no work item is active in session context — stage progress will not be recorded to the MCP."
+
+If a work item is present, resolve the workload path via `context-lookup`. This gives the `absolute_path` used for all meta writes in this run. Resolve once; reuse for every stage.
+
+---
+
 For each stage in `stages`:
 
 1. **Emit progress banner** — invoke `workflow-progress` with:
@@ -73,9 +82,17 @@ For each stage in `stages`:
    - `stages` = comma-separated list of all stage names
    - `active` = current stage name
 
-2. **Invoke the stage skill** — call the skill named in `skill`, passing `args` if provided. Wait for it to return.
+2. **Record stage entry** — if `workItem` is present, invoke the `workflow-recordProgress` skill with:
+   - `workflow` = workflow title
+   - `stage` = current stage name
+   - `workItem` = work item ordinal
+   - `workload` = resolved workload absolute path
 
-3. **Stage gate** — before advancing, evaluate whether the stage skill's own exit criteria have been met by inspecting its behaviour: check that expected outputs are present (e.g. docs written, decisions captured, playback confirmed). Prefer to derive the answer from what the stage skill did — only involve the user if the criteria cannot be determined without their input.
+   If the skill's output contains `##WORKFLOW_HALT##`, halt immediately — do not invoke the stage skill.
+
+3. **Invoke the stage skill** — call the skill named in `skill`, passing `args` if provided. Wait for it to return.
+
+4. **Stage gate** — before advancing, evaluate whether the stage skill's own exit criteria have been met by inspecting its behaviour: check that expected outputs are present (e.g. docs written, decisions captured, playback confirmed). Prefer to derive the answer from what the stage skill did — only involve the user if the criteria cannot be determined without their input.
 
    **If criteria ARE met:** emit a confirmation message in the format `✔ Stage('<stage name>'): <exit criteria met>`. The next stage must not begin until this message has been emitted.
 
@@ -93,7 +110,7 @@ For each stage in `stages`:
    - **Skip:** treat as user-confirmed skip (see Skipping constraint below) and advance.
    - **Stop:** emit a clear stop message and halt — do not advance to the next stage.
 
-4. **Advance** — move to the next stage and repeat.
+5. **Advance** — move to the next stage and repeat.
 
 ### 3. Complete
 

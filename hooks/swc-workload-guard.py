@@ -51,8 +51,8 @@ def main() -> None:
         allow()
         return
 
-    # version is a metadata call with no workload parameter — exempt it
-    if tool_name == "mcp__swc-workload__version":
+    # version and init have no workload parameter — exempt them
+    if tool_name in ("mcp__swc-workload__version", "mcp__swc-workload__init"):
         allow()
         return
 
