@@ -2,7 +2,7 @@
 
 ## Goal
 
-Record each work item's progress through SWC workflow stages (Plan, Deliver, Implement and their sub-stages) on the workload artefact, so that:
+Record each work item's progress through SWC workflow stages (Plan, Deliver, Implement and their sub-stages) in the MCP workload artefact, so that:
 
 1. A user can loop back to an earlier stage and the record stays coherent.
 2. A new session can resume work on item N by reading where it left off.
@@ -10,38 +10,22 @@ Record each work item's progress through SWC workflow stages (Plan, Deliver, Imp
 
 ## Background
 
-The workload-MCP currently stores workitems as `{ id, n, title, description, status }`. SWC drives multi-stage workflows (Plan → Deliver → Implement, each with sub-stages) but has nowhere durable to record where a given workitem sits in that journey. Without this, resuming work across sessions or looping back to an earlier stage relies on inference rather than recorded state.
+`swc-workload-mcp` v1.0.0 already supports freeform JSON meta per work item (`meta` is a namespaced free-form blob the MCP stores but does not validate). SWC drives multi-stage workflows (Plan → Deliver → Implement, each with sub-stages) but has nowhere durable to record where a given work item sits in that journey. Without this, resuming work across sessions or looping back to an earlier stage relies on inference rather than recorded state.
 
-The design pressure is to add stage tracking **without** coupling the MCP to SWC's workflow shape — the MCP should remain a generic workload store usable by any orchestrator.
+All work is SWC-side — no MCP changes required.
 
 ## Approach
 
-Layer the change so that SWC owns workflow semantics and the MCP stays generic:
+- **SWC writes under `meta["swc-workflow-status"]`**: `{ currentStage, enteredAt, workflow, stages }`. The MCP stores it verbatim; SWC owns the schema.
+- **Trigger point**: the workflow orchestrator fires the MCP meta write between emitting the progress banner and invoking the stage skill — a single central point that covers every stage in every workflow, including re-invokes on loopback.
+- **Orchestrator gets work item identity** via an optional `workItem` field added to the workflow definition schema. Entry skills (`workflowDeliver`, `workflowPlan`, etc.) pass the item number when handing off to the orchestrator.
+- **Workflow definition persistence**: how a fresh session reconstructs the full stage list (not just `currentStage`) is an open question — see below.
+- **Resume**: a fresh session reads `meta["swc-workflow-status"]`, gets `currentStage` + the stage list, and routes to the matching skill.
 
-- **MCP gains a `meta` field** on each workitem: a namespaced free-form JSON blob the MCP stores but does not validate.
-- **`description` → `notes`** rename (it's just a text bucket; the new name reflects that).
-- **New `get(target)` tool** for exact lookup by `n` or `id`, returning the full workitem including `meta` by default.
-- **`list` / `find` / `summary` omit `meta` by default**, with opt-in via `includeMeta: true` or `metaNamespaces: [...]` to keep payloads small.
-- **SWC writes under `meta["swc-workflow-status"]`** (namespace key style TBD — see open questions): `{ version, currentWorkflow, currentStage, stages: { <name>: { state, enteredAt, completedAt, exitEvidence } }, history }`.
-- **Stage states:** `pending` → `active` → `done`, plus `superseded` for stages invalidated by a loopback.
-- **Loopback rule:** entering an earlier stage marks all later stages `superseded` (preserving their prior `exitEvidence` for re-use). The orchestrator computes the transition; one `patch_meta` call commits it; `history` appends a `{ kind: "loopback" }` entry.
-- **Resume:** a fresh session calls `get(n)`, reads `currentWorkflow` + `currentStage`, and routes to the matching SWC stage skill.
-- **Migration:** existing items have no `meta` and use `description` — one-shot migration renames the field and adds `meta: {}`, shipped with the MCP version bump.
-
-Tooling for meta writes is still open: either dedicated `set_meta` / `patch_meta` tools, or extending `update` / `set_status` to accept a `meta` patch. Leaning toward narrow dedicated tools — see open questions.
-
-Full design detail (workitem shape, scenario walkthroughs, `includeMeta` semantics table) lives in `architecture.md`.
+Full layering detail and the `swc-workflow-status` schema live in `architecture.md`.
 
 ## Open Questions
 
-1. **Does current `find` already return multiple matches?** Needs verification against `swc-workload-mcp/tools.py` before locking the `find` vs `get` split.
-2. **Atomicity of status + meta writes.** When the terminal stage completes, `status: done` and `meta["swc-workflow-status"].currentStage: accept (done)` should land together. Options: (a) extend `complete` / `set_status` to accept an optional `meta` patch, (b) accept eventual consistency, (c) introduce a transactional `update`. Leaning (a).
-3. **Dedicated `set_meta` / `patch_meta` vs piggy-backing on `update`.** Narrow tools are easier to reason about; one general tool is fewer surface items. Probably narrow tools.
-4. **Namespace key style.** `swc-workflow-status` (kebab) vs `swc:workflow-status` (colon-namespaced). Colon scales better as SWC adds more namespaces. Probably colon.
-5. **Schema versioning.** `version: 1` on the meta blob is cheap insurance — worth doing from day one.
-6. **Loopback: `superseded` vs reset to `pending`.** `superseded` preserves prior exit evidence; `pending` is simpler. Preference: `superseded`, but it adds a state to handle.
-7. **Validation.** Should SWC ship a tiny validator skill that checks `swc-workflow-status` shape on read? Probably yes — belt-and-braces, low cost.
-8. **`summary` tool surface.** Should `summary` synthesise stage progress for display? Likely no — keep `summary` generic; SWC computes display from `get` results.
-9. **Listing by stage.** Do we need `list({ metaFilter: { "swc-workflow-status.currentStage": "implement" } })`? Useful, but couples the MCP to meta-path querying. Defer until a real use case appears.
-10. **`history` size growth.** Cap at last N entries (e.g. 20) or leave unbounded? Probably cap — it's mostly diagnostic.
-11. **Migration of existing items.** Rename `description` → `notes`, add empty `meta: {}`. Cheap; do as part of the MCP version bump.
+1. **Workflow definition persistence.** On resume, we need the full stage list to route correctly. Options: (a) store the stage list in meta at workflow start, (b) derive it from `workflow` name (SWC hard-codes the mapping). Option (a) is more robust; option (b) is simpler. Not yet decided.
+2. **Loopback handling.** When a user re-enters an earlier stage, do we mark later stages `superseded` (preserving exit evidence) or reset to `pending` (simpler)? Prefer `superseded` but adds a state to handle.
+3. **Atomicity.** When the terminal stage completes, `item.status: done` and the meta update should land together. Likely two sequential MCP calls — acceptable for now.
