@@ -21,6 +21,13 @@
 **Description:** Pass section does not record why Python was used despite the "no Python helpers" requirement — no audit trail for future reviewers.
 **Accepted because:** accepted during delivery of 6
 
+## [work item 4] — contexts predating context-initWorkflowManifest have no workflow-manifest.json — 2026-06-11
+
+**Severity:** info
+**Location:** `.swc/feature_swc-workflow-progress/` (and any context initialised before work item 3 shipped)
+**Description:** `context-initWorkflowManifest` only runs from `context-init`, so existing context folders never get a manifest. Harmless today — the orchestrator's resume path does not read the manifest — but any future consumer (reporting, generic resume) needs a backfill story or a manual re-run of the skill.
+**Accepted because:** manifest deliberately kept out of the resume path during work item 4 design
+
 ## [work item 3] — F-02: stale manifest recovery not cross-referenced in context-init — 2026-06-11
 
 **Severity:** info

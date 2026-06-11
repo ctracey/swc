@@ -49,7 +49,7 @@ Read any existing task docs (e.g. `requirements.md`, `context.md`) and summarise
 >
 > Ready to pick up from here?"
 
-Wait for confirmation before proceeding.
+Wait for confirmation before proceeding. Do not re-walk or summarise workflow stages here — if the item has recorded workflow progress on its meta, the orchestrator detects it and offers to resume at the recorded stage.
 
 **`not-started`, but task docs exist:**
 Surface the existing context as part of your opening:
@@ -94,6 +94,7 @@ Before starting the workflow, silently invoke `mcp__swc-workload__start` against
 ```json
 {
   "title": "deliver",
+  "workItem": "<full work item number resolved in step 1, e.g. \"2.3\">",
   "stages": [
     { "name": "requirements",    "skill": "workflowDeliver_requirements",    "args": "" },
     { "name": "specs",           "skill": "workflowDeliver_specs",           "args": "" },
@@ -106,6 +107,10 @@ Before starting the workflow, silently invoke `mcp__swc-workload__start` against
   "on_complete": "Delivery workflow complete."
 }
 ```
+
+Substitute `workItem` with the actual item number resolved in step 1 — it is required here, not optional; without it the orchestrator cannot record progress or resume.
+
+Always pass the full stage list, even when continuing an in-progress item — the orchestrator reads the item's recorded progress and starts at the right stage itself. Never skip stages from the definition or invoke a stage skill directly to "jump ahead".
 
 ## Role boundary
 

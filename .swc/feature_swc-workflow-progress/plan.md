@@ -16,16 +16,15 @@ All work is SWC-side — no MCP changes required.
 
 ## Approach
 
-- **SWC writes under `meta["swc-workflow-status"]`**: `{ currentStage, enteredAt, workflow, stages }`. The MCP stores it verbatim; SWC owns the schema.
-- **Trigger point**: the workflow orchestrator fires the MCP meta write between emitting the progress banner and invoking the stage skill — a single central point that covers every stage in every workflow, including re-invokes on loopback.
-- **Orchestrator gets work item identity** via an optional `workItem` field added to the workflow definition schema. Entry skills (`workflowDeliver`, `workflowPlan`, etc.) pass the item number when handing off to the orchestrator.
-- **Workflow definition persistence**: how a fresh session reconstructs the full stage list (not just `currentStage`) is an open question — see below.
-- **Resume**: a fresh session reads `meta["swc-workflow-status"]`, gets `currentStage` + the stage list, and routes to the matching skill.
+- **SWC writes under `meta["swc"]`**: `workflowState` (latest position per workflow: `{ currentStage, completed }`) and `workflowEvents` (append-only history). The MCP stores it verbatim; SWC owns the schema.
+- **Trigger point**: the workflow orchestrator fires the MCP meta write between emitting the progress banner and invoking the stage skill — a single central point that covers every stage in every workflow, including re-invokes on loopback. A second write after the final stage records completion (`currentStage: null`, `completed: true`).
+- **Orchestrator gets work item identity** from an explicit `workItem` field on the workflow definition, passed by the entry skill (session-context inference proved unreliable in testing); the workload path is resolved once via `context-lookup`.
+- **Resume (work item 4)**: the orchestrator — not the entry skill — reads `meta.swc.workflowState["<workflow>"]` before the stage loop. A non-null `currentStage` turns the confirm-intent prompt into a resume prompt (resume at recorded stage / restart); the stage loop then starts at the chosen stage with banners, recording, and gates intact. Completed runs (`completed: true`) are never offered for resume; stage-entry writes reset `completed: false` so repeat passes (e.g. implement via the refine loop) behave correctly.
+- **Workflow definition persistence (resolved)**: the entry skill always passes the full stage+skill definition to the orchestrator, so resume needs no persisted definition. `workflow-manifest.json` stays a reporting/future artefact and is not read on resume.
 
-Full layering detail and the `swc-workflow-status` schema live in `architecture.md`.
+Full layering detail and the `meta.swc` schema live in `architecture.md`.
 
 ## Open Questions
 
-1. **Workflow definition persistence.** On resume, we need the full stage list to route correctly. Options: (a) store the stage list in meta at workflow start, (b) derive it from `workflow` name (SWC hard-codes the mapping). Option (a) is more robust; option (b) is simpler. Not yet decided.
-2. **Loopback handling.** When a user re-enters an earlier stage, do we mark later stages `superseded` (preserving exit evidence) or reset to `pending` (simpler)? Prefer `superseded` but adds a state to handle.
-3. **Atomicity.** When the terminal stage completes, `item.status: done` and the meta update should land together. Likely two sequential MCP calls — acceptable for now.
+1. **Loopback handling.** Resolved for now: `workflowState` holds only the latest position and `workflowEvents` preserves full history; per-stage `superseded` states were considered and not implemented.
+2. **Atomicity.** When the terminal stage completes, `item.status: done` and the meta update should land together. Likely two sequential MCP calls — acceptable for now.

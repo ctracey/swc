@@ -8,9 +8,9 @@ SWC-side design for recording work item stage progress using the MCP's existing 
 ┌──────────────────────────────────────────────────────────────┐
 │  SWC plugin (skills + workflow-orchestrator)                 │
 │   - Owns workflow shape (stages, ordering, exit criteria)    │
-│   - Owns swc-workflow-status schema                          │
-│   - Computes transitions, enforces loopback invariants       │
-│   - Writes its state under meta["swc-workflow-status"]       │
+│   - Owns the meta.swc schema                                 │
+│   - Computes transitions, detects resume, records completion │
+│   - Writes its state under meta["swc"]                       │
 └──────────────────────────────┬───────────────────────────────┘
                                │ MCP calls
                                ▼
@@ -24,79 +24,62 @@ SWC-side design for recording work item stage progress using the MCP's existing 
 
 The MCP is a generic workload store. SWC is the only thing that knows what a "workflow stage" is.
 
-## Orchestrator hook point
+## Orchestrator hook points
 
-The workflow orchestrator runs each stage in this sequence:
+The workflow orchestrator owns all reads and writes of workflow progress. Per run:
 
-1. Emit progress banner (`workflow-progress`)
-2. **→ Write MCP meta** ← new step
-3. Invoke stage skill
+1. **Before the stage loop** — read `meta.swc.workflowState["<workflow>"]` to detect an interrupted run (resume).
+2. **On each stage entry** — between the progress banner and the stage skill, `workflow-recordProgress` writes the stage entry (covers every stage in every workflow, including re-invokes on loopback; a crash mid-stage still records entry).
+3. **After the final stage** — `workflow-recordProgress complete=true` records completion.
 
-Step 2 fires when `workItem` is present in the workflow definition. It writes the current stage name and timestamp to `meta["swc-workflow-status"]` before the stage skill is invoked. This means:
+No per-stage skill changes are needed, and every workflow that runs through the orchestrator (deliver, implement, planning) gets recording and resume for free.
 
-- Every stage in every workflow is covered — no per-stage skill changes needed.
-- Re-invokes (on loopback or gate failure) are naturally recorded.
-- The write happens before the stage does any work, so a crash mid-stage still records entry.
+## Work item identity
 
-## Orchestrator input schema change
+The orchestrator learns the work item from an explicit `workItem` field on the workflow definition — entry skills that know the item (`workflowDeliver`, `workflowImplement`) resolve it and pass it in the JSON handoff. Inference from conversation history proved unreliable in testing (the orchestrator declined to commit to an item and skipped all meta writes), so the explicit field is the contract; session context is only a fallback. Workflows not tied to an item (planning, demo) omit the field and run without recording.
 
-A single optional field is added to the workflow definition:
+## `meta.swc` schema
 
-```jsonc
-{
-  "title": "deliver",
-  "workItem": 4,          // optional — item ordinal; enables meta writes when present
-  "stages": [ ... ],
-  "on_complete": "..."
-}
-```
-
-Entry skills (`workflowDeliver`, `workflowPlan`, `workflowImplement`) pass `workItem` when they know the active item number.
-
-## `swc-workflow-status` schema
-
-SWC writes this blob under `meta["swc-workflow-status"]`:
+All SWC state lives under the single `meta.swc` namespace on the work item:
 
 ```jsonc
 {
-  "version": 1,
-  "workflow": "deliver",           // workflow name — used to reconstruct stage list on resume
-  "currentStage": "implement",     // stage name currently active
-  "enteredAt": "2026-06-10T...",   // ISO timestamp of last stage entry
-  "stages": {                      // optional: per-stage state for loopback tracking
-    "requirements": { "state": "done",   "completedAt": "..." },
-    "specs":        { "state": "done",   "completedAt": "..." },
-    "implement":    { "state": "active", "enteredAt": "..."   },
-    "refine":       { "state": "pending" }
-  }
+  "workflowState": {
+    // keyed by workflow name — multiple workflows coexist per item
+    "deliver":   { "currentStage": "implement", "completed": false },
+    "implement": { "currentStage": null,        "completed": true  }
+  },
+  "workflowEvents": [
+    // append-only log; entries are never modified or removed
+    { "workflow": "deliver", "stage": "requirements", "timestamp": "2026-06-11T02:39:12Z" },
+    { "workflow": "deliver", "stage": "implement",    "timestamp": "2026-06-11T03:24:21Z" },
+    { "workflow": "implement", "event": "completed",  "timestamp": "2026-06-11T03:29:40Z" }
+  ]
 }
 ```
 
-Stage states: `pending` → `active` → `done` (+ `superseded` for loopback, if implemented).
+State semantics per workflow:
 
-## Workflow definition persistence (open question)
+- `currentStage: "<name>"`, `completed: false` — in-flight run, interrupted or active. Resume candidate.
+- `currentStage: null`, `completed: true` — last run finished cleanly. Never offered for resume.
+- Stage-entry writes always set `completed: false`, so a new pass over a previously completed workflow (e.g. a second implementation pass spawned by the refine loop) flips the state back to in-flight on its first stage.
 
-On resume, we need the full stage list to route to the right skill. Two options:
-
-- **(a) Store in meta at workflow start** — write `stages` array (name + skill) into the meta blob when the orchestrator starts. Fully self-contained; no coupling to SWC internals.
-- **(b) Derive from `workflow` name** — SWC hard-codes the mapping (`"deliver"` → `workflowDeliver` stage list). Simpler but couples resume logic to the workflow definition in code.
-
-Not yet decided. Option (a) is preferred for resilience.
+`workflow-recordProgress` encapsulates the read-modify-write for both modes; the orchestrator never edits meta directly.
 
 ## Scenario: fresh-session resume
 
-1. User says "continue item 4".
-2. Skill calls `mcp__swc-workload__get(4)` — meta comes back in one call.
-3. Reads `currentStage` from `meta["swc-workflow-status"]`.
-4. Routes to the matching SWC stage skill.
-5. Stage skill inspects its own `stages[currentStage]` to decide resume-mid-stage vs start-fresh.
+1. User says "continue item 4" → `workflowDeliver` runs its status check and hands the **full** stage definition — including `workItem: "4"` — to the orchestrator, as always.
+2. The orchestrator resolves the work item and workload path, then reads `meta.swc.workflowState["deliver"]`.
+3. `currentStage` is non-null → the confirm-intent prompt becomes a resume prompt: earlier stages ticked, recorded stage highlighted, "resume or restart?".
+4. On resume, the stage loop starts at the recorded stage. Banners, progress recording, and gates apply to every stage that runs — resume never invokes a stage skill outside the loop.
+5. The recorded stage may be unfinished; the stage skill starts normally and discovers existing docs/notes itself.
+
+Guard rails: a recorded stage missing from the current definition, or a failed meta read, degrades to a fresh run with a warning — resume never blocks the workflow.
+
+## Workflow definition persistence (resolved)
+
+Resume does not need a persisted definition: the entry skill always supplies the full stage+skill list when invoking the orchestrator, and the recorded `currentStage` is matched against it by name. `workflow-manifest.json` (written by `context-initWorkflowManifest`) remains a reporting/future artefact — e.g. for a generic resume that routes without an entry skill — and is not read by the orchestrator.
 
 ## Scenario: loopback
 
-User re-enters `requirements` from `implement`:
-
-1. Orchestrator marks `implement` and any later stages as `superseded` in the meta blob.
-2. Sets `currentStage: requirements`, `state: active`.
-3. One MCP meta write commits the full transition.
-
-The orchestrator enforces the invariant — the MCP stores it blindly.
+User re-enters `requirements` from `implement`: the orchestrator runs the stage loop from `requirements`; the stage-entry write moves `currentStage` back and appends a new event. The event log preserves the full history — `workflowState` only ever holds the latest position. Per-stage states (`superseded` etc.) were considered and not implemented; the append-only log covers the audit need.
