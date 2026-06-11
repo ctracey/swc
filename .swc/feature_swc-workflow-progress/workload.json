@@ -102,7 +102,7 @@
     {
       "id": "84d55e7",
       "title": "Support picking up in-flight work items across sessions",
-      "status": "in-progress",
+      "status": "done",
       "children": [],
       "meta": {
         "swc": {
