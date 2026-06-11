@@ -29,6 +29,7 @@ Invoke `workflow-orchestrator` with the implementation stage definitions:
 ```json
 {
   "title": "implement",
+  "workItem": "<work item number from step 1, e.g. \"1.4.4.1\">",
   "stages": [
     { "name": "orient",    "skill": "workflowImplement_orient",    "args": "" },
     { "name": "implement", "skill": "workflowImplement_implement",  "args": "" },
@@ -38,4 +39,4 @@ Invoke `workflow-orchestrator` with the implementation stage definitions:
 }
 ```
 
-The work item number, name, and folder path are available to each stage skill via the calling context.
+Substitute `workItem` with the actual item number confirmed in step 1 — it is required here; without it the orchestrator cannot record stage progress. The work item number, name, and folder path are available to each stage skill via the calling context.

@@ -6,7 +6,7 @@ Covers `swc:workflow-recordProgress` and the orchestrator's work item tracking.
 
 ## SCENARIO: Stage advance records workflow, stage, and history entry
 
-**Setup:** Work item 3 is active in session context. The "deliver" workflow is running.
+**Setup:** The "deliver" workflow is running with `workItem: "3"` in the workflow definition passed to the orchestrator.
 
 **Trigger:** Orchestrator advances to stage "specs".
 

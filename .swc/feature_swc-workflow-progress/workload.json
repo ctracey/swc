@@ -102,9 +102,24 @@
     {
       "id": "84d55e7",
       "title": "Support picking up in-flight work items across sessions",
-      "status": "not-started",
+      "status": "in-progress",
       "children": [],
-      "meta": {}
+      "meta": {
+        "swc": {
+          "workflowState": {
+            "deliver": {
+              "currentStage": "requirements"
+            }
+          },
+          "workflowEvents": [
+            {
+              "workflow": "deliver",
+              "stage": "requirements",
+              "timestamp": "2026-06-11T06:57:01Z"
+            }
+          ]
+        }
+      }
     },
     {
       "id": "6a49ca3",

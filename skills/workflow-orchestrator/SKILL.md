@@ -1,6 +1,6 @@
 ---
-description: Generic workflow orchestrator — drives a user through a sequence of stages defined by the calling workflow skill. Manages progress banner, stage gates, and skill invocation. Use when a workflow skill hands off a workflow definition to run, or when invoked via /workflow-orchestrator.
-allowed-tools: Bash, Read, Write, Edit, Glob, Skill
+description: Generic workflow orchestrator — drives a user through a sequence of stages defined by the calling workflow skill. Manages progress banner, stage gates, skill invocation, and resume from recorded progress. Use when a workflow skill hands off a workflow definition to run, or when invoked via /workflow-orchestrator.
+allowed-tools: Bash, Read, Write, Edit, Glob, Skill, mcp__swc-workload__list
 ---
 
 # Workflow Orchestrator
@@ -23,6 +23,10 @@ Called by a workflow skill with a JSON workflow definition conforming to this sc
     "purpose": {
       "type": "string",
       "description": "One-sentence description of what the workflow produces, shown in the confirm-intent prompt (optional)"
+    },
+    "workItem": {
+      "type": "string",
+      "description": "Work item ref this run is delivering — plain (`2`) or dotted (`1.4.4.1`) notation. Enables progress recording and resume. Entry skills that know the item MUST pass it (optional only for workflows not tied to an item, e.g. planning)"
     },
     "stages": {
       "type": "array",
@@ -47,9 +51,38 @@ Called by a workflow skill with a JSON workflow definition conforming to this sc
 
 ## Behaviour
 
-### 0. Confirm intent
+### 0. Parse the workflow definition
 
-Before doing anything else, present a confirmation prompt to the user. For each stage in `stages`, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow). Then ask:
+Read the JSON argument and validate it against the input schema. If it is malformed or fails validation, stop and report the specific violation — do not attempt to run.
+
+### 1. Resolve work item and recorded progress
+
+The work item comes from the `workItem` field of the workflow definition — this is the contract; do not rely on inferring it from conversation history. Only if the field is absent, fall back to a work item number explicitly established in session context by the calling entry skill, and say which item you picked up.
+
+If no work item can be resolved either way, emit once (not per stage):
+> "Warning: no work item is active for this run — stage progress will not be recorded to the MCP."
+
+Then treat this as a fresh run with no recorded progress and continue to step 2.
+
+If a work item is present:
+
+1. Resolve the workload path via `context-lookup`. This gives the `absolute_path` used for all meta reads and writes in this run. Resolve once; reuse for every stage.
+2. Read the item's meta: invoke `mcp__swc-workload__list` with `ref=<workItem>`, `json=true`, and `workload=<absolute_path>`. Extract `items[0].meta.swc.workflowState["<title>"]` — treat as absent if any level is missing.
+3. Determine the **resume candidate**:
+   - `currentStage` is a non-null stage name → this is an interrupted run; that stage is the resume candidate.
+   - `currentStage` is null, the key is absent, or `completed` is true → no resume candidate; this is a fresh run.
+4. **Validate the candidate**: if the recorded `currentStage` does not match any `name` in `stages` (e.g. the workflow definition changed since it was recorded), warn the user:
+   > "Recorded progress for **[title]** points at stage **'<currentStage>'**, which is not in the current workflow definition. Starting from the beginning unless you tell me otherwise."
+
+   Then treat as a fresh run.
+
+If the meta read fails, warn the user that recorded progress could not be read and treat as a fresh run — do not block the workflow on a read failure.
+
+### 2. Confirm intent
+
+Present a confirmation prompt before invoking any stage skill. For each stage in `stages`, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow).
+
+**Fresh run** (no resume candidate):
 
 > "Would you like to run through **[title]**?[purpose sentence, preceded by a space, if provided] It covers [N] stages:
 > - [stage bullet 1]
@@ -58,24 +91,29 @@ Before doing anything else, present a confirmation prompt to the user. For each 
 >
 > Want to go ahead?"
 
-If the user confirms, proceed. If not, ask what they actually need and stop here — do not invoke any stage skills.
+If the user confirms, proceed with the first stage as the starting stage. If not, ask what they actually need and stop here — do not invoke any stage skills.
 
-### 1. Parse the workflow definition
+**Resume** (resume candidate found):
 
-Read the JSON argument and validate it against the input schema. If it is malformed or fails validation, stop and report the specific violation — do not attempt to run.
+Render stages before the candidate with a ✔ prefix and highlight the candidate as the pickup point:
 
-### 2. Run stages in order
+> "**[title]** for work item **[workItem]** has recorded progress — it was last active at stage **'<currentStage>'**:
+> - ✔ [earlier stage 1]
+> - ✔ [earlier stage 2]
+> - ▶ [candidate stage] ← pick up here
+> - [later stage] …
+>
+> Resume at **'<currentStage>'**, or restart from the beginning?"
 
-**Before the first stage — check for active work item:**
+- **Resume:** the starting stage is the candidate stage.
+- **Restart:** the starting stage is the first stage.
+- Anything else (e.g. the user names a different stage): follow their lead — set the starting stage accordingly and confirm in one line.
 
-Check session context for an active work item (e.g. a work item number established by the calling entry skill earlier in the conversation). If none is found, emit once (not per stage):
-> "Warning: no work item is active in session context — stage progress will not be recorded to the MCP."
+### 3. Run stages in order
 
-If a work item is present, resolve the workload path via `context-lookup`. This gives the `absolute_path` used for all meta writes in this run. Resolve once; reuse for every stage.
+Run the stage loop from the starting stage chosen in step 2 to the final stage. Stages before the starting stage are not invoked and get no banner — the recorded progress already covers them.
 
----
-
-For each stage in `stages`:
+For each stage:
 
 1. **Emit progress banner** — invoke `workflow-progress` with:
    - `title` = workflow title
@@ -112,17 +150,25 @@ For each stage in `stages`:
 
 5. **Advance** — move to the next stage and repeat.
 
-### 3. Complete
+### 4. Complete
 
 After the final stage returns:
 
 1. Emit a final progress banner with `active=""` (all stages done).
-2. If `on_complete` is set, emit that message.
-3. Return control to the caller.
+2. **Record completion** — if `workItem` is present, invoke the `workflow-recordProgress` skill with:
+   - `workflow` = workflow title
+   - `workItem` = work item ordinal
+   - `workload` = resolved workload absolute path
+   - `complete` = `true`
+
+   This sets `currentStage` to null and `completed` to true on the workflow's state, so a future session does not mistake a finished run for an interrupted one.
+3. If `on_complete` is set, emit that message.
+4. Return control to the caller.
 
 ## Constraints
 
 - **No workflow logic here.** Stage-specific questions, decisions, and doc writes belong in the stage skills, not this orchestrator.
+- **Resume runs through the loop.** Resuming never invokes a stage skill directly outside the stage loop — the starting stage simply moves; banners, progress recording, and gates apply to every stage that runs.
 - **Skipping.** Follow the user's lead — if they indicate a stage can be skipped, surface the stage's exit criteria in a single concise message and confirm they are comfortable proceeding without them. Once confirmed, move on without further challenge.
 - **No retrying.** If a stage skill fails, surface the error and stop. The caller decides how to recover.
 - **Sequential only.** Stages run one at a time in the order defined.
