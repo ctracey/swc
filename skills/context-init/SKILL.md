@@ -99,10 +99,16 @@ Invoke `mcp__swc-workload__init` against the resolved context's `absolute_path` 
 
 If the MCP call fails, surface the error to the calling skill and stop. The stub files written in step 1 stay in place — the caller decides whether to retry or clean up.
 
-### 3. Return
+### 3. Generate workflow manifest
+
+Invoke the `context-initWorkflowManifest` skill, passing the resolved context `absolute_path`. This writes `workflow-manifest.json` to the context folder so a fresh session can reconstruct the full stage list for any workflow without hardcoding.
+
+If this step fails, surface the error but do not stop — the stub files and workload are already in a good state. The manifest can be regenerated later by re-running this skill.
+
+### 4. Return
 
 Return the folder path to the calling skill. Print nothing — the calling skill handles confirmation.
 
 ## Exit criteria
 
-**Done when** the five narrative stubs (`plan.md`, `architecture.md`, `notes.md`, `changelog.md`, `pipeline.md`) exist at `.swc/<folder>/` AND `mcp__swc-workload__init` has succeeded for that folder.
+**Done when** the five narrative stubs (`plan.md`, `architecture.md`, `notes.md`, `changelog.md`, `pipeline.md`) exist at `.swc/<folder>/` AND `mcp__swc-workload__init` has succeeded for that folder AND `workflow-manifest.json` has been written to `.swc/<folder>/`.
