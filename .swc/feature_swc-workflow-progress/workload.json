@@ -17,9 +17,87 @@
     {
       "id": "cf41a5a",
       "title": "Find a way to persist a workflow stage definition",
-      "status": "not-started",
+      "status": "done",
       "children": [],
-      "meta": {}
+      "meta": {
+        "swc": {
+          "workflowState": {
+            "deliver": {
+              "currentStage": "accept"
+            },
+            "implement": {
+              "currentStage": "summarise"
+            }
+          },
+          "workflowEvents": [
+            {
+              "workflow": "deliver",
+              "stage": "requirements",
+              "timestamp": "2026-06-11T02:39:12Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "specs",
+              "timestamp": "2026-06-11T03:19:14Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "solution-design",
+              "timestamp": "2026-06-11T03:21:21Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "implement",
+              "timestamp": "2026-06-11T03:24:21Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "orient",
+              "timestamp": "2026-06-11T03:25:41Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "implement",
+              "timestamp": "2026-06-11T03:26:54Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "summarise",
+              "timestamp": "2026-06-11T03:29:01Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "refine",
+              "timestamp": "2026-06-11T03:30:26Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "orient",
+              "timestamp": "2026-06-11T04:52:56Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "implement",
+              "timestamp": "2026-06-11T05:46:52Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "summarise",
+              "timestamp": "2026-06-11T05:56:09Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "review",
+              "timestamp": "2026-06-11T05:58:27Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "accept",
+              "timestamp": "2026-06-11T06:40:25Z"
+            }
+          ]
+        }
+      }
     },
     {
       "id": "84d55e7",
@@ -38,9 +116,72 @@
     {
       "id": "b930d15",
       "title": "Add version skill to the swc plugin",
-      "status": "not-started",
+      "status": "done",
       "children": [],
-      "meta": {}
+      "meta": {
+        "swc": {
+          "workflowState": {
+            "deliver": {
+              "currentStage": "accept"
+            },
+            "implement": {
+              "currentStage": "summarise"
+            }
+          },
+          "workflowEvents": [
+            {
+              "workflow": "deliver",
+              "stage": "requirements",
+              "timestamp": "2026-06-10T23:15:42Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "specs",
+              "timestamp": "2026-06-10T23:39:01Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "solution-design",
+              "timestamp": "2026-06-10T23:42:16Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "implement",
+              "timestamp": "2026-06-10T23:46:26Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "orient",
+              "timestamp": "2026-06-10T23:47:13Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "implement",
+              "timestamp": "2026-06-10T23:48:45Z"
+            },
+            {
+              "workflow": "implement",
+              "stage": "summarise",
+              "timestamp": "2026-06-10T23:49:45Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "refine",
+              "timestamp": "2026-06-10T23:51:18Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "review",
+              "timestamp": "2026-06-10T23:56:23Z"
+            },
+            {
+              "workflow": "deliver",
+              "stage": "accept",
+              "timestamp": "2026-06-10T23:59:23Z"
+            }
+          ]
+        }
+      }
     }
   ]
 }

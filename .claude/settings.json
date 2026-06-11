@@ -3,12 +3,14 @@
     "allow": [
       "Skill(swc:*)",
       "Read(/Users/tracer/claude-plugins/plugins/swc_v1.1.0-PR/skills/**)",
+      "Read(/Users/tracer/claude-plugins/plugins/swc/skills/**)",
       "Read(.swc/**)",
       "Write(.swc/**)",
       "Edit(.swc/**)",
       "Bash(mkdir -p .swc/**)",
       "Bash(mkdir -p .swc/*/workitems/**)",
       "Bash(python3 /Users/tracer/claude-plugins/plugins/swc_v1.1.0-PR/skills/**)",
+      "Bash(python3 /Users/tracer/claude-plugins/plugins/swc/skills/**)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('output', d.get\\('error', ''\\)\\)\\)\")",
       "mcp__swc-workload__*",
       "mcp__plugin_swc_swc-workload__*"
