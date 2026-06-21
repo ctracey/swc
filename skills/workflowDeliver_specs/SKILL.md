@@ -19,7 +19,7 @@ Read from the active context folder:
 - `requirements.md` for this work item (`.swc/<folder>/workitems/<N>/requirements.md`) — `<N>` is the **full work item number**, e.g. `1.1`, `2.3`, not just the top-level number
 - `plan.md` and `architecture.md` for broader context
 
-Summarise requirements in one short paragraph, then move to the calibration step.
+Then move to the calibration step.
 
 ---
 
@@ -52,16 +52,12 @@ If the user pushes back on your choice, adjust without debate.
 
 For simple, single-path work items.
 
-### L1 — Confirm the success condition
+### L1/L2 — Confirm success and failure cases
 
 Ask one question:
-> "What does done look like — what would you check to know this works?"
+> "What does done look like — what would you check to know this works? And is there anything that should explicitly not happen?"
 
-### L2 — Note any failure cases
-
-> "Is there anything that should explicitly not happen, or an error case worth calling out?"
-
-If nothing meaningful, skip.
+If no failure cases are raised, skip them.
 
 ### L3 — Write lightweight specs doc
 
@@ -79,8 +75,10 @@ Write to `.swc/<folder>/workitems/<N>/specs.md`:
 - [bullet per explicit failure or non-behaviour — omit section if none]
 ```
 
-Show the user the file path and say:
-> "Specs captured."
+Show the user the file path and its contents, then ask:
+> "Does that capture it? Happy to move to solution design."
+
+Wait for confirmation. Address any corrections, then return control to the calling skill.
 
 **Return control to the calling skill.**
 
@@ -132,9 +130,9 @@ For each meaningful behaviour in the journeys, write one EARS requirement. Choos
 Each requirement gets a unique ID: REQ-01, REQ-02, etc.
 
 Read them back as a numbered list:
-> "Here are the requirements I've derived: [list]. Anything missing or wrong?"
+> "Here are the requirements I've derived: [list]."
 
-Correct and confirm before proceeding.
+If anything looks uncertain or incomplete, pause and check. Otherwise proceed to scenarios.
 
 ### F4 — Write acceptance scenarios (Gherkin)
 
@@ -166,12 +164,7 @@ Each rule implies: one scenario just inside the valid range, one just outside.
 
 Skip this section if no validation logic is present.
 
-### F6 — Confirm and write full specs doc
-
-Play back:
-> "To summarise: [personas], [N] journeys, [N] EARS requirements, [N] Gherkin scenarios[, validation rules]. Does that capture it?"
-
-Correct and re-confirm if needed.
+### F6 — Write full specs doc
 
 Write to `.swc/<folder>/workitems/<N>/specs.md`:
 
@@ -209,8 +202,10 @@ REQ-02: [EARS requirement]
 
 Create the `workitems/<N>/` directory if it doesn't exist.
 
-Show the user the file path and say:
-> "Specs captured. The implementation agent will write tests from this doc before touching any implementation code."
+Show the user the file path and its contents, then ask:
+> "Does that capture it? Happy to move to solution design."
+
+Wait for confirmation. Address any corrections, then proceed.
 
 **Return control to the calling skill.**
 
@@ -221,6 +216,5 @@ Show the user the file path and say:
 **Done when:**
 - Depth calibrated and path chosen
 - `specs.md` written to `.swc/<folder>/workitems/<N>/` via the appropriate path
-- User has confirmed the spec captures it
 
 **Return control to the calling skill.**

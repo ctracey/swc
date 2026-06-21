@@ -93,11 +93,11 @@ Return control to the orchestrator.
 
 ### 7. Feedback path
 
-Collect the feedback. Once the developer has described what needs to change, play it back:
+Collect the feedback. Once the developer has described what needs to change, state your interpretation directly:
 
-> "So the feedback is: [summary of what the developer said]. Is that captured correctly?"
+> "So the feedback is: [summary of what the developer said]."
 
-If the developer corrects the playback, update and play back again. Repeat until confirmed.
+If the developer corrects it, update and restate. Otherwise proceed to step 8.
 
 ### 8. Write feedback.md
 

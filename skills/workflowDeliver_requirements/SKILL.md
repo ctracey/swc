@@ -31,51 +31,43 @@ If no codebase is present (docs-only or new project), skip this step.
 
 ### 3. Open the conversation
 
-Summarise what you understand about the intent from the docs so far. One short paragraph — what the work item is, why it exists, and any constraints already documented.
+State what you understand about the intent from the docs so far — one short paragraph covering what the work item is, why it exists, and any constraints already documented. Declare your reading directly rather than inviting disagreement up front.
 
-If the work item description is thin (a single line with no context), flag it:
+If the work item description is genuinely thin (a single line with no context), flag it:
 > "The work item entry is brief — I've got [title] but not much else. Want to give me more context before we dig in, or is keeping it simple intentional?"
-
-Then invite the user to clarify or elaborate:
-> "Does that capture what you're going for, or is there something I've missed or oversimplified?"
 
 ### 4. Clarify intent
 
-Ask questions until you have a clear picture of:
+Declare what's already clear from the docs, then ask only genuine branch-point questions in a single pass — things the user must answer before the direction is settled. Do not loop one question at a time or play back before moving on.
+
+Target a clear picture of:
 - **What** is being built and for whom
 - **Why** it's needed — the problem or outcome it addresses
 - **Constraints** — things that must hold true regardless of approach
 - **Out of scope** — anything explicitly not included
 
-Follow the planning conversation principles: one question at a time, calibrate depth to the work item's complexity, play back before moving on.
-
-Stay in the problem space. If the user raises implementation specifics, note them and park:
+Calibrate depth to complexity: simple/standard items may need no questions at all. Stay in the problem space. If the user raises implementation specifics, note them and park:
 > "Good to know — I'll capture that. Let's make sure we've got the intent solid first."
 
-### 5. Confirm intent before moving on
+### 5. Summarise intent and proceed
 
 Play back the intent picture before shifting to solution:
 
-> "So if I've got this right: [what], for [who/context], because [why]. The key outcome is [what changes or is achieved]. Constraints: [list if any]. Does that capture it, or is there anything to adjust?"
+> "So: [what], for [who/context], because [why]. The key outcome is [what changes or is achieved]. Constraints: [list if any]."
 
-Correct and re-confirm if needed. Do not proceed to solution direction until the user confirms intent is right.
+Then proceed to solution direction. If the user has corrections they will say so.
 
 ### 6. Explore high-level solution direction
 
-Once intent is confirmed, shift to approach:
-> "Now that I understand what we're building — how are you thinking of approaching it?"
+Shift to approach. If there is an obvious approach given the codebase context loaded in step 2, state it:
+> "Given how [existing pattern/file/skill] works, the natural approach would be [X]."
+
+Ask only if the direction is genuinely unclear:
+> "How are you thinking of approaching it?"
 
 This is approach confirmation, not design: what kind of thing are we building, what are the major constraints, are there obvious alternatives to rule out? Keep it high-level.
 
-If there is an obvious approach given the codebase context loaded in step 2, surface it:
-> "Given how [existing pattern/file/skill] works, the natural approach would be [X]. Does that match your thinking, or are you considering something different?"
-
-### 7. Confirm and write requirements doc
-
-Play back the full picture:
-> "So to summarise: [intent paragraph]. Approach direction: [one or two sentences]. Constraints: [list]. Out of scope: [list if any]. Does that capture it?"
-
-Correct and re-confirm if needed.
+### 7. Write requirements doc
 
 Write to `.swc/<folder>/workitems/<N>/requirements.md`:
 
@@ -107,8 +99,10 @@ Create the `workitems/<N>/` directory if it doesn't exist.
 
 ### 8. Confirm and hand off
 
-Show the user the requirements doc path, then say:
-> "Requirements captured. Moving to specs."
+Show the user the requirements doc path and its contents, then ask:
+> "Does that capture it? Happy to move to specs."
+
+Wait for confirmation. Address any corrections, then proceed.
 
 ## Exit criteria
 
