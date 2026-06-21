@@ -3,6 +3,7 @@
     "main": "main",
     "feature/swc-skill-permissions": "feature_swc-skill-permissions",
     "feature/mcp-workload-migration": "feature_mcp-workload-migration",
-    "feature/swc-workflow-progress": "feature_swc-workflow-progress"
+    "feature/swc-workflow-progress": "feature_swc-workflow-progress",
+    "streamline": "streamline"
   }
 }
