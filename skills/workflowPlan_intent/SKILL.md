@@ -48,15 +48,11 @@ If users, personas, or scenarios were discussed, add `## Users and scenarios`.
 
 If constraints were raised, add `## Constraints` to `notes.md`.
 
-### 5. Present and check
+### 5. Present and proceed
 
-Run `swc-report-plan` to show the current state of the plan doc. Then ask:
+Run `swc-report-plan` to show the current state of the plan doc.
 
-> "Does that capture what you're going for? Anything to adjust before we move to the solution?"
-
-Wait for confirmation or corrections before transitioning.
-
-Transition: *"Good — now let's talk about how you're thinking of approaching it."*
+Transition: *"Now let's talk about how you're thinking of approaching it."*
 
 ## Exit criteria
 
