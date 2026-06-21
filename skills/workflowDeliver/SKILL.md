@@ -44,12 +44,10 @@ Check the item's current status marker and any existing task-specific docs at `.
 
 **`in-progress`:**
 Read any existing task docs (e.g. `requirements.md`, `context.md`) and summarise what has already been captured:
-> "We're continuing work on **[N]: [name]**. Here's where things stand:
-> [one bullet per doc found — what it contains, e.g. 'requirements.md — intent and approach direction captured']
->
-> Ready to pick up from here?"
+> "Continuing work on **[N]: [name]**. Here's where things stand:
+> [one bullet per doc found — what it contains, e.g. 'requirements.md — intent and approach direction captured']"
 
-Wait for confirmation before proceeding. Do not re-walk or summarise workflow stages here — if the item has recorded workflow progress on its meta, the orchestrator detects it and offers to resume at the recorded stage.
+Then proceed. Do not re-walk or summarise workflow stages here — if the item has recorded workflow progress on its meta, the orchestrator detects it and offers to resume at the recorded stage.
 
 **`not-started`, but task docs exist:**
 Surface the existing context as part of your opening:
@@ -58,10 +56,8 @@ Surface the existing context as part of your opening:
 Proceed to step 1 without waiting — this is informational, not a gate.
 
 **`not-started`, no task docs:**
-Confirm simply:
-> "I'll work on **[N]: [name]** — is that right?"
-
-Wait for confirmation before proceeding.
+Announce and proceed:
+> "Starting work on **[N]: [name]**."
 
 **`done`:**
 Do not proceed automatically. Clarify with the user:
@@ -72,22 +68,11 @@ Do not proceed automatically. Clarify with the user:
 
 Wait for their answer and act accordingly before continuing.
 
-### 2. Confirm intent
-
-Before starting, read the `stages` array from the JSON config in step 2. For each stage, render its `name` as a bullet with a one-line description of what that stage covers. Present to the user:
-
-> "Ready to start the delivery workflow for **[item number]: [item name]**. It covers [N] stages:
-> [generated bullets]
->
-> Want to go ahead?"
-
-If yes, proceed. If no, ask what they actually need and stop here.
-
-### 3. Mark work item in-progress
+### 2. Mark work item in-progress
 
 Before starting the workflow, silently invoke `mcp__swc-workload__start` against the resolved context's `absolute_path` with the work item number. The MCP handles parent rollup. Emit no output — this is a silent side-effect.
 
-### 4. Run the workflow
+### 3. Run the workflow
 
 **Use the Skill tool to invoke `workflow-orchestrator`.** Do not run stages inline — the orchestrator manages the progress banner, stage gates, and exit criteria checks. Pass the following workflow definition as the args:
 

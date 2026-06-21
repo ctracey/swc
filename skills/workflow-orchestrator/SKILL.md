@@ -78,20 +78,16 @@ If a work item is present:
 
 If the meta read fails, warn the user that recorded progress could not be read and treat as a fresh run — do not block the workflow on a read failure.
 
-### 2. Confirm intent
+### 2. Resolve starting stage
 
-Present a confirmation prompt before invoking any stage skill. For each stage in `stages`, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow).
+**Fresh run** (no resume candidate): render the stage list as a statement and proceed — do not ask for confirmation. For each stage, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow).
 
-**Fresh run** (no resume candidate):
+> "Running **[title]**[purpose sentence, preceded by a space, if provided]. It covers [N] stages:
+> - [stage name] — [one-line description]
+> - [stage name] — [one-line description]
+> …"
 
-> "Would you like to run through **[title]**?[purpose sentence, preceded by a space, if provided] It covers [N] stages:
-> - [stage bullet 1]
-> - [stage bullet 2]
-> …
->
-> Want to go ahead?"
-
-If the user confirms, proceed with the first stage as the starting stage. If not, ask what they actually need and stop here — do not invoke any stage skills.
+The starting stage is the first stage.
 
 **Resume** (resume candidate found):
 

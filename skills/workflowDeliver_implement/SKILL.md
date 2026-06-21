@@ -77,7 +77,12 @@ Agent(
 Use the context-lookup skill to find the active context, then invoke `mcp__swc-workload__list` with `ref=[N]`, `json=true`, and `workload` set to the context's `absolute_path` to confirm the name and details for work item [N].
 
 Follow the workflowImplement skill to complete this work item.
-The user has already confirmed intent — when the workflow-orchestrator asks "Want to go ahead?", answer yes and proceed immediately without pausing.
+
+COMPLETION REQUIREMENT: Do NOT return until all three stages — orient, implement, and summarise — have completed and `summary.md` has been written. Intermediate stage outputs and summaries are not a signal to return — stay in the workflow until it is finished.
+
+The user has already confirmed intent and direction. Answer "yes" to any go-ahead confirmation and proceed without pausing for decisions already settled in requirements.md, specs.md, and solution.md.
+
+RETURN EARLY ONLY IF you encounter a genuine direction decision not covered by the brief — a choice where making the wrong assumption would require significant rework and the docs give no basis to decide. In that case, surface the specific question clearly, write what you have to context.md, and halt. Do not return early for implementation details, minor ambiguities, or anything the solution.md or specs.md already resolves.
 
 [Include only if quality-baseline.md exists:]
 A quality-baseline.md exists at .swc/<folder>/workitems/<N>/quality-baseline.md — read it during orient.

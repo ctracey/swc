@@ -17,16 +17,7 @@ Follow the `setup-permissions` skill.
 
 Follow the `mcp-check` skill. If the MCP is missing, the check delegates to `mcp-install` and the workflow cannot proceed — stop here.
 
-### 1. Announce workflow
-
-Before starting, read the `stages` array from the JSON config in step 2. For each stage, render its `name` as a bullet with a one-line description of what that stage covers (inferred from the name and your knowledge of the workflow). Present this to the user:
-
-> "Starting the planning workflow. The output is a set of planning docs that any future session can pick up and execute from without needing context from this conversation. It covers [N] stages:
-> [generated bullets]"
-
-Then proceed to step 2.
-
-### 2. Run the workflow
+### 1. Run the workflow
 
 Invoke `swc-workflow-orchestrator` with the following definition:
 
