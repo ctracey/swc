@@ -1,0 +1,91 @@
+{
+  "items": [
+    {
+      "id": "451bd41",
+      "title": "workflowPlan",
+      "status": "done",
+      "children": [
+        {
+          "id": "a0f8813",
+          "title": "Update workflowPlan/SKILL.md \u2014 \"Want to go ahead?\" \u2192 statement",
+          "status": "done",
+          "children": [],
+          "meta": {}
+        },
+        {
+          "id": "3f25c34",
+          "title": "Update workflowPlan_intent/SKILL.md \u2014 remove redundant step 5 confirmation ask; run report and proceed",
+          "status": "done",
+          "children": [],
+          "meta": {}
+        }
+      ],
+      "meta": {}
+    },
+    {
+      "id": "1e91a39",
+      "title": "workflowDeliver",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "83b44f2",
+          "title": "Update workflowDeliver/SKILL.md \u2014 remove confirmation gates at entry",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        },
+        {
+          "id": "0235275",
+          "title": "Update workflowDeliver_requirements/SKILL.md \u2014 declare not confirm; single-pass branch-point questions",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        },
+        {
+          "id": "8f96769",
+          "title": "Update workflowDeliver_specs/SKILL.md \u2014 remove play-back confirmations; combine lightweight questions",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        },
+        {
+          "id": "6fc4842",
+          "title": "Update workflowDeliver_solutionDesign/SKILL.md \u2014 reuse-first scan; remove depth invite and proceed gate",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        },
+        {
+          "id": "f3932e1",
+          "title": "Update workflowDeliver_review/SKILL.md \u2014 streamline feedback play-back",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        }
+      ],
+      "meta": {}
+    },
+    {
+      "id": "e3fc365",
+      "title": "workflowImplement",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "0778614",
+          "title": "Update workflowImplement_implement/SKILL.md \u2014 explicit judgment-call guidance; flag assumptions for summary",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        },
+        {
+          "id": "b4beec1",
+          "title": "Update workflowImplement_summarise/SKILL.md \u2014 agent self-heals empty context; approach flag in summary not prompt; add judgment calls section",
+          "status": "not-started",
+          "children": [],
+          "meta": {}
+        }
+      ],
+      "meta": {}
+    }
+  ]
+}
