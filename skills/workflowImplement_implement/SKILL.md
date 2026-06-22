@@ -21,7 +21,19 @@ Read `specs.md` and `architecture.md` to determine the spec type:
 | Skill / Way (markdown) | Work item is a `.md` instruction file | Acceptance checklist; use `ways-tests` skill for ways |
 | Agent | Work item defines agent behaviour | Input/output scenarios, verified by running the agent |
 
-### 2. Cycle through scenarios
+### 2. Judgment-call guidance
+
+When facing spec ambiguity or an approach choice not covered by `solution.md` or `specs.md`:
+
+- **Make the call.** Choose the most reasonable interpretation and keep going.
+- **Log it immediately** in context.md as `- **Assumption:** [what was assumed, should be verified]`.
+- **Do not interrupt the user.** Pausing for minor decisions defeats the purpose of autonomous implementation.
+
+The only exception is a genuine direction decision where the wrong call would require significant rework and the docs give no basis to decide — surface that explicitly, write what you have to context.md, and halt.
+
+Assumptions logged here are aggregated into the `### Judgment calls` section of `summary.md` at the summarise stage so they are easy to review.
+
+### 3. Cycle through scenarios
 
 Work through each scenario in `specs.md` one at a time.
 
@@ -61,13 +73,13 @@ For each scenario:
 
 For Ways specifically, run `ways-tests` after each scenario to score the match.
 
-### 3. Run the full suite
+### 4. Run the full suite
 
 After all scenarios pass, run the full test suite (code) or walk the complete checklist (skill/way/agent) to confirm no regressions.
 
 If regressions are found: treat each as a new scenario cycle with the same 3-cycle limit.
 
-### 4. Blocked
+### 5. Blocked
 
 If a scenario still fails after 3 fix cycles, or no reasonable forward path exists within the agreed brief:
 

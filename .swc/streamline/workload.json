@@ -68,19 +68,19 @@
     {
       "id": "e3fc365",
       "title": "workflowImplement",
-      "status": "not-started",
+      "status": "done",
       "children": [
         {
           "id": "0778614",
           "title": "Update workflowImplement_implement/SKILL.md \u2014 explicit judgment-call guidance; flag assumptions for summary",
-          "status": "not-started",
+          "status": "done",
           "children": [],
           "meta": {}
         },
         {
           "id": "b4beec1",
           "title": "Update workflowImplement_summarise/SKILL.md \u2014 agent self-heals empty context; approach flag in summary not prompt; add judgment calls section",
-          "status": "not-started",
+          "status": "done",
           "children": [],
           "meta": {}
         }

@@ -15,11 +15,11 @@ allowed-tools: Read, Write, Glob, Bash
 
 Read `.swc/<folder>/workitems/<N>/context.md`. Find the current pass section (the last `## Pass` header).
 
-If the current pass section has no bullet entries, surface this before continuing:
+If the current pass section has no bullet entries, write a brief entry yourself and continue — do not gate on user input:
 
-> "The context.md pass section for this run has no entries. Before wrapping up, capture what happened — even briefly: what was done, any decision or assumption made, or where things were left. This is the record a future agent relies on."
-
-Do not continue until at least one bullet entry exists under the current pass section.
+```
+- **Pass summary (auto):** [one sentence covering what was done, any key decisions or assumptions made]
+```
 
 ### 3. Collect pipeline results
 
@@ -68,6 +68,10 @@ Check if `.swc/<folder>/workitems/<N>/summary.md` exists.
 
 [Work observations outside the agreed brief — not acted on, raised for Gate 3. Write "None" if nothing to flag.]
 
+### Judgment calls
+
+[List all `**Assumption:**` entries from context.md for this pass — one bullet each. These are calls made autonomously where the docs were ambiguous. Write "None" if no assumptions were logged.]
+
 ### Approach needs revisiting
 
 [If the agreed approach proved unworkable mid-implementation, describe what was encountered and what a better approach would be. This flag triggers Gate 1 again. Write "No" if approach held.]
@@ -105,20 +109,16 @@ Check if `.swc/<folder>/workitems/<N>/summary.md` exists.
 
 [New scope observations from this pass, or "None".]
 
+### Judgment calls
+
+[Assumption entries from context.md for this pass, or "None".]
+
 ### Approach needs revisiting
 
 ["No" if approach held, or describe what needs revisiting.]
 ```
 
-### 6. Check "Approach needs revisiting"
-
-Read the `### Approach needs revisiting` section of the pass just written.
-
-If it contains anything other than "No", surface it to the user immediately before returning:
-
-> "The implementation agent flagged that the agreed approach needs revisiting: [content]. This will trigger Gate 1 again in the deliver workflow."
-
-### 7. Return
+### 6. Return
 
 Return control to the orchestrator.
 
@@ -128,6 +128,6 @@ Return control to the orchestrator.
 - context.md pass section has at least one entry
 - Pipeline checks run (or absence noted)
 - Pass section appended to `summary.md` (or file created on first pass)
-- "Approach needs revisiting" surfaced to user if set
+- Judgment calls section populated from context.md Assumption entries
 
 **Return control to the calling skill.**
